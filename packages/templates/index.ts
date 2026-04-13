@@ -143,7 +143,23 @@ export const templates: TemplateMeta[] = [
     style: 'Professional',
     thumbnail: '/templates/thumbnails/corporate.png',
     htmlPath: 'corporate.html'
-  }
+  },
+  {
+    id: 'infographic',
+    name: 'Infographic',
+    slug: 'infographic',
+    style: 'Creative',
+    thumbnail: '/templates/thumbnails/infographic.png',
+    htmlPath: 'infographic.html'
+  },
+  {
+    id: 'academic',
+    name: 'Academic',
+    slug: 'academic',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/academic.png',
+    htmlPath: 'academic.html'
+  },
 ];
 
 export const templateStyles = ['Professional', 'Minimal', 'Creative', 'Modern'];

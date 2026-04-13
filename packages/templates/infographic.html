@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{fullName}} - Resume</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&display=swap');
+  :root { --accent: var(--resume-accent-color, #7c3aed); }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:#fff; color:#1a1a1a; }
+  .page { width:794px; min-height:1123px; margin:0 auto; display:grid; grid-template-columns:250px 1fr; }
+  .left { background:var(--accent); padding:0; display:flex; flex-direction:column; }
+  .l-top { padding:40px 24px 32px; text-align:center; border-bottom:1px solid rgba(255,255,255,0.15); }
+  .avatar { width:72px; height:72px; border-radius:50%; background:rgba(255,255,255,0.2); border:3px solid rgba(255,255,255,0.5); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; color:#fff; margin:0 auto 14px; }
+  .l-name { font-size:16px; font-weight:800; color:#fff; line-height:1.3; margin-bottom:4px; }
+  .l-title { font-size:10px; font-weight:400; color:rgba(255,255,255,0.7); letter-spacing:1.5px; text-transform:uppercase; }
+  .l-section { padding:20px 24px; border-bottom:1px solid rgba(255,255,255,0.1); }
+  .l-label { font-size:9px; font-weight:800; letter-spacing:2.5px; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:10px; }
+  .l-contact { font-size:11px; color:rgba(255,255,255,0.8); margin-bottom:6px; line-height:1.4; }
+  .vis-skill { margin-bottom:10px; }
+  .vis-skill-name { font-size:11px; color:rgba(255,255,255,0.85); margin-bottom:4px; font-weight:500; }
+  .vis-bar-bg { height:4px; background:rgba(255,255,255,0.15); border-radius:2px; }
+  .vis-bar-fill { height:4px; background:rgba(255,255,255,0.8); border-radius:2px; }
+  .l-lang { display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.8); margin-bottom:6px; }
+  .l-edu { font-size:11px; color:rgba(255,255,255,0.85); line-height:1.5; }
+  .l-edu strong { display:block; font-weight:700; font-size:12px; color:#fff; }
+  .right { padding:36px 40px; }
+  .r-section { margin-bottom:26px; }
+  .r-title { font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+  .r-title::after { content:''; flex:1; height:2px; background:#f3f0ff; }
+  .summary-p { font-size:13px; line-height:1.8; color:#444; }
+  .exp-card { background:#faf9ff; border-left:3px solid var(--accent); padding:12px 14px; border-radius:0 8px 8px 0; margin-bottom:12px; }
+  .ec-top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:2px; }
+  .ec-role { font-size:13px; font-weight:700; color:#1a1a1a; }
+  .ec-date { font-size:10px; color:var(--accent); font-weight:700; }
+  .ec-co { font-size:11px; color:#777; margin-bottom:7px; }
+  .ec-list { list-style:none; }
+  .ec-list li { font-size:12px; color:#444; line-height:1.65; padding-left:12px; position:relative; margin-bottom:2px; }
+  .ec-list li::before { content:'◆'; position:absolute; left:0; color:var(--accent); font-size:6px; top:5px; }
+  .cert-pill { display:flex; justify-content:space-between; align-items:center; background:#faf9ff; border:1px solid #ede9fe; border-radius:8px; padding:8px 12px; margin-bottom:8px; }
+  .cert-left .cert-name { font-size:12px; font-weight:700; color:#1a1a1a; }
+  .cert-left .cert-issuer { font-size:11px; color:#777; }
+  .cert-year { font-size:11px; font-weight:700; color:var(--accent); }
+  @media print { body{-webkit-print-color-adjust:exact;print-color-adjust:exact;} .page{margin:0;} }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="left">
+    <div class="l-top">
+      <div class="avatar">{{initials}}</div>
+      <div class="l-name">{{fullName}}</div>
+      <div class="l-title">{{jobTitle}}</div>
+    </div>
+    <div class="l-section">
+      <div class="l-label">Contact</div>
+      <div class="l-contact">{{email}}</div>
+      <div class="l-contact">{{phone}}</div>
+      <div class="l-contact">{{location}}</div>
+      <div class="l-contact">{{linkedin}}</div>
+    </div>
+    <div class="l-section">
+      <div class="l-label">Skills</div>
+      <div class="vis-skill"><div class="vis-skill-name">{{skill1}}</div><div class="vis-bar-bg"><div class="vis-bar-fill" style="width:92%"></div></div></div>
+      <div class="vis-skill"><div class="vis-skill-name">{{skill2}}</div><div class="vis-bar-bg"><div class="vis-bar-fill" style="width:82%"></div></div></div>
+      <div class="vis-skill"><div class="vis-skill-name">{{skill3}}</div><div class="vis-bar-bg"><div class="vis-bar-fill" style="width:88%"></div></div></div>
+      <div class="vis-skill"><div class="vis-skill-name">{{skill4}}</div><div class="vis-bar-bg"><div class="vis-bar-fill" style="width:72%"></div></div></div>
+      <div class="vis-skill"><div class="vis-skill-name">{{skill5}}</div><div class="vis-bar-bg"><div class="vis-bar-fill" style="width:78%"></div></div></div>
+    </div>
+    <div class="l-section">
+      <div class="l-label">Languages</div>
+      <div class="l-lang"><span>{{lang1}}</span><span>{{lang1Level}}</span></div>
+      <div class="l-lang"><span>{{lang2}}</span><span>{{lang2Level}}</span></div>
+    </div>
+    <div class="l-section">
+      <div class="l-label">Education</div>
+      <div class="l-edu"><strong>{{degree}}</strong>{{university}}</div>
+      <div class="l-contact" style="margin-top:4px;font-weight:700;color:rgba(255,255,255,0.9)">{{graduationYear}}</div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="r-section">
+      <div class="r-title">About Me</div>
+      <p class="summary-p">{{summary}}</p>
+    </div>
+    <div class="r-section">
+      <div class="r-title">Experience</div>
+      <div class="exp-card">
+        <div class="ec-top"><span class="ec-role">{{job1Title}}</span><span class="ec-date">{{job1Start}} &ndash; {{job1End}}</span></div>
+        <div class="ec-co">{{job1Company}} &middot; {{job1Location}}</div>
+        <ul class="ec-list"><li>{{job1Bullet1}}</li><li>{{job1Bullet2}}</li><li>{{job1Bullet3}}</li></ul>
+      </div>
+      <div class="exp-card">
+        <div class="ec-top"><span class="ec-role">{{job2Title}}</span><span class="ec-date">{{job2Start}} &ndash; {{job2End}}</span></div>
+        <div class="ec-co">{{job2Company}} &middot; {{job2Location}}</div>
+        <ul class="ec-list"><li>{{job2Bullet1}}</li><li>{{job2Bullet2}}</li></ul>
+      </div>
+    </div>
+    <div class="r-section">
+      <div class="r-title">Certifications</div>
+      <div class="cert-pill"><div class="cert-left"><div class="cert-name">{{cert1}}</div><div class="cert-issuer">{{cert1Issuer}}</div></div><span class="cert-year">{{cert1Year}}</span></div>
+      <div class="cert-pill"><div class="cert-left"><div class="cert-name">{{cert2}}</div><div class="cert-issuer">{{cert2Issuer}}</div></div><span class="cert-year">{{cert2Year}}</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

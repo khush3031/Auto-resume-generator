@@ -9,6 +9,9 @@ import { ResumePreviewer } from './ResumePreviewer';
 import { AiBulletSuggestions } from './builder/AiBulletSuggestions';
 import { AiSkillSuggestions } from './builder/AiSkillSuggestions';
 import { AiSummarySuggestions } from './builder/AiSummarySuggestions';
+import { ColorPicker } from './builder/ColorPicker';
+import { DEFAULT_COLOR, ResumeColor } from '../src/lib/resume-colors';
+
 
 const baseFormData: Record<string, string> = {
   fullName: '', jobTitle: '', email: '', phone: '',
@@ -96,6 +99,13 @@ function populateTemplate(html: string, data: Record<string, string>): string {
   });
 }
 
+/** Inject the accent-color CSS variable right after <head> so it overrides the template default */
+function injectAccentColor(html: string, hex: string): string {
+  const injection = `<style>:root { --resume-accent-color: ${hex} !important; }</style>`;
+  if (html.includes('<head>')) return html.replace('<head>', `<head>${injection}`);
+  return injection + html;
+}
+
 function validate(
   formData: Record<string, string>,
   experiences: number[], educations: number[],
@@ -139,6 +149,7 @@ export function BuilderShell({
 
   const [resumeId,        setResumeId]        = useState<string | null>(null);
   const [html,            setHtml]            = useState('');
+  const [accentColor,     setAccentColor]     = useState<ResumeColor>(DEFAULT_COLOR);
   const [isSaving,        setIsSaving]        = useState(false);
   const [isDownloading,   setIsDownloading]   = useState(false);
   const [lastSavedAt,     setLastSavedAt]     = useState<string | null>(null);
@@ -175,8 +186,8 @@ export function BuilderShell({
   }, [template.id]);
 
   useEffect(() => {
-    setHtml(populateTemplate(template.htmlContent, formData));
-  }, [formData, template.htmlContent]);
+    setHtml(injectAccentColor(populateTemplate(template.htmlContent, formData), accentColor.hex));
+  }, [formData, template.htmlContent, accentColor.hex]);
 
   useEffect(() => {
     createResume({ templateId: template.id, formData })
@@ -505,6 +516,13 @@ export function BuilderShell({
               {isSaving ? 'Saving…' : resumeId ? 'Up to date' : 'Preview only'}
             </span>
           </div>
+
+          {/* Color theme picker */}
+          <ColorPicker
+            selected={accentColor.hex}
+            onChange={(color) => setAccentColor(color)}
+          />
+
           <div className="builder-preview-body">
             <ResumePreviewer html={html} padding={64} />
           </div>
