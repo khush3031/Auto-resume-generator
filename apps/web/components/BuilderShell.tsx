@@ -16,6 +16,7 @@ import { DEFAULT_COLOR, ResumeColor } from '../src/lib/resume-colors';
 const baseFormData: Record<string, string> = {
   fullName: '', jobTitle: '', email: '', phone: '',
   location: '', linkedin: '', website: '', initials: '', summary: '',
+  _accentColor: '',
 };
 
 const sampleData: Record<string, string> = {
@@ -238,12 +239,73 @@ function populateTemplate(html: string, data: Record<string, string>): string {
 }
 
 
-/** Inject the accent-color CSS variable right after <head> so it overrides the template default */
-function injectAccentColor(html: string, hex: string): string {
-  const injection = `<style>:root { --resume-accent-color: ${hex} !important; }</style>`;
-  if (html.includes('<head>')) return html.replace('<head>', `<head>${injection}`);
-  return injection + html;
+/**
+ * Known accent colors for each template id.
+ * These are the "brand" colors hardcoded in each template's CSS.
+ * When the user picks a theme color, these get swapped out.
+ */
+const TEMPLATE_ACCENT_COLORS: Record<string, string> = {
+  'classic':      '#0f3d5c',
+  'minimal':      '#111827',
+  'executive':    '#d4af37',   // gold in sidebar brand text
+  'bold':         '#ef4444',
+  'modern':       '#3b82f6',
+  'elegant':      '#9d8189',
+  'clean-grid':   '#334155',
+  'ats-friendly': '#374151',
+  'ats':          '#374151',
+  'corporate':    '#4299e1',
+  'creative':     '#4ecdc4',
+  'compact':      '#e53935',
+  'timeline':     '#7c3aed',
+  'mono':         '#333',
+  'slate':        '#38bdf8',
+  'indigo':       '#4338ca',
+  'cobalt':       '#0077cc',
+  'sage':         '#3a5e3b',
+  'infographic':  '#7c3aed',
+  'academic':     '#374151',
+};
+
+/** Convert any hex color to its lowercase 6-char form (#abc → #aabbcc) */
+function normHex(h: string): string {
+  const s = h.replace('#', '');
+  return s.length === 3
+    ? '#' + s.split('').map(c => c + c).join('')
+    : '#' + s.toLowerCase();
 }
+
+/**
+ * Inject the selected accent color into the template HTML.
+ *
+ * Two-pass strategy so EVERY template responds to the picker:
+ *  1. Replace all occurrences of the template's known accent color hex
+ *     with the selected hex (handles hardcoded-color templates).
+ *  2. Inject a <style> overriding --resume-accent-color (handles
+ *     templates that already use CSS custom properties).
+ */
+function injectAccentColor(html: string, hex: string, templateId: string): string {
+  let result = html;
+
+  // Pass 1 — direct hex replacement for templates with hardcoded colors
+  const knownAccent = TEMPLATE_ACCENT_COLORS[templateId];
+  if (knownAccent) {
+    const norm = normHex(knownAccent);
+    const short = knownAccent.replace('#', '').length === 3 ? knownAccent : null;
+    // Replace 6-char version (case-insensitive)
+    result = result.split(norm).join(hex);
+    result = result.split(norm.toUpperCase()).join(hex);
+    result = result.split(knownAccent).join(hex);        // original form
+    if (short) result = result.split(short).join(hex);
+  }
+
+  // Pass 2 — CSS variable override (for templates that use var(--resume-accent-color))
+  const cssVar = `<style>:root { --resume-accent-color: ${hex} !important; --accent: ${hex} !important; }</style>`;
+  result = result.includes('<head>') ? result.replace('<head>', `<head>${cssVar}`) : cssVar + result;
+
+  return result;
+}
+
 
 function validate(
   formData: Record<string, string>,
@@ -325,8 +387,8 @@ export function BuilderShell({
   }, [template.id]);
 
   useEffect(() => {
-    setHtml(injectAccentColor(populateTemplate(template.htmlContent, formData), accentColor.hex));
-  }, [formData, template.htmlContent, accentColor.hex]);
+    setHtml(injectAccentColor(populateTemplate(template.htmlContent, formData), accentColor.hex, template.id));
+  }, [formData, template.htmlContent, accentColor.hex, template.id]);
 
   useEffect(() => {
     createResume({ templateId: template.id, formData })
@@ -659,7 +721,11 @@ export function BuilderShell({
           {/* Color theme picker */}
           <ColorPicker
             selected={accentColor.hex}
-            onChange={(color) => setAccentColor(color)}
+            onChange={(color) => {
+              setAccentColor(color);
+              // persist color into formData so it's auto-saved and used for PDF export
+              setFormData((prev) => ({ ...prev, _accentColor: color.hex }));
+            }}
           />
 
           <div className="builder-preview-body">

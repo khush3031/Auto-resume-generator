@@ -125,11 +125,49 @@ export class ResumesService {
     // process.cwd() is apps/api when Turbo runs the dev script.
     // packages/templates lives two directories above that at the monorepo root.
     const templatePath = join(process.cwd(), '..', '..', 'packages', 'templates', template.htmlPath);
-    const html = await fs.readFile(templatePath, 'utf-8');
-    return html.replace(/{{\s*([^}\s]+)\s*}}/g, (_, key) => {
-      return String(formData[key] ?? '');
+    let html = await fs.readFile(templatePath, 'utf-8');
+
+    // Replace {{placeholders}} with formData values
+    html = html.replace(/{{\s*([^}\s]+)\s*}}/g, (_, key) => {
+      return key === '_accentColor' ? '' : String(formData[key] ?? '');
     });
+
+    // Inject accent color chosen by the user (stored in formData._accentColor)
+    const accentHex = formData['_accentColor'];
+    if (accentHex) {
+      html = this.injectAccentColor(html, accentHex, templateId);
+    }
+
+    return html;
   }
+
+  /** Mirrors the client-side injectAccentColor logic in BuilderShell.tsx */
+  private injectAccentColor(html: string, hex: string, templateId: string): string {
+    const ACCENT_MAP: Record<string, string> = {
+      'classic': '#0f3d5c', 'minimal': '#111827', 'executive': '#d4af37',
+      'bold': '#ef4444', 'modern': '#3b82f6', 'elegant': '#9d8189',
+      'clean-grid': '#334155', 'ats-friendly': '#374151', 'ats': '#374151',
+      'corporate': '#4299e1', 'creative': '#4ecdc4', 'compact': '#e53935',
+      'timeline': '#7c3aed', 'mono': '#333', 'slate': '#38bdf8',
+      'indigo': '#4338ca', 'cobalt': '#0077cc', 'sage': '#3a5e3b',
+      'infographic': '#7c3aed', 'academic': '#374151',
+    };
+
+    const knownAccent = ACCENT_MAP[templateId];
+    if (knownAccent) {
+      const norm = knownAccent.replace('#', '').length === 3
+        ? '#' + knownAccent.replace('#', '').split('').map((c: string) => c + c).join('')
+        : knownAccent.toLowerCase();
+      html = html.split(norm).join(hex);
+      html = html.split(knownAccent).join(hex);
+    }
+
+    // CSS variable override (for new templates using var(--resume-accent-color))
+    const cssVar = `<style>:root { --resume-accent-color: ${hex} !important; --accent: ${hex} !important; }</style>`;
+    html = html.includes('<head>') ? html.replace('<head>', `<head>${cssVar}`) : cssVar + html;
+    return html;
+  }
+
 
   private async createPdfBuffer(html: string) {
     const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
