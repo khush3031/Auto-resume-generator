@@ -30,6 +30,7 @@ export function Navbar() {
         {/* Desktop nav */}
         <nav className="navbar__desktop" aria-label="Main navigation">
           <Link href="/templates" className="navbar__link">Templates</Link>
+          <Link href="/upload" className="navbar__link">Upload Resume</Link>
           {isAuthenticated ? (
             <>
               <Link href="/dashboard" className="navbar__link">Dashboard</Link>
@@ -73,6 +74,7 @@ export function Navbar() {
         <nav className="navbar__mobile-nav" aria-label="Mobile navigation">
           <div className="navbar__mobile-links">
             <Link href="/templates" className="navbar__mobile-link">Templates</Link>
+            <Link href="/upload" className="navbar__mobile-link">Upload Resume</Link>
             {isAuthenticated ? (
               <>
                 <Link href="/dashboard" className="navbar__mobile-link">Dashboard</Link>

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { TemplateCard } from '../../components/TemplateCard';
 import type { TemplateMeta } from '@resumeforge/templates';
 
@@ -74,6 +75,16 @@ export default async function TemplatesPage() {
               </div>
             </div>
           )}
+
+          {/* Upload banner */}
+          <div className="templates-upload-banner">
+            <span className="templates-upload-banner__text">
+              Already have a resume? Skip the form and upload it directly.
+            </span>
+            <Link href="/upload" className="btn btn--outline btn--sm">
+              Upload &amp; Rebuild →
+            </Link>
+          </div>
 
           {templates.length === 0 ? (
             <div className="empty-state">

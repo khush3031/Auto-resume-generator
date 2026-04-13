@@ -185,6 +185,8 @@ export async function exportResumePdf(resumeId: string) {
   return response.data;
 }
 
+export { api };
+
 export default {
   login,
   register,

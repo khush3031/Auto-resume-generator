@@ -14,3 +14,7 @@ npm-debug.log*
 **/.parcel-cache
 **/.pnp
 **/coverage
+
+# Upload temp files (keep .gitkeep)
+apps/api/uploads/temp/*
+!apps/api/uploads/temp/.gitkeep

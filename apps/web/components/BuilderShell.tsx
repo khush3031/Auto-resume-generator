@@ -6,6 +6,9 @@ import { createResume, exportResumePdf, updateResume } from '../src/lib/api';
 import { useAuthStore } from '../src/store/auth.store';
 import { AuthModal } from './AuthModal';
 import { ResumePreviewer } from './ResumePreviewer';
+import { AiBulletSuggestions } from './builder/AiBulletSuggestions';
+import { AiSkillSuggestions } from './builder/AiSkillSuggestions';
+import { AiSummarySuggestions } from './builder/AiSummarySuggestions';
 
 const baseFormData: Record<string, string> = {
   fullName: '', jobTitle: '', email: '', phone: '',
@@ -148,6 +151,29 @@ export function BuilderShell({
 
   useEffect(() => { loadFromStorage(); }, [loadFromStorage]);
 
+  // Pre-fill from upload flow (source=upload query param) ──────────────────
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('source') !== 'upload') return;
+    const key = `parsed_resume_${template.id}`;
+    const stored = sessionStorage.getItem(key);
+    if (!stored) return;
+    try {
+      const parsed: Record<string, string> = JSON.parse(stored);
+      sessionStorage.removeItem(key);
+      setFormData((prev) => {
+        const next = { ...prev };
+        Object.entries(parsed).forEach(([k, v]) => {
+          if (typeof v === 'string' && v.trim()) next[k] = v;
+        });
+        return next;
+      });
+    } catch {
+      console.error('Failed to load parsed resume data from sessionStorage');
+    }
+  }, [template.id]);
+
   useEffect(() => {
     setHtml(populateTemplate(template.htmlContent, formData));
   }, [formData, template.htmlContent]);
@@ -274,6 +300,13 @@ export function BuilderShell({
 
       <FormSection title="Professional Summary">
         <Textarea label="Summary" field="summary" value={formData.summary} onChange={updateField} />
+        <AiSummarySuggestions
+          jobTitle={formData.jobTitle || ''}
+          topSkills={[formData.skill1, formData.skill2, formData.skill3].filter(Boolean)}
+          yearsOfExperience="3+"
+          currentRole={formData.job1Title || ''}
+          onSelect={(s) => updateField('summary', s)}
+        />
       </FormSection>
 
       <FormSection title="Work Experience">
@@ -290,6 +323,20 @@ export function BuilderShell({
             <Input label="Bullet 1" field={`job${n}Bullet1`} value={formData[`job${n}Bullet1`] ?? ''} onChange={updateField} />
             <Input label="Bullet 2" field={`job${n}Bullet2`} value={formData[`job${n}Bullet2`] ?? ''} onChange={updateField} />
             <Input label="Bullet 3" field={`job${n}Bullet3`} value={formData[`job${n}Bullet3`] ?? ''} onChange={updateField} />
+            <AiBulletSuggestions
+              jobTitle={formData[`job${n}Title`] || ''}
+              company={formData[`job${n}Company`] || ''}
+              existingBullets={[
+                formData[`job${n}Bullet1`] || '',
+                formData[`job${n}Bullet2`] || '',
+                formData[`job${n}Bullet3`] || '',
+              ]}
+              onSelect={(bullet) => {
+                const slots = [`job${n}Bullet1`, `job${n}Bullet2`, `job${n}Bullet3`];
+                const empty = slots.find((s) => !formData[s]);
+                updateField(empty ?? `job${n}Bullet3`, bullet);
+              }}
+            />
           </Card>
         ))}
         <AddButton label="Add Work Experience" onClick={() => addSection(setExperiences, expCounter, experienceFields)} />
@@ -328,6 +375,33 @@ export function BuilderShell({
             ))}
           </div>
         )}
+        <AiSkillSuggestions
+          jobTitle={formData.jobTitle || ''}
+          experienceSummary={[
+            formData.job1Title, formData.job1Company,
+            formData.job1Bullet1, formData.job1Bullet2,
+            formData.job2Title, formData.job2Company,
+          ].filter(Boolean).join('. ')}
+          selectedSkills={skills.map((n) => formData[`skill${n}`]).filter(Boolean)}
+          onAdd={(skill) => {
+            // Find first empty slot or add a new one
+            const emptySlot = skills.find((n) => !formData[`skill${n}`]);
+            if (emptySlot != null) {
+              updateField(`skill${emptySlot}`, skill);
+            } else {
+              addSection(setSkills, skillCounter, skillFields);
+              // After state update, set the new field via a tiny delay
+              setTimeout(() => {
+                const newN = skillCounter.current;
+                updateField(`skill${newN}`, skill);
+              }, 50);
+            }
+          }}
+          onRemove={(skill) => {
+            const slot = skills.find((n) => formData[`skill${n}`] === skill);
+            if (slot != null) updateField(`skill${slot}`, '');
+          }}
+        />
         <AddButton label="Add Skill" onClick={() => addSection(setSkills, skillCounter, skillFields)} />
       </FormSection>
 
