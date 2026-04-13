@@ -91,13 +91,152 @@ function injectWrapFix(html: string): string {
   return html.includes('</head>') ? html.replace('</head>', style + '\n</head>') : style + html;
 }
 
+// ── Dynamic slot expansion ────────────────────────────────────────────────────
+/**
+ * Find the smallest HTML element that spans all the given search strings.
+ * Walks backwards from the first search position looking for an opening tag
+ * whose matching close tag falls after all search strings.
+ */
+function findContainer(
+  html: string,
+  searches: string[],
+): { el: string; start: number; end: number } | null {
+  if (!searches.length) return null;
+
+  // Compute the range that must be covered
+  let rangeStart = Infinity;
+  let rangeEnd   = -1;
+  for (const s of searches) {
+    const p = html.indexOf(s);
+    if (p === -1) return null;
+    if (p < rangeStart) rangeStart = p;
+    if (p + s.length > rangeEnd) rangeEnd = p + s.length;
+  }
+
+  const VOID = new Set(['meta','link','br','hr','img','input','head','html','body','style','script']);
+
+  for (let i = rangeStart - 1; i >= 0; i--) {
+    if (html[i] !== '<') continue;
+    const next = html[i + 1];
+    if (next === '/' || next === '!' || next === '?') continue;
+
+    const gt = html.indexOf('>', i);
+    if (gt === -1 || gt >= rangeStart) continue; // tag must fully open before rangeStart
+
+    const tagName = (html.slice(i, gt + 1).match(/^<(\w+)/i) ?? [])[1]?.toLowerCase();
+    if (!tagName || VOID.has(tagName)) continue;
+
+    const closeTag = `</${tagName}>`;
+    const closePos = html.indexOf(closeTag, rangeEnd);
+    if (closePos === -1) continue;
+
+    const candidate = html.slice(i, closePos + closeTag.length);
+    if (searches.every(s => candidate.includes(s))) {
+      return { el: candidate, start: i, end: closePos + closeTag.length };
+    }
+  }
+  return null;
+}
+
+/** Clone the HTML block wrapping the last slot of `prefix` for each extra item in data. */
+function expandSingleSlots(html: string, data: Record<string, string>, prefix: string): string {
+  let max = 0;
+  for (let n = 1; html.includes(`{{${prefix}${n}}}`); n++) max = n;
+  if (!max) return html;
+
+  const extras: number[] = [];
+  for (let n = max + 1; data[`${prefix}${n}`]; n++) extras.push(n);
+  if (!extras.length) return html;
+
+  const c = findContainer(html, [`{{${prefix}${max}}}`]);
+  if (!c) return html;
+
+  const clones = extras
+    .map(n => c.el.split(`{{${prefix}${max}}}`).join(`{{${prefix}${n}}}`))
+    .join('');
+  return html.slice(0, c.end) + clones + html.slice(c.end);
+}
+
+/** Clone the HTML block for multi-field items (cert, lang) */
+function expandMultiSlots(
+  html: string,
+  data: Record<string, string>,
+  prefix: string,
+  suffixes: string[],
+): string {
+  let max = 0;
+  for (let n = 1; html.includes(`{{${prefix}${n}}}`); n++) max = n;
+  if (!max) return html;
+
+  const extras: number[] = [];
+  for (let n = max + 1; data[`${prefix}${n}`]; n++) extras.push(n);
+  if (!extras.length) return html;
+
+  const searchKeys = [`{{${prefix}${max}}}`, ...suffixes.map(s => `{{${prefix}${max}${s}}}`)];
+  const validKeys  = searchKeys.filter(s => html.includes(s));
+
+  const c = findContainer(html, validKeys);
+  if (!c) return expandSingleSlots(html, data, prefix); // fallback
+
+  const allSuffixes = ['', ...suffixes];
+  const clones = extras.map(n => {
+    let clone = c.el;
+    allSuffixes.forEach(s => {
+      clone = clone.split(`{{${prefix}${max}${s}}}`).join(`{{${prefix}${n}${s}}}`);
+    });
+    return clone;
+  }).join('');
+  return html.slice(0, c.end) + clones + html.slice(c.end);
+}
+
+/** Clone the HTML block for extra work-experience entries */
+function expandJobSlots(html: string, data: Record<string, string>): string {
+  let max = 0;
+  for (let n = 1; html.includes(`{{job${n}Title}}`); n++) max = n;
+  if (!max) return html;
+
+  const extras: number[] = [];
+  for (let n = max + 1; data[`job${n}Title`]; n++) extras.push(n);
+  if (!extras.length) return html;
+
+  const allSuffixes = ['Title','Company','Location','Start','End','Bullet1','Bullet2','Bullet3'];
+  const validKeys   = allSuffixes
+    .map(s => `{{job${max}${s}}}`)
+    .filter(s => html.includes(s));
+  if (validKeys.length < 2) return html;
+
+  const c = findContainer(html, validKeys.slice(0, 3));
+  if (!c) return html;
+
+  const clones = extras.map(n => {
+    let clone = c.el;
+    allSuffixes.forEach(s => {
+      clone = clone.split(`{{job${max}${s}}}`).join(`{{job${n}${s}}}`);
+    });
+    return clone;
+  }).join('');
+  return html.slice(0, c.end) + clones + html.slice(c.end);
+}
+
+function expandAllDynamicSlots(html: string, data: Record<string, string>): string {
+  html = expandSingleSlots(html, data, 'skill');
+  html = expandMultiSlots(html, data, 'lang', ['Level']);
+  html = expandMultiSlots(html, data, 'cert', ['Issuer', 'Year']);
+  html = expandJobSlots(html, data);
+  return html;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function populateTemplate(html: string, data: Record<string, string>): string {
-  const injected = injectWrapFix(sanitizeEncoding(html));
-  return injected.replace(/{{\s*([^}\s]+)\s*}}/g, (_, key: string) => {
+  const prepped  = injectWrapFix(sanitizeEncoding(html));
+  const expanded = expandAllDynamicSlots(prepped, data);
+  return expanded.replace(/{{\s*([^}\s]+)\s*}}/g, (_, key: string) => {
     const v = data[key];
     return v !== undefined && v.trim() !== '' ? v : (sampleData[key] ?? '');
   });
 }
+
 
 /** Inject the accent-color CSS variable right after <head> so it overrides the template default */
 function injectAccentColor(html: string, hex: string): string {
