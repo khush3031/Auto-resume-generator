@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minimal Resume</title>
+  <style>
+    body { margin: 0; font-family: 'Libre Baskerville', Georgia, serif; color: #111827; background: #ffffff; }
+    .page { max-width: 880px; margin: auto; padding: 44px; }
+    .bordered { border-bottom: 1px solid #e5e7eb; padding-bottom: 24px; margin-bottom: 30px; }
+    h1 { margin: 0; font-size: 2.8rem; font-weight: 700; }
+    h2 { margin: 0 0 12px; font-size: 1rem; letter-spacing: 0.18em; text-transform: uppercase; color: #6b7280; }
+    .meta { display: flex; flex-wrap: wrap; gap: 12px; color: #4b5563; margin-top: 12px; font-size: 0.95rem; }
+    .section { margin-bottom: 28px; }
+    .section p, .section li { line-height: 1.8; }
+    ul { margin: 0; padding-left: 18px; }
+    .grid { display: grid; gap: 22px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .skill-list, .language-list { display: grid; gap: 10px; }
+    .tag { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 999px; width: fit-content; }
+    @media print { .page { padding: 20px; } .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="bordered">
+      <h1>{{fullName}}</h1>
+      <div class="meta">
+        <span>{{jobTitle}}</span>
+        <span>{{location}}</span>
+        <span>{{email}}</span>
+        <span>{{website}}</span>
+      </div>
+    </header>
+    <section class="section">
+      <h2>Summary</h2>
+      <p>{{summary}}</p>
+    </section>
+    <div class="grid">
+      <div>
+        <section class="section">
+          <h2>Experience</h2>
+          <p><strong>{{job1Title}}</strong><br>{{job1Company}} | {{job1Start}} – {{job1End}}<br>{{job1Bullet1}}</p>
+          <p><strong>{{job2Title}}</strong><br>{{job2Company}} | {{job2Start}} – {{job2End}}<br>{{job2Bullet1}}</p>
+        </section>
+        <section class="section">
+          <h2>Education</h2>
+          <p><strong>{{degree}}</strong><br>{{university}} | {{graduationYear}}</p>
+          <p><strong>{{degree2}}</strong><br>{{university2}} | {{graduationYear2}}</p>
+        </section>
+      </div>
+      <aside>
+        <section class="section">
+          <h2>Skills</h2>
+          <div class="skill-list">
+            <span class="tag">{{skill1}}</span>
+            <span class="tag">{{skill2}}</span>
+            <span class="tag">{{skill3}}</span>
+            <span class="tag">{{skill4}}</span>
+          </div>
+        </section>
+        <section class="section">
+          <h2>Languages</h2>
+          <div class="language-list">
+            <span>{{lang1}} — {{lang1Level}}</span>
+            <span>{{lang2}} — {{lang2Level}}</span>
+          </div>
+        </section>
+        <section class="section">
+          <h2>Certifications</h2>
+          <div style="margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:600;">{{cert1}}</div>
+            <div style="font-size:11px;opacity:0.7;margin-top:2px;">{{cert1Issuer}} &middot; {{cert1Year}}</div>
+          </div>
+          <div style="margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:600;">{{cert2}}</div>
+            <div style="font-size:11px;opacity:0.7;margin-top:2px;">{{cert2Issuer}} &middot; {{cert2Year}}</div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+</body>
+</html>

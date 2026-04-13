@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sage Resume</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:wght@600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Lato', sans-serif; background: #fff; color: #2d3a2e; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; padding: 0; }
+    .header { background: #f5f9f5; padding: 48px 56px 36px; border-bottom: 3px solid #5c7a5e; position: relative; }
+    .header::after { content: ''; position: absolute; bottom: -3px; left: 56px; width: 80px; height: 3px; background: #8fbc8f; }
+    .h-name { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; color: #2d3a2e; letter-spacing: -.5px; margin-bottom: 6px; }
+    .h-title { font-size: 13px; font-weight: 300; color: #5c7a5e; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 18px; }
+    .h-contact { display: flex; flex-wrap: wrap; gap: 20px; }
+    .h-contact span { font-size: 12px; color: #4a5e4b; }
+    .body { padding: 36px 56px; display: grid; grid-template-columns: 1fr 195px; gap: 36px; }
+    .m-label { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; color: #2d3a2e; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #c8dcc8; }
+    .m-section { margin-bottom: 26px; }
+    .summary-p { font-size: 13px; line-height: 1.85; color: #4a5e4b; font-style: italic; }
+    .exp-item { margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px dashed #c8dcc8; }
+    .exp-item:last-child { border-bottom: none; }
+    .exp-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px; }
+    .exp-role { font-size: 13px; font-weight: 700; color: #2d3a2e; }
+    .exp-date { font-size: 11px; color: #5c7a5e; background: #e8f0e8; padding: 2px 8px; border-radius: 3px; font-weight: 400; }
+    .exp-co { font-size: 12px; color: #6b7f6c; margin-bottom: 8px; }
+    .exp-list { list-style: none; }
+    .exp-list li { font-size: 12px; color: #4a5e4b; line-height: 1.7; padding-left: 14px; position: relative; margin-bottom: 2px; }
+    .exp-list li::before { content: '✿'; position: absolute; left: 0; color: #8fbc8f; font-size: 9px; top: 3px; }
+    .s-label { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 600; color: #2d3a2e; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #c8dcc8; margin-top: 18px; }
+    .s-label:first-child { margin-top: 0; }
+    .s-text { font-size: 12px; color: #4a5e4b; line-height: 1.6; margin-bottom: 5px; }
+    .s-bold { font-weight: 700; color: #2d3a2e; }
+    .skill-pill { display: inline-block; font-size: 11px; color: #3a5e3b; border: 1px solid #8fbc8f; padding: 3px 10px; border-radius: 99px; margin: 3px 2px 3px 0; background: #f5f9f5; }
+    .lang-row { display: flex; justify-content: space-between; font-size: 12px; color: #4a5e4b; padding: 4px 0; }
+    .lang-level { font-style: italic; color: #5c7a5e; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="h-name">{{fullName}}</div>
+      <div class="h-title">{{jobTitle}}</div>
+      <div class="h-contact">
+        <span>{{email}}</span>
+        <span>{{phone}}</span>
+        <span>{{location}}</span>
+        <span>{{linkedin}}</span>
+      </div>
+    </div>
+    <div class="body">
+      <div>
+        <div class="m-section">
+          <div class="m-label">Profile</div>
+          <p class="summary-p">{{summary}}</p>
+        </div>
+        <div class="m-section">
+          <div class="m-label">Experience</div>
+          <div class="exp-item">
+            <div class="exp-top"><span class="exp-role">{{job1Title}}</span><span class="exp-date">{{job1Start}} – {{job1End}}</span></div>
+            <div class="exp-co">{{job1Company}} · {{job1Location}}</div>
+            <ul class="exp-list">
+              <li>{{job1Bullet1}}</li>
+              <li>{{job1Bullet2}}</li>
+              <li>{{job1Bullet3}}</li>
+            </ul>
+          </div>
+          <div class="exp-item">
+            <div class="exp-top"><span class="exp-role">{{job2Title}}</span><span class="exp-date">{{job2Start}} – {{job2End}}</span></div>
+            <div class="exp-co">{{job2Company}} · {{job2Location}}</div>
+            <ul class="exp-list">
+              <li>{{job2Bullet1}}</li>
+              <li>{{job2Bullet2}}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="s-label">Education</div>
+        <div class="s-text"><span class="s-bold">{{degree}}</span><br>{{university}}<br>{{graduationYear}}</div>
+        <div class="s-label">Skills</div>
+        <span class="skill-pill">{{skill1}}</span>
+        <span class="skill-pill">{{skill2}}</span>
+        <span class="skill-pill">{{skill3}}</span>
+        <span class="skill-pill">{{skill4}}</span>
+        <span class="skill-pill">{{skill5}}</span>
+        <div class="s-label">Languages</div>
+        <div class="lang-row"><span>{{lang1}}</span><span class="lang-level">{{lang1Level}}</span></div>
+        <div class="lang-row"><span>{{lang2}}</span><span class="lang-level">{{lang2Level}}</span></div>
+        <div class="s-label">Certifications</div>
+        <div class="s-text"><span class="s-bold">{{cert1}}</span><br>{{cert1Issuer}} · {{cert1Year}}</div>
+        <div class="s-text"><span class="s-bold">{{cert2}}</span><br>{{cert2Issuer}} · {{cert2Year}}</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

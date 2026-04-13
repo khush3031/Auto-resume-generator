@@ -1,0 +1,16 @@
+node_modules
+dist
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.production.local
+package-lock.json
+npm-debug.log*
+**/package-lock.json
+**/.next
+**/out
+**/.turbo
+**/.parcel-cache
+**/.pnp
+**/coverage

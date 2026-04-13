@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cobalt Resume</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Poppins', sans-serif; background: #fff; color: #1a202c; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; }
+    .top-band { height: 8px; background: linear-gradient(90deg, #0055a4, #0077cc, #00aaee); }
+    .header { padding: 36px 52px 28px; border-bottom: 1px solid #e2e8f0; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 24px; }
+    .h-name { font-size: 30px; font-weight: 700; color: #0055a4; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .h-title { font-size: 13px; font-weight: 400; color: #4a5568; letter-spacing: .5px; }
+    .h-contact { text-align: right; }
+    .h-contact p { font-size: 11.5px; color: #4a5568; line-height: 1.8; }
+    .h-contact a { color: #0055a4; text-decoration: none; }
+    .body { padding: 32px 52px; display: grid; grid-template-columns: 1fr 190px; gap: 36px; }
+    .m-head { font-size: 11px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #0055a4; border-bottom: 2px solid #0055a4; padding-bottom: 5px; margin-bottom: 14px; }
+    .m-section { margin-bottom: 26px; }
+    .summary-p { font-size: 12.5px; line-height: 1.8; color: #4a5568; font-weight: 300; }
+    .exp-block { margin-bottom: 16px; }
+    .eb-top { display: flex; justify-content: space-between; margin-bottom: 2px; }
+    .eb-role { font-size: 13px; font-weight: 600; color: #1a202c; }
+    .eb-date { font-size: 11px; color: #0055a4; font-weight: 500; }
+    .eb-co { font-size: 12px; color: #718096; font-style: italic; margin-bottom: 7px; }
+    .eb-list { list-style: none; }
+    .eb-list li { font-size: 12px; color: #4a5568; line-height: 1.7; padding-left: 16px; position: relative; margin-bottom: 2px; }
+    .eb-list li::before { content: ''; position: absolute; left: 0; top: 8px; width: 6px; height: 2px; background: #0055a4; }
+    .s-head { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #0055a4; border-bottom: 1px solid #bee3f8; padding-bottom: 5px; margin-bottom: 10px; margin-top: 18px; }
+    .s-head:first-child { margin-top: 0; }
+    .s-text { font-size: 11.5px; color: #4a5568; line-height: 1.6; margin-bottom: 5px; }
+    .s-bold { font-weight: 600; color: #1a202c; }
+    .skill-bar { margin-bottom: 8px; }
+    .skill-name { font-size: 11.5px; color: #2d3748; margin-bottom: 3px; font-weight: 500; }
+    .skill-track { height: 4px; background: #e2e8f0; border-radius: 99px; }
+    .skill-fill { height: 4px; background: linear-gradient(90deg, #0055a4, #00aaee); border-radius: 99px; }
+    .lang-row { display: flex; justify-content: space-between; font-size: 11.5px; color: #4a5568; padding: 4px 0; border-bottom: 1px dotted #e2e8f0; }
+    .lang-level { color: #0055a4; font-size: 11px; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top-band"></div>
+    <div class="header">
+      <div>
+        <div class="h-name">{{fullName}}</div>
+        <div class="h-title">{{jobTitle}}</div>
+      </div>
+      <div class="h-contact">
+        <p>{{email}}</p>
+        <p>{{phone}}</p>
+        <p>{{location}}</p>
+        <p>{{linkedin}}</p>
+      </div>
+    </div>
+    <div class="body">
+      <div>
+        <div class="m-section">
+          <div class="m-head">Professional Summary</div>
+          <p class="summary-p">{{summary}}</p>
+        </div>
+        <div class="m-section">
+          <div class="m-head">Experience</div>
+          <div class="exp-block">
+            <div class="eb-top"><span class="eb-role">{{job1Title}}</span><span class="eb-date">{{job1Start}} – {{job1End}}</span></div>
+            <div class="eb-co">{{job1Company}} · {{job1Location}}</div>
+            <ul class="eb-list">
+              <li>{{job1Bullet1}}</li>
+              <li>{{job1Bullet2}}</li>
+              <li>{{job1Bullet3}}</li>
+            </ul>
+          </div>
+          <div class="exp-block">
+            <div class="eb-top"><span class="eb-role">{{job2Title}}</span><span class="eb-date">{{job2Start}} – {{job2End}}</span></div>
+            <div class="eb-co">{{job2Company}} · {{job2Location}}</div>
+            <ul class="eb-list">
+              <li>{{job2Bullet1}}</li>
+              <li>{{job2Bullet2}}</li>
+            </ul>
+          </div>
+        </div>
+        <div class="m-section">
+          <div class="m-head">Education</div>
+          <div class="eb-top"><span class="eb-role">{{degree}}</span><span class="eb-date">{{graduationYear}}</span></div>
+          <div class="eb-co">{{university}}</div>
+        </div>
+      </div>
+      <div>
+        <div class="s-head">Core Skills</div>
+        <div class="skill-bar"><div class="skill-name">{{skill1}}</div><div class="skill-track"><div class="skill-fill" style="width:95%"></div></div></div>
+        <div class="skill-bar"><div class="skill-name">{{skill2}}</div><div class="skill-track"><div class="skill-fill" style="width:88%"></div></div></div>
+        <div class="skill-bar"><div class="skill-name">{{skill3}}</div><div class="skill-track"><div class="skill-fill" style="width:82%"></div></div></div>
+        <div class="skill-bar"><div class="skill-name">{{skill4}}</div><div class="skill-track"><div class="skill-fill" style="width:75%"></div></div></div>
+        <div class="skill-bar"><div class="skill-name">{{skill5}}</div><div class="skill-track"><div class="skill-fill" style="width:70%"></div></div></div>
+        <div class="s-head">Languages</div>
+        <div class="lang-row"><span>{{lang1}}</span><span class="lang-level">{{lang1Level}}</span></div>
+        <div class="lang-row"><span>{{lang2}}</span><span class="lang-level">{{lang2Level}}</span></div>
+        <div class="s-head">Certifications</div>
+        <div class="s-text"><span class="s-bold">{{cert1}}</span><br>{{cert1Issuer}} · {{cert1Year}}</div>
+        <div class="s-text"><span class="s-bold">{{cert2}}</span><br>{{cert2Issuer}} · {{cert2Year}}</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

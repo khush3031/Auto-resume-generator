@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Slate Resume</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #fff; color: #1e293b; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; display: grid; grid-template-columns: 230px 1fr; }
+    .sidebar { background: #1e293b; padding: 48px 24px; display: flex; flex-direction: column; gap: 0; }
+    .avatar { width: 70px; height: 70px; border-radius: 50%; background: #334155; border: 2px solid #475569; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; }
+    .s-name { font-size: 16px; font-weight: 700; color: #f1f5f9; text-align: center; margin-bottom: 4px; }
+    .s-title { font-size: 10px; font-weight: 400; color: #64748b; text-align: center; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 28px; }
+    .s-divider { height: 1px; background: #334155; margin: 16px 0; }
+    .s-section-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #38bdf8; margin-bottom: 10px; margin-top: 20px; }
+    .s-item { font-size: 11px; color: #94a3b8; line-height: 1.7; margin-bottom: 4px; }
+    .s-skill { font-size: 11px; color: #cbd5e1; background: #334155; padding: 4px 10px; border-radius: 3px; margin: 3px 0; display: block; }
+    .s-lang { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-bottom: 6px; }
+    .s-lang span:last-child { color: #38bdf8; font-size: 10px; }
+    .main { padding: 48px 36px; }
+    .m-section { margin-bottom: 28px; }
+    .m-label { font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #38bdf8; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 14px; }
+    .summary-p { font-size: 13px; line-height: 1.8; color: #475569; }
+    .exp-item { margin-bottom: 18px; }
+    .exp-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px; }
+    .exp-role { font-size: 13px; font-weight: 600; color: #1e293b; }
+    .exp-date { font-size: 11px; color: #38bdf8; font-weight: 500; white-space: nowrap; }
+    .exp-co { font-size: 12px; color: #64748b; margin-bottom: 7px; }
+    .exp-list { list-style: none; }
+    .exp-list li { font-size: 12px; color: #475569; line-height: 1.7; padding-left: 14px; position: relative; margin-bottom: 2px; }
+    .exp-list li::before { content: '▸'; position: absolute; left: 0; color: #38bdf8; font-size: 10px; top: 2px; }
+    .edu-item { display: flex; justify-content: space-between; align-items: flex-start; }
+    .edu-deg { font-size: 13px; font-weight: 600; color: #1e293b; }
+    .edu-uni { font-size: 12px; color: #64748b; }
+    .edu-year { font-size: 12px; color: #38bdf8; font-weight: 500; }
+    .cert-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
+    .cert-name { font-size: 12px; font-weight: 500; color: #1e293b; }
+    .cert-meta { font-size: 11px; color: #64748b; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="sidebar">
+      <div class="avatar">{{initials}}</div>
+      <div class="s-name">{{fullName}}</div>
+      <div class="s-title">{{jobTitle}}</div>
+      <div class="s-divider"></div>
+      <div class="s-section-label">Contact</div>
+      <div class="s-item">{{email}}</div>
+      <div class="s-item">{{phone}}</div>
+      <div class="s-item">{{location}}</div>
+      <div class="s-item">{{linkedin}}</div>
+      <div class="s-section-label">Skills</div>
+      <span class="s-skill">{{skill1}}</span>
+      <span class="s-skill">{{skill2}}</span>
+      <span class="s-skill">{{skill3}}</span>
+      <span class="s-skill">{{skill4}}</span>
+      <span class="s-skill">{{skill5}}</span>
+      <div class="s-section-label">Languages</div>
+      <div class="s-lang"><span>{{lang1}}</span><span>{{lang1Level}}</span></div>
+      <div class="s-lang"><span>{{lang2}}</span><span>{{lang2Level}}</span></div>
+      <div class="s-section-label">Education</div>
+      <div class="s-item" style="color:#cbd5e1;font-weight:500;">{{degree}}</div>
+      <div class="s-item">{{university}}</div>
+      <div class="s-item" style="color:#38bdf8;">{{graduationYear}}</div>
+    </div>
+    <div class="main">
+      <div class="m-section">
+        <div class="m-label">Professional Summary</div>
+        <p class="summary-p">{{summary}}</p>
+      </div>
+      <div class="m-section">
+        <div class="m-label">Experience</div>
+        <div class="exp-item">
+          <div class="exp-top"><span class="exp-role">{{job1Title}}</span><span class="exp-date">{{job1Start}} – {{job1End}}</span></div>
+          <div class="exp-co">{{job1Company}} · {{job1Location}}</div>
+          <ul class="exp-list">
+            <li>{{job1Bullet1}}</li>
+            <li>{{job1Bullet2}}</li>
+            <li>{{job1Bullet3}}</li>
+          </ul>
+        </div>
+        <div class="exp-item">
+          <div class="exp-top"><span class="exp-role">{{job2Title}}</span><span class="exp-date">{{job2Start}} – {{job2End}}</span></div>
+          <div class="exp-co">{{job2Company}} · {{job2Location}}</div>
+          <ul class="exp-list">
+            <li>{{job2Bullet1}}</li>
+            <li>{{job2Bullet2}}</li>
+          </ul>
+        </div>
+      </div>
+      <div class="m-section">
+        <div class="m-label">Certifications</div>
+        <div class="cert-row"><span class="cert-name">{{cert1}}</span><span class="cert-meta">{{cert1Issuer}} · {{cert1Year}}</span></div>
+        <div class="cert-row"><span class="cert-name">{{cert2}}</span><span class="cert-meta">{{cert2Issuer}} · {{cert2Year}}</span></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

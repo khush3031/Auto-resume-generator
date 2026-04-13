@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modern Resume</title>
+  <style>
+    body { margin: 0; font-family: 'DM Sans', Arial, sans-serif; background: #eef2f7; color: #0f172a; }
+    .page { max-width: 1000px; margin: auto; display: grid; grid-template-columns: 260px 1fr; gap: 32px; padding: 40px; }
+    .sidebar { background: #114b5f; color: #f8fafc; padding: 30px; border-radius: 24px; display: flex; flex-direction: column; gap: 24px; }
+    .main { background: #ffffff; padding: 34px; border-radius: 24px; }
+    .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+    .name { margin: 0; font-size: 2.4rem; }
+    .role { color: #3b82f6; margin: 0; font-weight: 700; }
+    .section { margin-bottom: 28px; }
+    h2 { margin: 0 0 18px; font-size: 1rem; letter-spacing: 0.18em; text-transform: uppercase; color: #0f172a; }
+    .label { color: #94a3b8; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.16em; margin-bottom: 10px; }
+    .info p { margin: 0 0 10px; line-height: 1.8; }
+    .pill { display: inline-flex; gap: 8px; align-items: center; padding: 10px 14px; border-radius: 999px; background: rgba(59, 130, 246, 0.12); color: #1e293b; margin: 0 6px 8px 0; }
+    @media print { .page { display: block; } .sidebar { background: none; color: #000; padding: 0; border-radius: 0; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="sidebar">
+      <div>
+        <p class="label">Contact</p>
+        <p>{{email}}</p>
+        <p>{{phone}}</p>
+        <p>{{location}}</p>
+        <p>{{website}}</p>
+      </div>
+      <div>
+        <p class="label">Skills</p>
+        <p class="pill">{{skill1}}</p>
+        <p class="pill">{{skill2}}</p>
+        <p class="pill">{{skill3}}</p>
+        <p class="pill">{{skill4}}</p>
+      </div>
+      <div>
+        <p class="label">Languages</p>
+        <p>{{lang1}} — {{lang1Level}}</p>
+        <p>{{lang2}} — {{lang2Level}}</p>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="top">
+        <div>
+          <h1 class="name">{{fullName}}</h1>
+          <p class="role">{{jobTitle}}</p>
+        </div>
+      </div>
+      <section class="section">
+        <h2>Professional Summary</h2>
+        <div class="info"><p>{{summary}}</p></div>
+      </section>
+      <section class="section">
+        <h2>Experience</h2>
+        <div class="info">
+          <p><strong>{{job1Title}}</strong> &middot; {{job1Company}} &middot; {{job1Start}} &ndash; {{job1End}}</p>
+          <p>{{job1Bullet1}}</p>
+          <p><strong>{{job2Title}}</strong> &middot; {{job2Company}} &middot; {{job2Start}} &ndash; {{job2End}}</p>
+          <p>{{job2Bullet1}}</p>
+        </div>
+      </section>
+      <section class="section">
+        <h2>Education</h2>
+        <div class="info">
+          <p><strong>{{degree}}</strong> &middot; {{university}} &middot; {{graduationYear}}</p>
+          <p><strong>{{degree2}}</strong> &middot; {{university2}} &middot; {{graduationYear2}}</p>
+        </div>
+      </section>
+      <section class="section">
+        <h2>Certifications</h2>
+        <div class="info">
+          <div style="margin-bottom:8px;"><div style="font-size:12px;font-weight:600;">{{cert1}}</div><div style="font-size:11px;opacity:0.7;margin-top:2px;">{{cert1Issuer}} &middot; {{cert1Year}}</div></div>
+          <div style="margin-bottom:8px;"><div style="font-size:12px;font-weight:600;">{{cert2}}</div><div style="font-size:11px;opacity:0.7;margin-top:2px;">{{cert2Issuer}} &middot; {{cert2Year}}</div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{fullName}} - Resume</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Italiana&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Raleway:wght@300;400;500&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Raleway', sans-serif; background: #fdf9f6; color: #3a2e2e; }
+  .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #fff; }
+  .header { background: #fdf6ef; text-align: center; padding: 48px 60px 36px; border-bottom: 1px solid #e8ddd2; position: relative; }
+  .header::before { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 2px; background: #b07d4f; }
+  .h-name { font-family: 'Italiana', serif; font-size: 42px; color: #3a2e2e; letter-spacing: 2px; margin-bottom: 8px; }
+  .h-title { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #b07d4f; margin-bottom: 18px; font-weight: 300; }
+  .h-contacts { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
+  .h-contacts span { font-size: 12px; color: #8a7060; }
+  .body { padding: 40px 60px; display: grid; grid-template-columns: 1fr 200px; gap: 40px; }
+  .section { margin-bottom: 28px; }
+  .sec-title { font-family: 'Italiana', serif; font-size: 20px; color: #3a2e2e; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .sec-title::after { content: ''; flex: 1; height: 1px; background: #e8ddd2; }
+  .summary-text { font-family: 'EB Garamond', serif; font-size: 14px; line-height: 1.9; color: #5a4a3a; font-style: italic; }
+  .exp-row { margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px dashed #e8ddd2; }
+  .exp-row:last-child { border-bottom: none; }
+  .er-title { font-size: 13px; font-weight: 500; color: #3a2e2e; margin-bottom: 2px; }
+  .er-meta { font-size: 12px; color: #b07d4f; margin-bottom: 6px; }
+  .er-bullets { list-style: none; }
+  .er-bullets li { font-size: 12px; color: #5a4a3a; line-height: 1.7; padding-left: 14px; position: relative; margin-bottom: 2px; }
+  .er-bullets li::before { content: '◦'; position: absolute; left: 0; color: #b07d4f; font-size: 10px; top: 2px; }
+  .sidebar .sec-title { font-size: 16px; border-bottom: 1px solid #e8ddd2; padding-bottom: 8px; }
+  .sidebar .sec-title::after { display: none; }
+  .s-item { font-size: 12px; color: #5a4a3a; margin-bottom: 7px; line-height: 1.5; }
+  .s-item strong { display: block; color: #3a2e2e; font-weight: 500; font-size: 12px; }
+  .skill-pill { display: inline-block; font-size: 11px; color: #8a6040; border: 1px solid #e0cfc0; padding: 3px 10px; border-radius: 12px; margin: 3px; background: #fdf6ef; }
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="h-name">{{fullName}}</div>
+    <div class="h-title">{{jobTitle}}</div>
+    <div class="h-contacts">
+      <span>{{email}}</span><span>{{phone}}</span><span>{{location}}</span><span>{{linkedin}}</span>
+    </div>
+  </div>
+  <div class="body">
+    <div class="main-col">
+      <div class="section">
+        <div class="sec-title">About</div>
+        <p class="summary-text">{{summary}}</p>
+      </div>
+      <div class="section">
+        <div class="sec-title">Experience</div>
+        <div class="exp-row">
+          <div class="er-title">{{job1Title}}</div>
+          <div class="er-meta">{{job1Company}} · {{job1Start}} – {{job1End}}</div>
+          <ul class="er-bullets"><li>{{job1Bullet1}}</li><li>{{job1Bullet2}}</li><li>{{job1Bullet3}}</li></ul>
+        </div>
+        <div class="exp-row">
+          <div class="er-title">{{job2Title}}</div>
+          <div class="er-meta">{{job2Company}} · {{job2Start}} – {{job2End}}</div>
+          <ul class="er-bullets"><li>{{job2Bullet1}}</li><li>{{job2Bullet2}}</li></ul>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="section">
+        <div class="sec-title" style="font-family:'Italiana',serif;font-size:18px;margin-bottom:12px">Education</div>
+        <div class="s-item"><strong>{{degree}}</strong>{{university}}<br><span style="color:#b07d4f">{{graduationYear}}</span></div>
+      </div>
+      <div class="section" style="margin-top:20px">
+        <div class="sec-title" style="font-family:'Italiana',serif;font-size:18px;margin-bottom:12px">Skills</div>
+        <div><span class="skill-pill">{{skill1}}</span><span class="skill-pill">{{skill2}}</span><span class="skill-pill">{{skill3}}</span><span class="skill-pill">{{skill4}}</span><span class="skill-pill">{{skill5}}</span></div>
+      </div>
+      <div class="section" style="margin-top:20px">
+        <div class="sec-title" style="font-family:'Italiana',serif;font-size:18px;margin-bottom:12px">Languages</div>
+        <div class="s-item"><strong>{{lang1}}</strong>{{lang1Level}}</div>
+        <div class="s-item"><strong>{{lang2}}</strong>{{lang2Level}}</div>
+      </div>
+      <div class="section" style="margin-top:20px">
+        <div class="sec-title" style="font-family:'Italiana',serif;font-size:18px;margin-bottom:12px">Certifications</div>
+        <div class="s-item"><strong>{{cert1}}</strong>{{cert1Issuer}} · {{cert1Year}}</div>
+        <div class="s-item"><strong>{{cert2}}</strong>{{cert2Issuer}} · {{cert2Year}}</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

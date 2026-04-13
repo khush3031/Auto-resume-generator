@@ -1,0 +1,93 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UseFilters,
+  UseGuards
+} from '@nestjs/common';
+import { Request, Response } from 'express';
+import { ResumesService } from './resumes.service';
+import { HttpExceptionFilter } from '../common/http-exception.filter';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtGuard } from '../auth/guards/optional-jwt.guard';
+import { CreateResumeDto } from './dto/create-resume.dto';
+import { UpdateResumeDto } from './dto/update-resume.dto';
+
+@Controller('resumes')
+@UseFilters(HttpExceptionFilter)
+export class ResumesController {
+  constructor(private readonly resumesService: ResumesService) {}
+
+  // ------------------------------------------------------------------ CREATE
+  @UseGuards(OptionalJwtGuard)
+  @Post()
+  async create(@Body() payload: CreateResumeDto, @Req() req: Request) {
+    if (req.user) {
+      payload.userId = (req.user as any).sub;
+    }
+    const resume = await this.resumesService.createResume(payload);
+    return { success: true, data: resume, message: 'Resume created.' };
+  }
+
+  // -------------------------------------------------------- MY RESUMES (auth)
+  // IMPORTANT: literal route must be declared before the :id param route or
+  // NestJS will match "my" as an id and throw a 404 / CastError.
+  @UseGuards(JwtAuthGuard)
+  @Get('my')
+  async findMy(@Req() req: Request) {
+    const user = req.user as any;
+    const resumes = await this.resumesService.findUserResumes(user.sub);
+    return { success: true, data: resumes, message: 'User resumes loaded.' };
+  }
+
+  // ------------------------------------------------------- SINGLE RESUME (public)
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const resume = await this.resumesService.findById(id);
+    return { success: true, data: resume, message: 'Resume retrieved.' };
+  }
+
+  // ------------------------------------------------------------------ UPDATE
+  @UseGuards(OptionalJwtGuard)
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() payload: UpdateResumeDto, @Req() req: Request) {
+    const currentUserId = req.user ? (req.user as any).sub : undefined;
+    const resume = await this.resumesService.updateResume(id, payload, currentUserId);
+    return { success: true, data: resume, message: 'Resume updated.' };
+  }
+
+  // ------------------------------------------------------------------ DELETE
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async remove(@Param('id') id: string, @Req() req: Request) {
+    const user = req.user as any;
+    await this.resumesService.softDeleteResume(id, user.sub);
+    return { success: true, data: null, message: 'Resume deleted.' };
+  }
+
+  // ------------------------------------------------------------ PDF EXPORT
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/export')
+  async exportPdf(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
+    const user = req.user as any;
+    const pdf = await this.resumesService.exportToPdf(id, user.sub);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=resume-${id}.pdf`);
+    res.send(pdf);
+  }
+
+  // --------------------------------------------------------- CLAIM (guest → user)
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/claim')
+  async claim(@Param('id') id: string, @Req() req: Request) {
+    const user = req.user as any;
+    const resume = await this.resumesService.claimResume(id, user.sub);
+    return { success: true, data: resume, message: 'Resume claimed.' };
+  }
+}

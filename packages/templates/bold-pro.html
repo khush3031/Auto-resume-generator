@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{fullName}} - Resume</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:ital,wght@0,300;0,400;0,600;1,400&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Open Sans', sans-serif; background: #fff; color: #1a1a1a; }
+  .page { width: 794px; min-height: 1123px; margin: 0 auto; }
+  .header { background: #111; padding: 36px 48px 28px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .h-name { font-family: 'Oswald', sans-serif; font-size: 38px; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; }
+  .h-title { font-family: 'Oswald', sans-serif; font-size: 14px; font-weight: 400; color: #c8392b; letter-spacing: 3px; text-transform: uppercase; }
+  .h-contact { font-size: 12px; color: #aaa; line-height: 1.8; text-align:right; }
+  .red-bar { height: 5px; background: #c8392b; }
+  .body { padding: 36px 48px; display: grid; grid-template-columns: 1fr 200px; gap: 32px; }
+  .sec-head { font-family: 'Oswald', sans-serif; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: #111; padding-bottom: 6px; border-bottom: 3px solid #111; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .red-dash { width: 18px; height: 3px; background: #c8392b; }
+  .summary-box { background: #f8f8f8; border-left: 4px solid #c8392b; padding: 14px 16px; margin-bottom: 28px; }
+  .summary-box p { font-size: 13px; line-height: 1.8; color: #444; }
+  .section { margin-bottom: 26px; }
+  .exp-row { margin-bottom: 16px; }
+  .er-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+  .er-title { font-family: 'Oswald', sans-serif; font-size: 14px; font-weight: 500; color: #111; text-transform: uppercase; letter-spacing: 0.5px; }
+  .er-date { font-size: 11px; color: #c8392b; font-weight: 600; }
+  .er-co { font-size: 12px; color: #666; margin-bottom: 7px; font-style: italic; }
+  .er-list { list-style: none; }
+  .er-list li { font-size: 12px; color: #444; line-height: 1.7; padding-left: 14px; position: relative; margin-bottom: 3px; }
+  .er-list li::before { content: ''; position: absolute; left: 0; top: 8px; width: 6px; height: 2px; background: #c8392b; }
+  .s-sec { margin-bottom: 22px; }
+  .s-sec-title { font-family: 'Oswald', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: #111; border-bottom: 2px solid #c8392b; padding-bottom: 5px; margin-bottom: 10px; }
+  .s-text { font-size: 12px; color: #555; line-height: 1.7; margin-bottom: 4px; }
+  .skill-item { font-size: 12px; color: #333; padding: 4px 0; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 6px; }
+  .skill-item::before { content: ''; width: 6px; height: 6px; background: #c8392b; border-radius: 50%; flex-shrink: 0; }
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="h-name">{{fullName}}</div>
+      <div class="h-title">{{jobTitle}}</div>
+    </div>
+    <div class="h-contact">{{email}}<br>{{phone}}<br>{{location}}<br>{{linkedin}}</div>
+  </div>
+  <div class="red-bar"></div>
+  <div class="body">
+    <div>
+      <div class="summary-box"><p>{{summary}}</p></div>
+      <div class="section">
+        <div class="sec-head"><span class="red-dash"></span>Experience</div>
+        <div class="exp-row">
+          <div class="er-top"><span class="er-title">{{job1Title}}</span><span class="er-date">{{job1Start}} – {{job1End}}</span></div>
+          <div class="er-co">{{job1Company}} · {{job1Location}}</div>
+          <ul class="er-list"><li>{{job1Bullet1}}</li><li>{{job1Bullet2}}</li><li>{{job1Bullet3}}</li></ul>
+        </div>
+        <div class="exp-row">
+          <div class="er-top"><span class="er-title">{{job2Title}}</span><span class="er-date">{{job2Start}} – {{job2End}}</span></div>
+          <div class="er-co">{{job2Company}} · {{job2Location}}</div>
+          <ul class="er-list"><li>{{job2Bullet1}}</li><li>{{job2Bullet2}}</li></ul>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="s-sec">
+        <div class="s-sec-title">Education</div>
+        <div class="s-text" style="font-weight:600;color:#111">{{degree}}</div>
+        <div class="s-text">{{university}}</div>
+        <div class="s-text" style="color:#c8392b">{{graduationYear}}</div>
+      </div>
+      <div class="s-sec">
+        <div class="s-sec-title">Skills</div>
+        <div class="skill-item">{{skill1}}</div><div class="skill-item">{{skill2}}</div>
+        <div class="skill-item">{{skill3}}</div><div class="skill-item">{{skill4}}</div>
+        <div class="skill-item">{{skill5}}</div>
+      </div>
+      <div class="s-sec">
+        <div class="s-sec-title">Languages</div>
+        <div class="s-text">{{lang1}} – {{lang1Level}}</div>
+        <div class="s-text">{{lang2}} – {{lang2Level}}</div>
+      </div>
+      <div class="s-sec">
+        <div class="s-sec-title">Certifications</div>
+        <div class="s-text" style="font-weight:600;color:#111">{{cert1}}</div>
+        <div class="s-text">{{cert1Issuer}}</div>
+        <div class="s-text" style="color:#c8392b">{{cert1Year}}</div>
+        <div class="s-text" style="font-weight:600;color:#111;margin-top:8px">{{cert2}}</div>
+        <div class="s-text">{{cert2Issuer}}</div>
+        <div class="s-text" style="color:#c8392b">{{cert2Year}}</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

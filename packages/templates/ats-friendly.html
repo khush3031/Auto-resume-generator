@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATS Friendly Resume</title>
+  <style>
+    body { margin: 0; font-family: 'Noto Sans', Arial, sans-serif; background: #ffffff; color: #111111; }
+    .page { max-width: 790px; margin: auto; padding: 40px; }
+    .section { margin-bottom: 28px; }
+    h1 { margin: 0 0 12px; font-size: 2.6rem; font-weight: 700; }
+    h2 { margin: 0 0 14px; font-size: 1rem; font-weight: 700; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; }
+    p, li { margin: 0 0 12px; line-height: 1.7; }
+    ul { margin-left: 20px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.95rem; color: #374151; }
+    .label { font-weight: 700; }
+    @media print { .page { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="section">
+      <h1>{{fullName}}</h1>
+      <div class="meta">
+        <span>{{jobTitle}}</span>
+        <span>{{location}}</span>
+        <span>{{email}}</span>
+        <span>{{phone}}</span>
+      </div>
+    </header>
+    <section class="section">
+      <h2>Professional Summary</h2>
+      <p>{{summary}}</p>
+    </section>
+    <section class="section">
+      <h2>Experience</h2>
+      <p><strong>{{job1Title}}</strong></p>
+      <p>{{job1Company}} | {{job1Start}} – {{job1End}}</p>
+      <p>{{job1Bullet1}}</p>
+      <p><strong>{{job2Title}}</strong></p>
+      <p>{{job2Company}} | {{job2Start}} – {{job2End}}</p>
+      <p>{{job2Bullet1}}</p>
+    </section>
+    <section class="section">
+      <h2>Education</h2>
+      <p><strong>{{degree}}</strong></p>
+      <p>{{university}} | {{graduationYear}}</p>
+      <p><strong>{{degree2}}</strong></p>
+      <p>{{university2}} | {{graduationYear2}}</p>
+    </section>
+    <section class="section">
+      <h2>Skills</h2>
+      <ul>
+        <li>{{skill1}}</li>
+        <li>{{skill2}}</li>
+        <li>{{skill3}}</li>
+        <li>{{skill4}}</li>
+      </ul>
+    </section>
+    <section class="section">
+      <h2>Languages</h2>
+      <p>{{lang1}} ({{lang1Level}}), {{lang2}} ({{lang2Level}})</p>
+    </section>
+    <section class="section">
+      <h2>Certifications</h2>
+      <p><strong>{{cert1}}</strong> &mdash; {{cert1Issuer}}, {{cert1Year}}</p>
+      <p><strong>{{cert2}}</strong> &mdash; {{cert2Issuer}}, {{cert2Year}}</p>
+    </section>
+  </div>
+</body>
+</html>

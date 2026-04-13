@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Creative Resume</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Nunito', sans-serif; background: #fff; color: #1a1a2e; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; display: grid; grid-template-columns: 200px 1fr; }
+    .sidebar { background: #1a1a2e; padding: 0; display: flex; flex-direction: column; }
+    .s-accent { height: 10px; background: linear-gradient(90deg, #ff6b6b, #f7d56e, #4ecdc4); }
+    .s-inner { padding: 36px 20px; flex: 1; }
+    .avatar-ring { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #ff6b6b, #4ecdc4); padding: 3px; margin: 0 auto 20px; }
+    .avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: #2d2d4e; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #fff; }
+    .s-name { font-size: 16px; font-weight: 800; color: #fff; text-align: center; line-height: 1.2; margin-bottom: 4px; }
+    .s-title { font-size: 10px; font-weight: 400; color: #f7d56e; text-align: center; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 28px; }
+    .s-section { margin-bottom: 22px; }
+    .s-label { font-size: 9px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #4ecdc4; margin-bottom: 8px; }
+    .s-item { font-size: 11px; color: #8888aa; line-height: 1.7; margin-bottom: 3px; }
+    .s-divider { height: 1px; background: #2d2d4e; margin: 14px 0; }
+    .tag { display: inline-block; font-size: 10.5px; color: #1a1a2e; background: #f7d56e; padding: 3px 9px; border-radius: 3px; margin: 3px 2px 3px 0; font-weight: 700; }
+    .tag-alt { background: #4ecdc4; }
+    .tag-alt2 { background: #ff6b6b; }
+    .main { padding: 0; }
+    .main-accent { height: 10px; background: linear-gradient(90deg, #4ecdc4, #f7d56e, #ff6b6b); }
+    .main-body { padding: 32px 36px; }
+    .m-section { margin-bottom: 26px; }
+    .m-label { font-size: 13px; font-weight: 800; color: #1a1a2e; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+    .m-label::after { content: ''; flex: 1; height: 2px; background: linear-gradient(90deg, #ff6b6b, transparent); }
+    .summary-box { background: #f0fafa; border-radius: 8px; padding: 14px 18px; font-size: 13px; line-height: 1.8; color: #3a3a5e; }
+    .exp-card { background: #fafafa; border-radius: 6px; border: 1px solid #f0f0f0; border-left: 4px solid #ff6b6b; padding: 14px 16px; margin-bottom: 12px; }
+    .exp-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px; }
+    .exp-role { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+    .exp-badge { font-size: 10px; background: #fff0f0; color: #ff6b6b; padding: 2px 8px; border-radius: 99px; font-weight: 700; }
+    .exp-co { font-size: 12px; color: #888; margin-bottom: 8px; }
+    .exp-list { list-style: none; }
+    .exp-list li { font-size: 12px; color: #4a4a6a; line-height: 1.7; padding-left: 14px; position: relative; margin-bottom: 2px; }
+    .exp-list li::before { content: '→'; position: absolute; left: 0; color: #4ecdc4; font-size: 11px; }
+    .edu-card { background: #fffdf0; border-radius: 6px; border-left: 4px solid #f7d56e; padding: 12px 16px; }
+    .edu-deg { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+    .edu-uni { font-size: 12px; color: #666; }
+    .edu-year { font-size: 11px; color: #f7a800; font-weight: 700; margin-top: 3px; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="sidebar">
+      <div class="s-accent"></div>
+      <div class="s-inner">
+        <div class="avatar-ring"><div class="avatar-inner">{{initials}}</div></div>
+        <div class="s-name">{{fullName}}</div>
+        <div class="s-title">{{jobTitle}}</div>
+        <div class="s-divider"></div>
+        <div class="s-section">
+          <div class="s-label">Contact</div>
+          <div class="s-item">{{email}}</div>
+          <div class="s-item">{{phone}}</div>
+          <div class="s-item">{{location}}</div>
+          <div class="s-item">{{linkedin}}</div>
+        </div>
+        <div class="s-divider"></div>
+        <div class="s-section">
+          <div class="s-label">Skills</div>
+          <span class="tag">{{skill1}}</span>
+          <span class="tag tag-alt">{{skill2}}</span>
+          <span class="tag tag-alt2">{{skill3}}</span>
+          <span class="tag">{{skill4}}</span>
+          <span class="tag tag-alt">{{skill5}}</span>
+        </div>
+        <div class="s-divider"></div>
+        <div class="s-section">
+          <div class="s-label">Languages</div>
+          <div class="s-item">{{lang1}} — {{lang1Level}}</div>
+          <div class="s-item">{{lang2}} — {{lang2Level}}</div>
+        </div>
+        <div class="s-divider"></div>
+        <div class="s-section">
+          <div class="s-label">Certifications</div>
+          <div class="s-item">{{cert1}} ({{cert1Year}})</div>
+          <div class="s-item">{{cert2}} ({{cert2Year}})</div>
+        </div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="main-accent"></div>
+      <div class="main-body">
+        <div class="m-section">
+          <div class="m-label">About Me</div>
+          <div class="summary-box">{{summary}}</div>
+        </div>
+        <div class="m-section">
+          <div class="m-label">Experience</div>
+          <div class="exp-card">
+            <div class="exp-top"><span class="exp-role">{{job1Title}}</span><span class="exp-badge">{{job1Start}} – {{job1End}}</span></div>
+            <div class="exp-co">{{job1Company}} · {{job1Location}}</div>
+            <ul class="exp-list">
+              <li>{{job1Bullet1}}</li>
+              <li>{{job1Bullet2}}</li>
+              <li>{{job1Bullet3}}</li>
+            </ul>
+          </div>
+          <div class="exp-card" style="border-left-color:#4ecdc4;">
+            <div class="exp-top"><span class="exp-role">{{job2Title}}</span><span class="exp-badge" style="background:#f0fafa;color:#4ecdc4;">{{job2Start}} – {{job2End}}</span></div>
+            <div class="exp-co">{{job2Company}} · {{job2Location}}</div>
+            <ul class="exp-list">
+              <li>{{job2Bullet1}}</li>
+              <li>{{job2Bullet2}}</li>
+            </ul>
+          </div>
+        </div>
+        <div class="m-section">
+          <div class="m-label">Education</div>
+          <div class="edu-card">
+            <div class="edu-deg">{{degree}}</div>
+            <div class="edu-uni">{{university}}</div>
+            <div class="edu-year">Class of {{graduationYear}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

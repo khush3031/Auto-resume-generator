@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Timeline Resume</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Mulish', sans-serif; background: #fff; color: #1f2937; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; display: grid; grid-template-columns: 1fr 200px; }
+    .main { padding: 48px 40px; }
+    .m-name { font-size: 30px; font-weight: 800; color: #1f2937; letter-spacing: -.5px; margin-bottom: 3px; }
+    .m-title { font-size: 13px; font-weight: 400; color: #7c3aed; letter-spacing: .5px; margin-bottom: 14px; }
+    .m-contact { display: flex; flex-wrap: wrap; gap: 14px; border-top: 2px solid #7c3aed; border-bottom: 1px solid #e5e7eb; padding: 8px 0; margin-bottom: 28px; }
+    .m-contact span { font-size: 11.5px; color: #6b7280; }
+    .m-label { font-size: 10px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #7c3aed; margin-bottom: 16px; }
+    .m-section { margin-bottom: 26px; }
+    .summary-p { font-size: 13px; line-height: 1.8; color: #4b5563; font-weight: 300; }
+    /* Timeline */
+    .timeline { position: relative; padding-left: 24px; }
+    .timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, #7c3aed, #a78bfa, #e0e7ff); }
+    .tl-item { position: relative; margin-bottom: 20px; }
+    .tl-dot { position: absolute; left: -24px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #7c3aed; border: 2px solid #fff; box-shadow: 0 0 0 2px #7c3aed; }
+    .tl-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px; }
+    .tl-role { font-size: 13px; font-weight: 700; color: #1f2937; }
+    .tl-date { font-size: 11px; color: #7c3aed; background: #f3f0ff; padding: 2px 7px; border-radius: 3px; font-weight: 600; white-space: nowrap; }
+    .tl-co { font-size: 12px; color: #6b7280; margin-bottom: 7px; }
+    .tl-list { list-style: none; }
+    .tl-list li { font-size: 12px; color: #4b5563; line-height: 1.7; padding-left: 12px; position: relative; margin-bottom: 2px; font-weight: 300; }
+    .tl-list li::before { content: '◦'; position: absolute; left: 0; color: #a78bfa; font-weight: 700; }
+    /* Sidebar */
+    .sidebar { background: #faf9ff; padding: 48px 22px; border-left: 1px solid #e5e7eb; }
+    .s-section { margin-bottom: 22px; }
+    .s-label { font-size: 9px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #7c3aed; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #ede9fe; }
+    .s-text { font-size: 12px; color: #4b5563; line-height: 1.6; margin-bottom: 4px; font-weight: 400; }
+    .s-bold { font-weight: 700; color: #1f2937; display: block; }
+    .skill-tag { display: block; font-size: 11px; color: #5b21b6; background: #ede9fe; padding: 5px 10px; border-radius: 4px; margin-bottom: 5px; font-weight: 600; }
+    .lang-row { display: flex; justify-content: space-between; font-size: 11.5px; color: #4b5563; padding: 4px 0; border-bottom: 1px solid #ede9fe; }
+    .lang-level { color: #7c3aed; font-size: 11px; font-weight: 600; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="main">
+      <div class="m-name">{{fullName}}</div>
+      <div class="m-title">{{jobTitle}}</div>
+      <div class="m-contact">
+        <span>{{email}}</span>
+        <span>{{phone}}</span>
+        <span>{{location}}</span>
+        <span>{{linkedin}}</span>
+      </div>
+      <div class="m-section">
+        <div class="m-label">About</div>
+        <p class="summary-p">{{summary}}</p>
+      </div>
+      <div class="m-section">
+        <div class="m-label">Career Timeline</div>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-header"><span class="tl-role">{{job1Title}}</span><span class="tl-date">{{job1Start}} – {{job1End}}</span></div>
+            <div class="tl-co">{{job1Company}} · {{job1Location}}</div>
+            <ul class="tl-list">
+              <li>{{job1Bullet1}}</li>
+              <li>{{job1Bullet2}}</li>
+              <li>{{job1Bullet3}}</li>
+            </ul>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot" style="background:#a78bfa;box-shadow:0 0 0 2px #a78bfa;"></div>
+            <div class="tl-header"><span class="tl-role">{{job2Title}}</span><span class="tl-date">{{job2Start}} – {{job2End}}</span></div>
+            <div class="tl-co">{{job2Company}} · {{job2Location}}</div>
+            <ul class="tl-list">
+              <li>{{job2Bullet1}}</li>
+              <li>{{job2Bullet2}}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="m-section">
+        <div class="m-label">Education</div>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot" style="background:#c4b5fd;box-shadow:0 0 0 2px #c4b5fd;"></div>
+            <div class="tl-header"><span class="tl-role">{{degree}}</span><span class="tl-date">{{graduationYear}}</span></div>
+            <div class="tl-co">{{university}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="s-section">
+        <div class="s-label">Skills</div>
+        <span class="skill-tag">{{skill1}}</span>
+        <span class="skill-tag">{{skill2}}</span>
+        <span class="skill-tag">{{skill3}}</span>
+        <span class="skill-tag">{{skill4}}</span>
+        <span class="skill-tag">{{skill5}}</span>
+      </div>
+      <div class="s-section">
+        <div class="s-label">Languages</div>
+        <div class="lang-row"><span>{{lang1}}</span><span class="lang-level">{{lang1Level}}</span></div>
+        <div class="lang-row"><span>{{lang2}}</span><span class="lang-level">{{lang2Level}}</span></div>
+      </div>
+      <div class="s-section">
+        <div class="s-label">Certifications</div>
+        <div class="s-text"><span class="s-bold">{{cert1}}</span>{{cert1Issuer}}<br>{{cert1Year}}</div>
+        <div class="s-text"><span class="s-bold">{{cert2}}</span>{{cert2Issuer}}<br>{{cert2Year}}</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

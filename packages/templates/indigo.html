@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Indigo Resume</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fff; color: #1e1b4b; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; }
+    .header { background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%); padding: 44px 48px 36px; }
+    .h-name { font-size: 32px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .h-title { font-size: 14px; font-weight: 400; color: #c7d2fe; letter-spacing: 1px; margin-bottom: 20px; }
+    .h-contact { display: flex; flex-wrap: wrap; gap: 16px; }
+    .h-contact span { font-size: 12px; color: #e0e7ff; background: rgba(255,255,255,0.12); padding: 4px 10px; border-radius: 99px; }
+    .body { display: grid; grid-template-columns: 1fr 220px; padding: 36px 48px; gap: 36px; }
+    .m-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #4338ca; margin-bottom: 12px; }
+    .m-section { margin-bottom: 28px; }
+    .summary-p { font-size: 13px; line-height: 1.8; color: #374151; }
+    .exp-card { border-left: 3px solid #4338ca; padding-left: 14px; margin-bottom: 18px; }
+    .exp-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px; }
+    .exp-role { font-size: 13px; font-weight: 600; color: #1e1b4b; }
+    .exp-date { font-size: 11px; background: #ede9fe; color: #4338ca; padding: 2px 8px; border-radius: 99px; font-weight: 500; white-space: nowrap; }
+    .exp-co { font-size: 12px; color: #6b7280; margin-bottom: 8px; }
+    .exp-list { list-style: none; }
+    .exp-list li { font-size: 12px; color: #4b5563; line-height: 1.7; padding-left: 12px; position: relative; margin-bottom: 2px; }
+    .exp-list li::before { content: '·'; position: absolute; left: 0; color: #4338ca; font-weight: 700; }
+    .s-section { margin-bottom: 22px; }
+    .s-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #4338ca; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #e0e7ff; }
+    .skill-chip { display: inline-block; font-size: 11px; color: #3730a3; background: #eef2ff; padding: 4px 10px; border-radius: 4px; margin: 3px 3px 3px 0; }
+    .s-text { font-size: 12px; color: #4b5563; margin-bottom: 5px; line-height: 1.5; }
+    .s-bold { font-weight: 600; color: #1e1b4b; }
+    .lang-row { display: flex; justify-content: space-between; font-size: 12px; color: #4b5563; margin-bottom: 5px; }
+    .lang-level { color: #4338ca; font-size: 11px; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="h-name">{{fullName}}</div>
+      <div class="h-title">{{jobTitle}}</div>
+      <div class="h-contact">
+        <span>{{email}}</span>
+        <span>{{phone}}</span>
+        <span>{{location}}</span>
+        <span>{{linkedin}}</span>
+      </div>
+    </div>
+    <div class="body">
+      <div>
+        <div class="m-section">
+          <div class="m-label">About Me</div>
+          <p class="summary-p">{{summary}}</p>
+        </div>
+        <div class="m-section">
+          <div class="m-label">Work Experience</div>
+          <div class="exp-card">
+            <div class="exp-top"><span class="exp-role">{{job1Title}}</span><span class="exp-date">{{job1Start}} – {{job1End}}</span></div>
+            <div class="exp-co">{{job1Company}} · {{job1Location}}</div>
+            <ul class="exp-list">
+              <li>{{job1Bullet1}}</li>
+              <li>{{job1Bullet2}}</li>
+              <li>{{job1Bullet3}}</li>
+            </ul>
+          </div>
+          <div class="exp-card">
+            <div class="exp-top"><span class="exp-role">{{job2Title}}</span><span class="exp-date">{{job2Start}} – {{job2End}}</span></div>
+            <div class="exp-co">{{job2Company}} · {{job2Location}}</div>
+            <ul class="exp-list">
+              <li>{{job2Bullet1}}</li>
+              <li>{{job2Bullet2}}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="s-section">
+          <div class="s-label">Skills</div>
+          <span class="skill-chip">{{skill1}}</span>
+          <span class="skill-chip">{{skill2}}</span>
+          <span class="skill-chip">{{skill3}}</span>
+          <span class="skill-chip">{{skill4}}</span>
+          <span class="skill-chip">{{skill5}}</span>
+        </div>
+        <div class="s-section">
+          <div class="s-label">Education</div>
+          <div class="s-text"><span class="s-bold">{{degree}}</span><br>{{university}}<br><span style="color:#4338ca;">{{graduationYear}}</span></div>
+        </div>
+        <div class="s-section">
+          <div class="s-label">Languages</div>
+          <div class="lang-row"><span>{{lang1}}</span><span class="lang-level">{{lang1Level}}</span></div>
+          <div class="lang-row"><span>{{lang2}}</span><span class="lang-level">{{lang2Level}}</span></div>
+        </div>
+        <div class="s-section">
+          <div class="s-label">Certifications</div>
+          <div class="s-text"><span class="s-bold">{{cert1}}</span><br>{{cert1Issuer}} · {{cert1Year}}</div>
+          <div class="s-text"><span class="s-bold">{{cert2}}</span><br>{{cert2Issuer}} · {{cert2Year}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{fullName}} - Resume</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: #fff; color: #1e2a3a; }
+  .page { width: 794px; min-height: 1123px; margin: 0 auto; }
+  .header { padding: 36px 48px; background: #f4f7fb; border-bottom: 3px solid #3462ae; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; }
+  .h-name { font-size: 28px; font-weight: 600; color: #1e2a3a; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .h-title { font-size: 13px; font-weight: 300; color: #3462ae; letter-spacing: 1px; }
+  .h-contacts { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .h-contacts span { font-size: 12px; color: #4a5568; }
+  .grid-body { display: grid; grid-template-columns: 1fr 1fr; padding: 36px 48px; gap: 32px; }
+  .full-col { grid-column: 1 / -1; }
+  .sec-label { font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #3462ae; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #3462ae; }
+  .summary-text { font-size: 13px; line-height: 1.8; color: #4a5568; }
+  .exp-block { margin-bottom: 16px; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 3px; border-left: 3px solid #3462ae; }
+  .eb-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+  .eb-role { font-size: 13px; font-weight: 600; color: #1e2a3a; }
+  .eb-date { font-size: 11px; color: #3462ae; font-weight: 500; }
+  .eb-co { font-size: 12px; color: #718096; margin-bottom: 7px; }
+  .eb-list { list-style: none; }
+  .eb-list li { font-size: 12px; color: #4a5568; line-height: 1.7; padding-left: 12px; position: relative; margin-bottom: 2px; }
+  .eb-list li::before { content: '›'; position: absolute; left: 0; color: #3462ae; font-size: 14px; top: -1px; }
+  .edu-card { background: #f4f7fb; border-radius: 3px; padding: 12px 14px; margin-bottom: 10px; }
+  .ec-deg { font-size: 13px; font-weight: 600; color: #1e2a3a; margin-bottom: 2px; }
+  .ec-uni { font-size: 12px; color: #718096; margin-bottom: 2px; }
+  .ec-year { font-size: 11px; color: #3462ae; font-weight: 500; }
+  .skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .sk { background: #f4f7fb; border: 1px solid #e2e8f0; font-size: 12px; color: #1e2a3a; padding: 5px 10px; border-radius: 2px; }
+  .cert-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid #e2e8f0; }
+  .cert-name { font-size: 12px; font-weight: 500; color: #1e2a3a; }
+  .cert-meta { font-size: 11px; color: #718096; }
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="h-name">{{fullName}}</div>
+      <div class="h-title">{{jobTitle}}</div>
+    </div>
+    <div class="h-contacts">
+      <span>{{email}}</span><span>{{phone}}</span><span>{{location}}</span><span>{{linkedin}}</span>
+    </div>
+  </div>
+  <div class="grid-body">
+    <div class="full-col">
+      <div class="sec-label">Professional Summary</div>
+      <p class="summary-text">{{summary}}</p>
+    </div>
+    <div class="full-col">
+      <div class="sec-label">Work Experience</div>
+      <div class="exp-block">
+        <div class="eb-top"><span class="eb-role">{{job1Title}}</span><span class="eb-date">{{job1Start}} – {{job1End}}</span></div>
+        <div class="eb-co">{{job1Company}} · {{job1Location}}</div>
+        <ul class="eb-list"><li>{{job1Bullet1}}</li><li>{{job1Bullet2}}</li><li>{{job1Bullet3}}</li></ul>
+      </div>
+      <div class="exp-block">
+        <div class="eb-top"><span class="eb-role">{{job2Title}}</span><span class="eb-date">{{job2Start}} – {{job2End}}</span></div>
+        <div class="eb-co">{{job2Company}} · {{job2Location}}</div>
+        <ul class="eb-list"><li>{{job2Bullet1}}</li><li>{{job2Bullet2}}</li></ul>
+      </div>
+    </div>
+    <div>
+      <div class="sec-label">Education</div>
+      <div class="edu-card">
+        <div class="ec-deg">{{degree}}</div>
+        <div class="ec-uni">{{university}}</div>
+        <div class="ec-year">{{graduationYear}}</div>
+      </div>
+      <div style="margin-top:20px">
+        <div class="sec-label">Languages</div>
+        <div class="cert-row"><span class="cert-name">{{lang1}}</span><span class="cert-meta">{{lang1Level}}</span></div>
+        <div class="cert-row"><span class="cert-name">{{lang2}}</span><span class="cert-meta">{{lang2Level}}</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="sec-label">Skills</div>
+      <div class="skill-grid">
+        <span class="sk">{{skill1}}</span><span class="sk">{{skill2}}</span><span class="sk">{{skill3}}</span>
+        <span class="sk">{{skill4}}</span><span class="sk">{{skill5}}</span>
+      </div>
+      <div style="margin-top:20px">
+        <div class="sec-label">Certifications</div>
+        <div class="cert-row"><div><div class="cert-name">{{cert1}}</div><div class="cert-meta">{{cert1Issuer}}</div></div><span class="cert-meta">{{cert1Year}}</span></div>
+        <div class="cert-row"><div><div class="cert-name">{{cert2}}</div><div class="cert-meta">{{cert2Issuer}}</div></div><span class="cert-meta">{{cert2Year}}</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

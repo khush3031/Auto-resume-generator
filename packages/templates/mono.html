@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mono Resume</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Space Grotesk', sans-serif; background: #fff; color: #111; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; padding: 56px 64px; }
+    .h-eyebrow { font-size: 10px; font-weight: 500; letter-spacing: 4px; text-transform: uppercase; color: #888; margin-bottom: 10px; }
+    .h-name { font-size: 40px; font-weight: 700; color: #111; letter-spacing: -1px; margin-bottom: 6px; line-height: 1; }
+    .h-title { font-size: 15px; font-weight: 300; color: #444; margin-bottom: 18px; }
+    .h-line { display: flex; gap: 24px; flex-wrap: wrap; border-top: 2px solid #111; border-bottom: 1px solid #e5e5e5; padding: 10px 0; margin-bottom: 36px; }
+    .h-line span { font-size: 12px; color: #555; }
+    .grid { display: grid; grid-template-columns: 1fr 185px; gap: 40px; }
+    .section { margin-bottom: 28px; }
+    .sec-title { font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #111; padding-bottom: 6px; border-bottom: 2px solid #111; margin-bottom: 14px; }
+    .summary-p { font-size: 13px; line-height: 1.8; color: #444; font-weight: 300; }
+    .exp-item { margin-bottom: 18px; }
+    .exp-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+    .exp-role { font-size: 14px; font-weight: 600; color: #111; }
+    .exp-date { font-size: 11px; color: #888; font-weight: 400; }
+    .exp-co { font-size: 12px; color: #666; margin-bottom: 8px; font-weight: 400; }
+    .exp-list { list-style: none; }
+    .exp-list li { font-size: 12px; color: #444; line-height: 1.75; padding-left: 16px; position: relative; margin-bottom: 2px; font-weight: 300; }
+    .exp-list li::before { content: '→'; position: absolute; left: 0; color: #111; font-size: 11px; font-weight: 600; }
+    .s-section { margin-bottom: 20px; }
+    .s-title { font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #111; padding-bottom: 5px; border-bottom: 1px solid #e5e5e5; margin-bottom: 10px; }
+    .s-text { font-size: 12px; color: #444; line-height: 1.6; margin-bottom: 4px; font-weight: 300; }
+    .s-bold { font-weight: 600; color: #111; }
+    .skill-row { font-size: 12px; color: #333; padding: 5px 0; border-bottom: 1px solid #f0f0f0; font-weight: 400; display: flex; align-items: center; gap: 8px; }
+    .skill-row::before { content: ''; width: 4px; height: 4px; background: #111; border-radius: 50%; flex-shrink: 0; }
+    .lang-row { display: flex; justify-content: space-between; font-size: 12px; color: #444; padding: 4px 0; border-bottom: 1px solid #f0f0f0; }
+    .cert-block { margin-bottom: 8px; }
+    .cert-name { font-size: 12px; font-weight: 600; color: #111; }
+    .cert-meta { font-size: 11px; color: #888; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="h-eyebrow">Curriculum Vitae</div>
+    <div class="h-name">{{fullName}}</div>
+    <div class="h-title">{{jobTitle}}</div>
+    <div class="h-line">
+      <span>{{email}}</span>
+      <span>{{phone}}</span>
+      <span>{{location}}</span>
+      <span>{{linkedin}}</span>
+    </div>
+    <div class="grid">
+      <div>
+        <div class="section">
+          <div class="sec-title">Summary</div>
+          <p class="summary-p">{{summary}}</p>
+        </div>
+        <div class="section">
+          <div class="sec-title">Experience</div>
+          <div class="exp-item">
+            <div class="exp-meta"><span class="exp-role">{{job1Title}}</span><span class="exp-date">{{job1Start}} – {{job1End}}</span></div>
+            <div class="exp-co">{{job1Company}} · {{job1Location}}</div>
+            <ul class="exp-list">
+              <li>{{job1Bullet1}}</li>
+              <li>{{job1Bullet2}}</li>
+              <li>{{job1Bullet3}}</li>
+            </ul>
+          </div>
+          <div class="exp-item">
+            <div class="exp-meta"><span class="exp-role">{{job2Title}}</span><span class="exp-date">{{job2Start}} – {{job2End}}</span></div>
+            <div class="exp-co">{{job2Company}} · {{job2Location}}</div>
+            <ul class="exp-list">
+              <li>{{job2Bullet1}}</li>
+              <li>{{job2Bullet2}}</li>
+            </ul>
+          </div>
+        </div>
+        <div class="section">
+          <div class="sec-title">Education</div>
+          <div class="exp-meta"><span class="exp-role">{{degree}}</span><span class="exp-date">{{graduationYear}}</span></div>
+          <div class="exp-co">{{university}}</div>
+        </div>
+      </div>
+      <div>
+        <div class="s-section">
+          <div class="s-title">Skills</div>
+          <div class="skill-row">{{skill1}}</div>
+          <div class="skill-row">{{skill2}}</div>
+          <div class="skill-row">{{skill3}}</div>
+          <div class="skill-row">{{skill4}}</div>
+          <div class="skill-row">{{skill5}}</div>
+        </div>
+        <div class="s-section">
+          <div class="s-title">Languages</div>
+          <div class="lang-row"><span>{{lang1}}</span><span>{{lang1Level}}</span></div>
+          <div class="lang-row"><span>{{lang2}}</span><span>{{lang2Level}}</span></div>
+        </div>
+        <div class="s-section">
+          <div class="s-title">Certifications</div>
+          <div class="cert-block"><div class="cert-name">{{cert1}}</div><div class="cert-meta">{{cert1Issuer}} · {{cert1Year}}</div></div>
+          <div class="cert-block"><div class="cert-name">{{cert2}}</div><div class="cert-meta">{{cert2Issuer}} · {{cert2Year}}</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

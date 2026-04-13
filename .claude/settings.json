@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(echo \"API server starting in background \\(PID $!\\)\")",
+      "Bash(echo \"Web server starting in background \\(PID $!\\)\")",
+      "Bash(pnpm add:*)",
+      "Bash(echo \"API PID: $!\")",
+      "Bash(echo \"Web PID: $!\")",
+      "Bash(npx nest:*)",
+      "Bash(node_modules/.bin/nest build:*)",
+      "Bash(node_modules/.bin/next build:*)",
+      "Bash(node -e \"const { templates } = require\\('./packages/templates/index.js'\\); console.log\\('loaded', templates.length, 'templates:', templates.map\\(t => t.id\\).join\\(', '\\)\\)\")",
+      "Bash(node -e \"const { templates } = require\\('./packages/templates/index.js'\\); console.log\\('OK — loaded', templates.length, 'templates:', templates.map\\(t => t.id\\).join\\(', '\\)\\)\")",
+      "Bash(node -e \"require\\('./dist/templates/templates.service.js'\\)\")",
+      "Bash(timeout 5 node dist/main.js)",
+      "Bash(pnpm rebuild:*)",
+      "Bash(timeout 6 node dist/main.js)",
+      "Bash(pnpm next:*)",
+      "Bash(kill %1)",
+      "Bash(curl -s -m 10 http://localhost:3002/)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill /F /PID 11016)",
+      "Bash(cmd /c \"taskkill /F /PID 11016\")",
+      "Bash(cmd /c \"taskkill /F /PID 11016 2>&1\")",
+      "Bash(powershell -Command \"Stop-Process -Id 11016 -Force; Write-Host 'killed'\")",
+      "Bash(curl -s -m 5 http://localhost:3000/)",
+      "Bash(powershell -Command \"Get-NetTCPConnection -State Listen | Where-Object LocalPort -in 3000,3001,3002,3003,3004,3005 | Select-Object LocalPort,OwningProcess | Format-Table\")",
+      "Bash(powershell -Command \"Stop-Process -Id 31876,19364 -Force -ErrorAction SilentlyContinue; Write-Host 'killed web processes'\")",
+      "Bash(curl -s -m 15 http://localhost:3000/)",
+      "Bash(powershell -Command \"Get-NetTCPConnection -State Listen | Where-Object LocalPort -in 3000,3001 | Select-Object LocalPort,OwningProcess | Format-Table\")",
+      "Bash(curl -s -m 10 http://localhost:3000/register)",
+      "Bash(curl -s -m 10 http://localhost:3000/)",
+      "Bash(curl -s -m 10 http://localhost:3000/builder/elegant)",
+      "Bash(powershell -Command ':*)",
+      "Bash(grep -l \"experience1Title\\\\|job1Title\" d:/In/Auto-resume-generator/packages/templates/*.html)",
+      "Bash(grep -l \"experience1Title\\\\|education1Degree\\\\|language1Level\\\\|certification1\" d:/In/Auto-resume-generator/packages/templates/*.html)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(grep -rl \"â€\" d:/In/Auto-resume-generator/packages/templates/*.html)",
+      "Bash(grep -c \"â€\" d:/In/Auto-resume-generator/packages/templates/*.html)"
+    ]
+  }
+}
