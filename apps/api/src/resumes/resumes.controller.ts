@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtGuard } from '../auth/guards/optional-jwt.guard';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { UpdateResumeDto } from './dto/update-resume.dto';
+import { ExportResumeDto } from './dto/export-resume.dto';
 
 @Controller('resumes')
 @UseFilters(HttpExceptionFilter)
@@ -74,12 +75,33 @@ export class ResumesController {
   // ------------------------------------------------------------ PDF EXPORT
   @UseGuards(JwtAuthGuard)
   @Post(':id/export')
-  async exportPdf(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
-    const user = req.user as any;
-    const pdf = await this.resumesService.exportToPdf(id, user.sub);
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=resume-${id}.pdf`);
-    res.send(pdf);
+  async exportPdf(
+    @Param('id') id: string,
+    @Body() body: ExportResumeDto,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    try {
+      console.log("Id : ", id)
+      const user = req.user as any;
+      console.log("user : ", user)
+      console.log("body.formData : ", JSON.stringify(body.formData, null, 2))
+      const pdf = await this.resumesService.exportToPdf(id, user.sub, body.formData);
+      res.set({
+        'Content-Type':        'application/pdf',
+        'Content-Disposition': `attachment; filename="resume-${id}.pdf"`,
+        'Content-Length':      pdf.length.toString(),
+        'Cache-Control':       'no-cache, no-store, must-revalidate',
+        'Pragma':              'no-cache',
+        'Expires':             '0',
+      });
+      res.end(pdf);
+    } catch (err: any) {
+      res.status(err?.status || 500).json({
+        success: false,
+        message: err?.message || 'PDF export failed',
+      });
+    }
   }
 
   // --------------------------------------------------------- CLAIM (guest → user)

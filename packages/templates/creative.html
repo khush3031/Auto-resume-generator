@@ -5,10 +5,11 @@
   <title>Creative Resume</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&display=swap');
+    :root { --accent: var(--resume-accent-color, #1a1a2e); }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Nunito', sans-serif; background: #fff; color: #1a1a2e; }
-    .page { width: 794px; min-height: 1123px; margin: 0 auto; display: grid; grid-template-columns: 200px 1fr; }
-    .sidebar { background: #1a1a2e; padding: 0; display: flex; flex-direction: column; }
+    .page { width: 794px; max-width: 794px; min-height: 1123px; margin: 0 auto; display: grid; grid-template-columns: 200px 1fr; align-items: stretch; overflow: hidden; }
+    .sidebar { background: var(--accent); padding: 0; display: flex; flex-direction: column; min-height: 100%; align-self: stretch; overflow: hidden; }
     .s-accent { height: 10px; background: linear-gradient(90deg, #ff6b6b, #f7d56e, #4ecdc4); }
     .s-inner { padding: 36px 20px; flex: 1; }
     .avatar-ring { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #ff6b6b, #4ecdc4); padding: 3px; margin: 0 auto 20px; }
@@ -22,7 +23,7 @@
     .tag { display: inline-block; font-size: 10.5px; color: #1a1a2e; background: #f7d56e; padding: 3px 9px; border-radius: 3px; margin: 3px 2px 3px 0; font-weight: 700; }
     .tag-alt { background: #4ecdc4; }
     .tag-alt2 { background: #ff6b6b; }
-    .main { padding: 0; }
+    .main { padding: 0; min-width: 0; overflow: hidden; max-width: 100%; }
     .main-accent { height: 10px; background: linear-gradient(90deg, #4ecdc4, #f7d56e, #ff6b6b); }
     .main-body { padding: 32px 36px; }
     .m-section { margin-bottom: 26px; }
@@ -78,8 +79,7 @@
         <div class="s-divider"></div>
         <div class="s-section">
           <div class="s-label">Certifications</div>
-          <div class="s-item">{{cert1}} ({{cert1Year}})</div>
-          <div class="s-item">{{cert2}} ({{cert2Year}})</div>
+          {{certificationBlocks}}
         </div>
       </div>
     </div>
@@ -92,23 +92,7 @@
         </div>
         <div class="m-section">
           <div class="m-label">Experience</div>
-          <div class="exp-card">
-            <div class="exp-top"><span class="exp-role">{{job1Title}}</span><span class="exp-badge">{{job1Start}} – {{job1End}}</span></div>
-            <div class="exp-co">{{job1Company}} · {{job1Location}}</div>
-            <ul class="exp-list">
-              <li>{{job1Bullet1}}</li>
-              <li>{{job1Bullet2}}</li>
-              <li>{{job1Bullet3}}</li>
-            </ul>
-          </div>
-          <div class="exp-card" style="border-left-color:#4ecdc4;">
-            <div class="exp-top"><span class="exp-role">{{job2Title}}</span><span class="exp-badge" style="background:#f0fafa;color:#4ecdc4;">{{job2Start}} – {{job2End}}</span></div>
-            <div class="exp-co">{{job2Company}} · {{job2Location}}</div>
-            <ul class="exp-list">
-              <li>{{job2Bullet1}}</li>
-              <li>{{job2Bullet2}}</li>
-            </ul>
-          </div>
+          {{experienceBlocks}}
         </div>
         <div class="m-section">
           <div class="m-label">Education</div>
@@ -117,6 +101,10 @@
             <div class="edu-uni">{{university}}</div>
             <div class="edu-year">Class of {{graduationYear}}</div>
           </div>
+        </div>
+        <div class="m-section" style="display:{{projectsSectionDisplay}}">
+          <div class="m-label">Projects</div>
+          {{projectBlocks}}
         </div>
       </div>
     </div>

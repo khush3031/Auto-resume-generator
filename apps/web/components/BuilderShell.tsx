@@ -9,7 +9,8 @@ import { ResumePreviewer } from './ResumePreviewer';
 import { AiBulletSuggestions } from './builder/AiBulletSuggestions';
 import { AiSkillSuggestions } from './builder/AiSkillSuggestions';
 import { AiSummarySuggestions } from './builder/AiSummarySuggestions';
-import { ColorPicker } from './builder/ColorPicker';
+import { ColorPicker }   from './builder/ColorPicker';
+import { ZoomControls }  from './builder/ZoomControls';
 import { DEFAULT_COLOR, ResumeColor } from '../src/lib/resume-colors';
 
 
@@ -17,6 +18,9 @@ const baseFormData: Record<string, string> = {
   fullName: '', jobTitle: '', email: '', phone: '',
   location: '', linkedin: '', website: '', initials: '', summary: '',
   _accentColor: '',
+  // Job 1 fields — always present (user starts with one job entry)
+  job1Title: '', job1Company: '', job1Location: '', job1Start: '', job1End: '',
+  job1Bullet1: '', job1Bullet2: '', job1Bullet3: '',
 };
 
 const sampleData: Record<string, string> = {
@@ -50,10 +54,11 @@ const sampleData: Record<string, string> = {
   cert2: 'Google Cloud Professional', cert2Issuer: 'Google',              cert2Year: '2023',
 };
 
-function experienceFields(n: number): Record<string, string> {
+
+function jobFields(n: number): Record<string, string> {
   return {
     [`job${n}Title`]: '', [`job${n}Company`]: '', [`job${n}Location`]: '',
-    [`job${n}Start`]: '', [`job${n}End`]:     '',
+    [`job${n}Start`]: '', [`job${n}End`]: '',
     [`job${n}Bullet1`]: '', [`job${n}Bullet2`]: '', [`job${n}Bullet3`]: '',
   };
 }
@@ -62,12 +67,24 @@ function educationFields(n: number): Record<string, string> {
   return { [`degree${p}`]: '', [`university${p}`]: '', [`graduationYear${p}`]: '' };
 }
 function certFields(n: number): Record<string, string> {
-  return { [`cert${n}`]: '', [`cert${n}Issuer`]: '', [`cert${n}Year`]: '' };
+  return { [`cert${n}`]: '', [`cert${n}Issuer`]: '', [`cert${n}Year`]: '', [`cert${n}Url`]: '' };
 }
 function skillFields(n: number): Record<string, string> { return { [`skill${n}`]: '' }; }
 function langFields(n: number): Record<string, string> {
   return { [`lang${n}`]: '', [`lang${n}Level`]: '' };
 }
+function projectFields(n: number): Record<string, string> {
+  return {
+    [`project${n}Name`]: '', [`project${n}Role`]: '', [`project${n}Tech`]: '',
+    [`project${n}Start`]: '', [`project${n}End`]: '',
+    [`project${n}Description`]: '', [`project${n}Url`]: '',
+  };
+}
+
+// URL fields: cert*Url, project*Url, linkedin, website — everything else is plain text
+const URL_FIELD_RX    = /Url$|^linkedin$|^website$/;
+const LOCALHOST_RX    = /localhost|127\.0\.0\.1|builder\//i;
+const ANY_URL_RX      = /https?:\/\/|localhost|127\.0\.0\.1|builder\//i;
 
 function sanitizeEncoding(html: string): string {
   return html
@@ -227,12 +244,141 @@ function expandAllDynamicSlots(html: string, data: Record<string, string>): stri
   return html;
 }
 
+// ─── Client-side block builders (mirror backend logic for live preview) ───────
+
+/** Build experience HTML for templates using {{experienceBlocks}} placeholder. */
+function buildExpBlocksFront(d: Record<string, string>): string {
+  const items: string[] = [];
+  for (let i = 1; i <= 10; i++) {
+    const title = (d[`job${i}Title`] ?? '').trim();
+    if (!title) continue;
+    const company  = (d[`job${i}Company`]  ?? '').trim();
+    const location = (d[`job${i}Location`] ?? '').trim();
+    const start    = (d[`job${i}Start`]    ?? '').trim();
+    const end      = (d[`job${i}End`]      ?? '').trim();
+    const bullets  = [1, 2, 3].map((b) => (d[`job${i}Bullet${b}`] ?? '').trim()).filter(Boolean);
+    const dateStr    = [start, end].filter(Boolean).join(' \u2013 ');
+    const companyStr = [company, location].filter(Boolean).join(' \u00b7 ');
+    items.push(`
+<div style="margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #f0f0f0;">
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">
+    <span style="font-size:13px;font-weight:700;color:#1a1a1a;">${title}</span>
+    ${dateStr ? `<span style="font-size:11px;color:var(--accent,#1a3a4a);white-space:nowrap;margin-left:8px;">${dateStr}</span>` : ''}
+  </div>
+  ${companyStr ? `<div style="font-size:12px;color:#666;margin-bottom:6px;">${companyStr}</div>` : ''}
+  ${bullets.length ? `<ul style="list-style:none;padding:0;margin:0;">${
+    bullets.map((b) => `<li style="font-size:12px;color:#444;line-height:1.65;padding-left:14px;position:relative;margin-bottom:2px;word-break:break-word;"><span style="position:absolute;left:0;color:var(--accent,#1a3a4a);">&#9658;</span>${b}</li>`).join('')
+  }</ul>` : ''}
+</div>`);
+  }
+  return items.join('');
+}
+
+/** Build certification HTML for templates using {{certificationBlocks}} placeholder. */
+function buildCertBlocksFront(d: Record<string, string>): string {
+  const items: string[] = [];
+  for (let i = 1; i <= 10; i++) {
+    const name = (d[`cert${i}`] ?? '').trim();
+    if (!name) continue;
+    const issuer = (d[`cert${i}Issuer`] ?? '').trim();
+    const year   = (d[`cert${i}Year`]   ?? '').trim();
+    const url    = (d[`cert${i}Url`]    ?? '').trim();
+    items.push(`
+<div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f5f5f5;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#1a1a1a;">${name}</div>
+      ${issuer ? `<div style="font-size:11px;color:#777;margin-top:1px;">${issuer}</div>` : ''}
+      ${url ? `<a href="${url}" style="font-size:10px;color:var(--accent,#1a3a4a);text-decoration:none;display:inline-block;margin-top:2px;">View \u2192</a>` : ''}
+    </div>
+    ${year ? `<span style="font-size:11px;color:var(--accent,#1a3a4a);font-weight:600;white-space:nowrap;margin-left:8px;">${year}</span>` : ''}
+  </div>
+</div>`);
+  }
+  return items.join('');
+}
+
+/** Build project HTML for templates using {{projectBlocks}} placeholder. */
+function buildProjBlocksFront(d: Record<string, string>): string {
+  const items: string[] = [];
+  for (let i = 1; i <= 10; i++) {
+    const name = (d[`project${i}Name`] ?? '').trim();
+    if (!name) continue;
+    const role  = (d[`project${i}Role`]        ?? '').trim();
+    const tech  = (d[`project${i}Tech`]        ?? '').trim();
+    const start = (d[`project${i}Start`]       ?? '').trim();
+    const end   = (d[`project${i}End`]         ?? '').trim();
+    const desc  = (d[`project${i}Description`] ?? '').trim();
+    const url   = (d[`project${i}Url`]         ?? '').trim();
+    const dateStr = [start, end].filter(Boolean).join(' \u2013 ');
+    items.push(`
+<div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0;">
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;">
+    <span style="font-size:13px;font-weight:700;color:#1a1a1a;">${name}</span>
+    ${dateStr ? `<span style="font-size:11px;color:var(--accent,#1a3a4a);white-space:nowrap;">${dateStr}</span>` : ''}
+  </div>
+  ${role ? `<div style="font-size:12px;color:var(--accent,#1a3a4a);font-weight:600;margin-bottom:2px;">${role}</div>` : ''}
+  ${tech ? `<div style="font-size:11px;color:#777;margin-bottom:5px;">Tech: ${tech}</div>` : ''}
+  ${desc ? `<div style="font-size:12px;color:#444;line-height:1.65;word-break:break-word;">${desc}</div>` : ''}
+  ${url ? `<a href="${url}" style="font-size:10px;color:var(--accent,#1a3a4a);text-decoration:none;margin-top:3px;display:inline-block;">View Project \u2192</a>` : ''}
+</div>`);
+  }
+  return items.join('');
+}
+
+/** Build education HTML for templates using {{educationBlocks}} placeholder. */
+function buildEducationBlocksFront(d: Record<string, string>): string {
+  const items: string[] = [];
+  for (let i = 1; i <= 5; i++) {
+    const degKey  = i === 1 ? 'degree'         : `degree${i}`;
+    const uniKey  = i === 1 ? 'university'      : `university${i}`;
+    const yearKey = i === 1 ? 'graduationYear'  : `graduationYear${i}`;
+    const degree  = (d[degKey]  ?? '').trim();
+    const school  = (d[uniKey]  ?? '').trim();
+    const year    = (d[yearKey] ?? '').trim();
+    if (!degree && !school) continue;
+    items.push(`
+<div style="margin-bottom:12px;">
+  <div style="font-size:13px;font-weight:700;color:#1a1a1a;">${degree || school}</div>
+  ${degree && school ? `<div style="font-size:12px;color:#666;">${school}</div>` : ''}
+  ${year ? `<div style="font-size:11px;color:var(--accent,#1a3a4a);margin-top:2px;">${year}</div>` : ''}
+</div>`);
+  }
+  return items.join('');
+}
+
+/** Build languages HTML for templates using {{languagesBlock}} placeholder. */
+function buildLanguagesBlockFront(d: Record<string, string>): string {
+  const rows: string[] = [];
+  for (let i = 1; i <= 10; i++) {
+    const lang  = (d[`lang${i}`]      ?? '').trim();
+    const level = (d[`lang${i}Level`] ?? '').trim();
+    if (!lang) continue;
+    rows.push(`<div style="font-size:12px;color:#444;margin-bottom:5px;"><strong>${lang}</strong>${level ? ` \u2014 ${level}` : ''}</div>`);
+  }
+  return rows.join('');
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 function populateTemplate(html: string, data: Record<string, string>): string {
   const prepped  = injectWrapFix(sanitizeEncoding(html));
   const expanded = expandAllDynamicSlots(prepped, data);
-  return expanded.replace(/{{\s*([^}\s]+)\s*}}/g, (_, key: string) => {
+
+  // Replace block placeholders BEFORE the general {{key}} sweep so they
+  // don't get wiped to empty strings (data has no "experienceBlocks" key).
+  const hasProjects = Array.from({ length: 10 }, (_, i) => i + 1)
+    .some((i) => (data[`project${i}Name`] ?? '').trim());
+
+  const withBlocks = expanded
+    .replace(/\{\{experienceBlocks\}\}/g,      buildExpBlocksFront(data))
+    .replace(/\{\{certificationBlocks\}\}/g,   buildCertBlocksFront(data))
+    .replace(/\{\{projectBlocks\}\}/g,         buildProjBlocksFront(data))
+    .replace(/\{\{projectsSectionDisplay\}\}/g, hasProjects ? 'block' : 'none')
+    .replace(/\{\{educationBlocks\}\}/g,       buildEducationBlocksFront(data))
+    .replace(/\{\{languagesBlock\}\}/g,        buildLanguagesBlockFront(data));
+
+  return withBlocks.replace(/{{\s*([^}\s]+)\s*}}/g, (_, key: string) => {
     const v = data[key];
     return v !== undefined && v.trim() !== '' ? v : (sampleData[key] ?? '');
   });
@@ -245,25 +391,25 @@ function populateTemplate(html: string, data: Record<string, string>): string {
  * When the user picks a theme color, these get swapped out.
  */
 const TEMPLATE_ACCENT_COLORS: Record<string, string> = {
-  'classic':      '#0f3d5c',
+  'classic':      '#0f3d5c',   // sidebar bg (now var(--accent))
   'minimal':      '#111827',
-  'executive':    '#d4af37',   // gold in sidebar brand text
-  'bold':         '#ef4444',
-  'modern':       '#3b82f6',
+  'executive':    '#1b1b1b',   // sidebar bg (now var(--accent))
+  'bold':         '#ef4444',   // header bg (now var(--accent))
+  'modern':       '#114b5f',   // sidebar bg (now var(--accent))
   'elegant':      '#9d8189',
   'clean-grid':   '#334155',
   'ats-friendly': '#374151',
   'ats':          '#374151',
-  'corporate':    '#4299e1',
-  'creative':     '#4ecdc4',
+  'corporate':    '#1a1a2e',   // header bg (now var(--accent))
+  'creative':     '#1a1a2e',   // sidebar bg (now var(--accent))
   'compact':      '#e53935',
-  'timeline':     '#7c3aed',
+  'timeline':     '#7c3aed',   // top band bg (now var(--accent))
   'mono':         '#333',
   'slate':        '#38bdf8',
   'indigo':       '#4338ca',
   'cobalt':       '#0077cc',
   'sage':         '#3a5e3b',
-  'infographic':  '#7c3aed',
+  'infographic':  '#7c3aed',   // left panel bg (var(--accent))
   'academic':     '#374151',
 };
 
@@ -299,9 +445,9 @@ function injectAccentColor(html: string, hex: string, templateId: string): strin
     if (short) result = result.split(short).join(hex);
   }
 
-  // Pass 2 — CSS variable override (for templates that use var(--resume-accent-color))
-  const cssVar = `<style>:root { --resume-accent-color: ${hex} !important; --accent: ${hex} !important; }</style>`;
-  result = result.includes('<head>') ? result.replace('<head>', `<head>${cssVar}`) : cssVar + result;
+  // Pass 2 — CSS variable override, injected BEFORE </head> so it overrides template's own :root
+  const cssVar = `\n<style id="resume-forge-theme">:root { --resume-accent-color: ${hex} !important; --accent: ${hex} !important; }</style>`;
+  result = result.includes('</head>') ? result.replace('</head>', cssVar + '\n</head>') : cssVar + result;
 
   return result;
 }
@@ -309,7 +455,7 @@ function injectAccentColor(html: string, hex: string, templateId: string): strin
 
 function validate(
   formData: Record<string, string>,
-  experiences: number[], educations: number[],
+  jobs: number[], educations: number[],
   skills: number[], langs: number[], certs: number[],
 ): Record<string, string> {
   const err: Record<string, string> = {};
@@ -317,7 +463,11 @@ function validate(
     if (!formData[key]?.trim()) err[key] = `${label} is required`;
   };
   req('fullName', 'Full Name'); req('email', 'Email');
-  experiences.forEach((n) => { req(`job${n}Title`, 'Job Title'); req(`job${n}Company`, 'Company'); });
+  // First job entry is required
+  if (jobs.length > 0) {
+    const n = jobs[0];
+    req(`job${n}Title`, 'Job Title'); req(`job${n}Company`, 'Company');
+  }
   educations.forEach((n) => {
     const p = n === 1 ? '' : String(n);
     req(`degree${p}`, 'Degree'); req(`university${p}`, 'University / School');
@@ -336,17 +486,19 @@ export function BuilderShell({
   const { isAuthenticated, loadFromStorage } = useAuthStore();
 
   const [formData,     setFormData]     = useState<Record<string, string>>(baseFormData);
-  const [experiences,  setExperiences]  = useState<number[]>([]);
+  const [jobs,         setJobs]         = useState<number[]>([1]);
   const [educations,   setEducations]   = useState<number[]>([]);
   const [certs,        setCerts]        = useState<number[]>([]);
   const [skills,       setSkills]       = useState<number[]>([]);
   const [langs,        setLangs]        = useState<number[]>([]);
+  const [projects,     setProjects]     = useState<number[]>([]);
 
-  const expCounter   = useRef(0);
+  const jobCounter   = useRef(1);
   const eduCounter   = useRef(0);
   const certCounter  = useRef(0);
   const skillCounter = useRef(0);
   const langCounter  = useRef(0);
+  const projCounter  = useRef(0);
 
   const [resumeId,        setResumeId]        = useState<string | null>(null);
   const [html,            setHtml]            = useState('');
@@ -358,10 +510,98 @@ export function BuilderShell({
   const [activeTab,       setActiveTab]       = useState<'edit' | 'preview'>('edit');
   const [errors,          setErrors]          = useState<Record<string, string>>({});
   const [showErrorBanner, setShowErrorBanner] = useState(false);
+  const [panelWidth,      setPanelWidth]      = useState<number | null>(null);
+  const [isDragging,      setIsDragging]      = useState(false);
+  const [previewZoom,     setPreviewZoom]     = useState<number>(0.75);
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debounceRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const panelWidthRef  = useRef<number | null>(null);
 
   useEffect(() => { loadFromStorage(); }, [loadFromStorage]);
+
+  // Restore saved panel width from localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = localStorage.getItem('rf-panel-w');
+    if (stored) {
+      const w = parseInt(stored, 10);
+      if (w >= 260 && w <= 900) { setPanelWidth(w); panelWidthRef.current = w; }
+    }
+  }, []);
+
+  // Keyboard shortcuts: Ctrl/Cmd + = / − / 0 for zoom
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === '=' || e.key === '+') {
+          e.preventDefault();
+          setPreviewZoom((z) => Math.min(2.0, Math.round((z + 0.25) * 100) / 100));
+        } else if (e.key === '-') {
+          e.preventDefault();
+          setPreviewZoom((z) => Math.max(0.25, Math.round((z - 0.25) * 100) / 100));
+        } else if (e.key === '0') {
+          e.preventDefault();
+          setPreviewZoom(1);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
+  const onResizeMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const defaultW = window.innerWidth >= 1280 ? 660 : 420;
+    const startW   = panelWidthRef.current ?? defaultW;
+    setIsDragging(true);
+
+    const onMouseMove = (ev: MouseEvent) => {
+      const newW = Math.min(900, Math.max(260, startW + (ev.clientX - startX)));
+      setPanelWidth(newW);
+      panelWidthRef.current = newW;
+    };
+    const onMouseUp = () => {
+      setIsDragging(false);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup',   onMouseUp);
+      if (panelWidthRef.current) localStorage.setItem('rf-panel-w', String(panelWidthRef.current));
+    };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup',   onMouseUp);
+  }, []);
+
+  // Scrub browser-autofilled garbage on mount — ONLY clear values that are
+  // clearly wrong (contain the current page path or start with localhost http).
+  useEffect(() => {
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+    const isLocalhostUrl = (v: string) => {
+      const t = (v ?? '').trim();
+      return t.startsWith('http') && (t.includes('localhost') || t.includes('127.0.0.1'));
+    };
+
+    setFormData((prev) => {
+      const next = { ...prev };
+
+      // URL-typed fields: clear only if they contain the current builder URL
+      ['linkedin', 'website'].forEach((f) => {
+        if ((next[f] ?? '').includes(currentPath) || isLocalhostUrl(next[f] ?? '')) next[f] = '';
+      });
+
+      // cert/project URL fields: clear only if they contain the builder path
+      for (let i = 1; i <= 10; i++) {
+        if ((next[`cert${i}Url`]    ?? '').includes(currentPath)) next[`cert${i}Url`]    = '';
+        if ((next[`project${i}Url`] ?? '').includes(currentPath)) next[`project${i}Url`] = '';
+      }
+
+      // Initials: clear only if obviously wrong (> 4 chars)
+      if ((next.initials?.length ?? 0) > 4) next.initials = '';
+
+      return next;
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-fill from upload flow (source=upload query param) ──────────────────
   useEffect(() => {
@@ -374,13 +614,38 @@ export function BuilderShell({
     try {
       const parsed: Record<string, string> = JSON.parse(stored);
       sessionStorage.removeItem(key);
+      const urlRx = /https?:\/\/|localhost|127\.0\.0\.1|builder\//i;
       setFormData((prev) => {
         const next = { ...prev };
         Object.entries(parsed).forEach(([k, v]) => {
-          if (typeof v === 'string' && v.trim()) next[k] = v;
+          if (typeof v === 'string' && v.trim() && !urlRx.test(v)) next[k] = v;
         });
         return next;
       });
+      // Restore section counts from parsed data
+      const d = parsed;
+      let jc = 0;
+      for (let i = 1; i <= 10; i++) { if (d[`job${i}Title`]?.trim()) jc = i; else break; }
+      if (jc > 0) { setJobs(Array.from({ length: jc }, (_, i) => i + 1)); jobCounter.current = jc; }
+
+      let cc = 0;
+      for (let i = 1; i <= 10; i++) { if (d[`cert${i}`]?.trim()) cc = i; else break; }
+      if (cc > 0) { setCerts(Array.from({ length: cc }, (_, i) => i + 1)); certCounter.current = cc; }
+
+      let skc = 0;
+      for (let i = 1; i <= 20; i++) { if (d[`skill${i}`]?.trim()) skc = i; else if (i > 5) break; }
+      if (skc > 0) { setSkills(Array.from({ length: skc }, (_, i) => i + 1)); skillCounter.current = skc; }
+
+      let lc = 0;
+      for (let i = 1; i <= 10; i++) { if (d[`lang${i}`]?.trim()) lc = i; else break; }
+      if (lc > 0) { setLangs(Array.from({ length: lc }, (_, i) => i + 1)); langCounter.current = lc; }
+
+      let ec = 0;
+      for (let i = 1; i <= 5; i++) {
+        const key2 = i === 1 ? 'degree' : `degree${i}`;
+        if (d[key2]?.trim()) ec = i; else break;
+      }
+      if (ec > 0) { setEducations(Array.from({ length: ec }, (_, i) => i + 1)); eduCounter.current = ec; }
     } catch {
       console.error('Failed to load parsed resume data from sessionStorage');
     }
@@ -410,7 +675,14 @@ export function BuilderShell({
   }, [formData, resumeId]);
 
   const updateField = useCallback((field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Reject browser-autofilled URLs before they reach state
+    let sanitized = value;
+    if (URL_FIELD_RX.test(field)) {
+      if (LOCALHOST_RX.test(value)) sanitized = '';   // URL fields: reject localhost/builder
+    } else {
+      if (ANY_URL_RX.test(value)) sanitized = '';     // text fields: reject any URL
+    }
+    setFormData((prev) => ({ ...prev, [field]: sanitized }));
     setErrors((prev) => {
       if (!prev[field]) return prev;
       const next = { ...prev };
@@ -448,7 +720,7 @@ export function BuilderShell({
 
   const handleDownload = async () => {
     if (!isAuthenticated) { setShowAuthModal(true); return; }
-    const errs = validate(formData, experiences, educations, skills, langs, certs);
+    const errs = validate(formData, jobs, educations, skills, langs, certs);
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       setShowErrorBanner(true);
@@ -462,12 +734,18 @@ export function BuilderShell({
     if (!resumeId) return;
     try {
       setIsDownloading(true);
-      const blob = await exportResumePdf(resumeId);
+      // Cancel any pending debounce and pass formData directly in the export
+      // request — the server uses it instead of reading (potentially stale) MongoDB.
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      console.log("formData -> ", JSON.stringify(formData, null, 2))
+      const blob = await exportResumePdf(resumeId, formData);
       const url  = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       const a    = document.createElement('a');
       a.href = url; a.download = `resume-${resumeId}.pdf`;
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
+      // Persist the latest formData after the export
+      updateResume(resumeId, { formData }).then(() => setLastSavedAt(new Date().toISOString())).catch(() => {});
     } finally { setIsDownloading(false); }
   };
 
@@ -522,9 +800,8 @@ export function BuilderShell({
       </FormSection>
 
       <FormSection title="Work Experience">
-        {experiences.length === 0 && <EmptyHint text="No work experience added yet." />}
-        {experiences.map((n) => (
-          <Card key={n} label={`Experience ${n}`} onRemove={() => removeSection(n, setExperiences, experienceFields)}>
+        {jobs.map((n) => (
+          <Card key={n} label={`Job ${n}`} onRemove={jobs.length > 1 ? () => removeSection(n, setJobs, jobFields) : undefined}>
             <Input id={`field-job${n}Title`}   label="Job Title *" field={`job${n}Title`}   value={formData[`job${n}Title`]   ?? ''} onChange={updateField} error={errors[`job${n}Title`]} />
             <Input id={`field-job${n}Company`} label="Company *"   field={`job${n}Company`} value={formData[`job${n}Company`] ?? ''} onChange={updateField} error={errors[`job${n}Company`]} />
             <Input label="Location"            field={`job${n}Location`} value={formData[`job${n}Location`] ?? ''} onChange={updateField} />
@@ -551,7 +828,9 @@ export function BuilderShell({
             />
           </Card>
         ))}
-        <AddButton label="Add Work Experience" onClick={() => addSection(setExperiences, expCounter, experienceFields)} />
+        {jobs.length < 10 && (
+          <AddButton label="Add Work Experience" onClick={() => addSection(setJobs, jobCounter, jobFields)} />
+        )}
       </FormSection>
 
       <FormSection title="Education">
@@ -641,11 +920,36 @@ export function BuilderShell({
         {certs.map((n) => (
           <Card key={n} label={`Certification ${n}`} onRemove={() => removeSection(n, setCerts, certFields)}>
             <Input id={`field-cert${n}`} label="Certificate Name *"       field={`cert${n}`}       value={formData[`cert${n}`]       ?? ''} onChange={updateField} error={errors[`cert${n}`]} />
-            <Input                       label="Issuer (e.g. AWS, Google)" field={`cert${n}Issuer`} value={formData[`cert${n}Issuer`] ?? ''} onChange={updateField} />
-            <Input                       label="Year (e.g. 2023)"          field={`cert${n}Year`}   value={formData[`cert${n}Year`]   ?? ''} onChange={updateField} />
+            <div className="builder-date-row">
+              <Input label="Issuer (e.g. AWS, Google)" field={`cert${n}Issuer`} value={formData[`cert${n}Issuer`] ?? ''} onChange={updateField} />
+              <Input label="Year (e.g. 2023)"          field={`cert${n}Year`}   value={formData[`cert${n}Year`]   ?? ''} onChange={updateField} />
+            </div>
+            <Input label="Certificate URL (optional)" field={`cert${n}Url`} value={formData[`cert${n}Url`] ?? ''} onChange={updateField} autoComplete="off" />
           </Card>
         ))}
         <AddButton label="Add Certification" onClick={() => addSection(setCerts, certCounter, certFields)} />
+      </FormSection>
+
+      <FormSection title="Projects">
+        {projects.length === 0 && <EmptyHint text="No projects added yet." />}
+        {projects.map((n) => (
+          <Card key={n} label={`Project ${n}`} onRemove={() => removeSection(n, setProjects, projectFields)}>
+            <Input label="Project Name *"     field={`project${n}Name`}        value={formData[`project${n}Name`]        ?? ''} onChange={updateField} />
+            <div className="builder-date-row">
+              <Input label="Your Role"        field={`project${n}Role`}        value={formData[`project${n}Role`]        ?? ''} onChange={updateField} />
+              <Input label="Technologies"     field={`project${n}Tech`}        value={formData[`project${n}Tech`]        ?? ''} onChange={updateField} />
+            </div>
+            <div className="builder-date-row">
+              <Input label="Start Date"       field={`project${n}Start`}       value={formData[`project${n}Start`]       ?? ''} onChange={updateField} />
+              <Input label="End Date"         field={`project${n}End`}         value={formData[`project${n}End`]         ?? ''} onChange={updateField} />
+            </div>
+            <Textarea label="Description"    field={`project${n}Description`} value={formData[`project${n}Description`] ?? ''} onChange={updateField} rows={3} />
+            <Input label="Project URL / GitHub (optional)" field={`project${n}Url`} value={formData[`project${n}Url`] ?? ''} onChange={updateField} autoComplete="off" />
+          </Card>
+        ))}
+        {projects.length < 10 && (
+          <AddButton label="Add Project" onClick={() => addSection(setProjects, projCounter, projectFields)} />
+        )}
       </FormSection>
     </div>
   );
@@ -695,15 +999,26 @@ export function BuilderShell({
       </div>
 
       {/* ── Split (form + preview) ── */}
-      <div className="builder-split">
+      <div className="builder-split" style={isDragging ? { cursor: 'col-resize', userSelect: 'none' } : undefined}>
 
         {/* Form panel */}
-        <div className={`builder-form-panel${activeTab === 'preview' ? ' builder-form-panel--mobile-hidden' : ''}`}>
+        <div
+          className={`builder-form-panel${activeTab === 'preview' ? ' builder-form-panel--mobile-hidden' : ''}`}
+          style={panelWidth ? { width: panelWidth } : undefined}
+        >
           {errorBanner && <div className="builder-error-wrap">{errorBanner}</div>}
           <div className="builder-form-body">
             {formSections}
           </div>
         </div>
+
+        {/* Drag-to-resize handle */}
+        <div
+          className={`builder-resize-handle${isDragging ? ' builder-resize-handle--active' : ''}`}
+          onMouseDown={onResizeMouseDown}
+          title="Drag to resize"
+          aria-hidden="true"
+        />
 
         {/* Preview panel */}
         <div className={`builder-preview-panel${activeTab === 'edit' ? ' builder-preview-panel--mobile-hidden' : ''}`}>
@@ -713,10 +1028,33 @@ export function BuilderShell({
               <span className="builder-preview-label">Live Preview</span>
               <span className="builder-preview-name">{template.name}</span>
             </div>
-            <span className="builder-preview-status">
-              {isSaving ? 'Saving…' : resumeId ? 'Up to date' : 'Preview only'}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <ZoomControls
+                zoom={previewZoom}
+                onChange={setPreviewZoom}
+                min={0.25}
+                max={2.0}
+                step={0.25}
+              />
+              <span className="builder-preview-status">
+                {isSaving ? 'Saving…' : resumeId ? 'Up to date' : 'Preview only'}
+              </span>
+            </div>
           </div>
+
+          {/* Mobile zoom bar — visible only on small screens when preview is active */}
+          {activeTab === 'preview' && (
+            <div className="builder-mobile-zoom-bar">
+              <span className="builder-mobile-zoom-label">Zoom:</span>
+              <ZoomControls
+                zoom={previewZoom}
+                onChange={setPreviewZoom}
+                min={0.25}
+                max={2.0}
+                step={0.25}
+              />
+            </div>
+          )}
 
           {/* Color theme picker */}
           <ColorPicker
@@ -729,7 +1067,7 @@ export function BuilderShell({
           />
 
           <div className="builder-preview-body">
-            <ResumePreviewer html={html} padding={64} />
+            <ResumePreviewer html={html} zoomLevel={previewZoom} />
           </div>
         </div>
       </div>
@@ -763,13 +1101,13 @@ function FormSection({ title, children }: { title: string; children: React.React
 }
 
 function Card({ label, onRemove, children }: {
-  label: string; onRemove: () => void; children: React.ReactNode;
+  label: string; onRemove?: () => void; children: React.ReactNode;
 }) {
   return (
     <div className="form-card">
       <div className="form-card__header">
         <p className="form-card__label">{label}</p>
-        <button onClick={onRemove} className="form-card__remove">Remove</button>
+        {onRemove && <button onClick={onRemove} className="form-card__remove">Remove</button>}
       </div>
       {children}
     </div>
@@ -799,8 +1137,9 @@ function XIcon() {
   );
 }
 
-function Input({ id, label, field, value, onChange, error }: {
+function Input({ id, label, field, value, onChange, error, autoComplete }: {
   id?: string; label: string; field: string; value: string; error?: string;
+  autoComplete?: string;
   onChange: (field: string, value: string) => void;
 }) {
   return (
@@ -809,6 +1148,7 @@ function Input({ id, label, field, value, onChange, error }: {
       <input
         value={value}
         onChange={(e) => onChange(field, e.target.value)}
+        autoComplete={autoComplete ?? 'off'}
         className={`builder-input${error ? ' builder-input--error' : ''}`}
       />
       {error && (
@@ -834,6 +1174,7 @@ function Textarea({ label, field, value, onChange, rows = 4 }: {
         value={value}
         onChange={(e) => onChange(field, e.target.value)}
         rows={rows}
+        autoComplete="off"
         className="builder-textarea"
       />
     </label>

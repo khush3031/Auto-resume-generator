@@ -5,16 +5,17 @@
   <title>Corporate Resume</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Source+Sans+3:wght@300;400;600;700&display=swap');
+    :root { --accent: var(--resume-accent-color, #1a1a2e); }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Source Sans 3', sans-serif; background: #fff; color: #1a1a2e; }
-    .page { width: 794px; min-height: 1123px; margin: 0 auto; }
-    .header { background: #1a1a2e; padding: 44px 56px 36px; }
+    .page { width: 794px; max-width: 794px; min-height: 1123px; margin: 0 auto; overflow: hidden; }
+    .header { background: var(--accent); padding: 44px 56px 36px; }
     .h-name { font-family: 'Merriweather', serif; font-size: 30px; font-weight: 700; color: #fff; letter-spacing: -.5px; margin-bottom: 6px; }
     .h-title { font-size: 14px; font-weight: 300; color: #a0aec0; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 22px; }
     .h-contact { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; border-top: 1px solid #2d3748; padding-top: 18px; }
     .h-contact-item { font-size: 11px; color: #a0aec0; line-height: 1.4; }
     .h-contact-item strong { display: block; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: #4299e1; margin-bottom: 2px; font-weight: 700; }
-    .body { padding: 36px 56px; display: grid; grid-template-columns: 1fr 180px; gap: 36px; }
+    .body { padding: 36px 56px; display: grid; grid-template-columns: 1fr 180px; gap: 36px; align-items: stretch; overflow: hidden; }
     .m-section { margin-bottom: 26px; }
     .m-head { font-family: 'Merriweather', serif; font-size: 14px; font-weight: 700; color: #1a1a2e; padding-bottom: 6px; border-bottom: 2px solid #1a1a2e; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
     .m-head .blue-sq { width: 6px; height: 14px; background: #4299e1; flex-shrink: 0; border-radius: 1px; }
@@ -58,23 +59,7 @@
         </div>
         <div class="m-section">
           <div class="m-head"><span class="blue-sq"></span>Professional Experience</div>
-          <div class="exp-item">
-            <div class="exp-top"><span class="exp-role">{{job1Title}}</span><span class="exp-date">{{job1Start}} – {{job1End}}</span></div>
-            <div class="exp-co">{{job1Company}} · {{job1Location}}</div>
-            <ul class="exp-list">
-              <li>{{job1Bullet1}}</li>
-              <li>{{job1Bullet2}}</li>
-              <li>{{job1Bullet3}}</li>
-            </ul>
-          </div>
-          <div class="exp-item">
-            <div class="exp-top"><span class="exp-role">{{job2Title}}</span><span class="exp-date">{{job2Start}} – {{job2End}}</span></div>
-            <div class="exp-co">{{job2Company}} · {{job2Location}}</div>
-            <ul class="exp-list">
-              <li>{{job2Bullet1}}</li>
-              <li>{{job2Bullet2}}</li>
-            </ul>
-          </div>
+          {{experienceBlocks}}
         </div>
         <div class="m-section">
           <div class="m-head"><span class="blue-sq"></span>Education</div>
@@ -95,8 +80,9 @@
         <div class="lang-row"><span>{{lang1}}</span><span class="lang-level">{{lang1Level}}</span></div>
         <div class="lang-row"><span>{{lang2}}</span><span class="lang-level">{{lang2Level}}</span></div>
         <div class="s-label">Credentials</div>
-        <div class="s-text"><span class="s-bold">{{cert1}}</span><br>{{cert1Issuer}} · {{cert1Year}}</div>
-        <div class="s-text"><span class="s-bold">{{cert2}}</span><br>{{cert2Issuer}} · {{cert2Year}}</div>
+        {{certificationBlocks}}
+        <div class="s-label" style="display:{{projectsSectionDisplay}}">Projects</div>
+        <div style="display:{{projectsSectionDisplay}}">{{projectBlocks}}</div>
       </div>
     </div>
   </div>

@@ -6,7 +6,7 @@
   <title>Elegant Resume</title>
   <style>
     body { margin: 0; font-family: 'Italiana', serif; background: #fff5f2; color: #1f2937; }
-    .page { max-width: 850px; margin: auto; padding: 50px; background: #fff; border-radius: 32px; box-shadow: 0 24px 80px rgba(15, 23, 42, 0.08); }
+    .page { width: 794px; max-width: 794px; margin: 0 auto; padding: 50px; background: #fff; border-radius: 0; box-shadow: none; overflow: hidden; }
     .header { text-align: center; padding-bottom: 28px; border-bottom: 1px solid #f3e7e5; }
     .name { margin: 0; font-size: 3rem; letter-spacing: -0.04em; }
     .title { margin: 8px 0 0; font-size: 1.05rem; color: #9d8189; letter-spacing: 0.18em; text-transform: uppercase; }
@@ -36,10 +36,7 @@
     </section>
     <section class="section">
       <h2>Experience</h2>
-      <p><strong>{{job1Title}}</strong> &middot; {{job1Company}} &middot; {{job1Start}} &ndash; {{job1End}}</p>
-      <p>{{job1Bullet1}}</p>
-      <p><strong>{{job2Title}}</strong> &middot; {{job2Company}} &middot; {{job2Start}} &ndash; {{job2End}}</p>
-      <p>{{job2Bullet1}}</p>
+      {{experienceBlocks}}
     </section>
     <section class="section">
       <h2>Education</h2>
@@ -62,8 +59,11 @@
     </section>
     <section class="section">
       <h2>Certifications</h2>
-      <div style="margin-bottom:8px;"><div style="font-size:12px;font-weight:600;">{{cert1}}</div><div style="font-size:11px;opacity:0.7;margin-top:2px;">{{cert1Issuer}} &middot; {{cert1Year}}</div></div>
-      <div style="margin-bottom:8px;"><div style="font-size:12px;font-weight:600;">{{cert2}}</div><div style="font-size:11px;opacity:0.7;margin-top:2px;">{{cert2Issuer}} &middot; {{cert2Year}}</div></div>
+      {{certificationBlocks}}
+    </section>
+    <section class="section" style="display:{{projectsSectionDisplay}}">
+      <h2>Projects</h2>
+      {{projectBlocks}}
     </section>
   </div>
 </body>

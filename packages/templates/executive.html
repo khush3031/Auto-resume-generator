@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Executive Resume</title>
   <style>
+    :root { --accent: var(--resume-accent-color, #1b1b1b); }
     body { margin: 0; background: #111111; color: #f8f8f8; font-family: 'Cormorant Garamond', Georgia, serif; }
-    .page { max-width: 1000px; margin: auto; display: grid; grid-template-columns: 1fr 320px; min-height: 100vh; }
-    .sidebar { background: #1b1b1b; padding: 40px 32px; display: flex; flex-direction: column; gap: 30px; }
-    main { padding: 40px 50px; background: #f7f5f2; color: #111827; }
+    .page { width: 794px; max-width: 794px; margin: 0 auto; display: grid; grid-template-columns: 1fr 320px; min-height: 1123px; align-items: stretch; overflow: hidden; }
+    .sidebar { background: var(--accent); padding: 40px 32px; display: flex; flex-direction: column; gap: 30px; min-height: 100%; align-self: stretch; overflow: hidden; }
+    main { padding: 40px 50px; background: #f7f5f2; color: #111827; min-width: 0; overflow: hidden; max-width: 100%; }
     .brand { color: #d4af37; text-transform: uppercase; letter-spacing: 0.35em; font-size: 0.8rem; }
     h1 { margin: 0; font-size: 3rem; }
     p { margin: 0; line-height: 1.8; }
@@ -17,7 +18,7 @@
     .section { margin-bottom: 30px; }
     .section h2 { margin-bottom: 16px; font-size: 1rem; letter-spacing: 0.18em; }
     .contact span { display: block; margin-bottom: 10px; }
-    .cert-entry { margin-bottom: 10px; }
+    .cert-entry { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .cert-name { font-size: 12px; font-weight: 600; color: inherit; }
     .cert-meta { font-size: 11px; opacity: 0.75; margin-top: 2px; }
     @media print { .page { display: block; } .sidebar { padding: 20px; } main { padding: 20px; } }
@@ -40,23 +41,16 @@
           <span>{{website}}</span>
         </div>
       </div>
-      <div class="section">
+      <div id="skills-section" class="section">
         <p class="label">Skills</p>
         <span class="skill">{{skill1}}</span>
         <span class="skill">{{skill2}}</span>
         <span class="skill">{{skill3}}</span>
         <span class="skill">{{skill4}}</span>
       </div>
-      <div class="section">
+      <div id="certs-section" class="section">
         <p class="label">Certifications</p>
-        <div class="cert-entry">
-          <div class="cert-name">{{cert1}}</div>
-          <div class="cert-meta">{{cert1Issuer}} &middot; {{cert1Year}}</div>
-        </div>
-        <div class="cert-entry">
-          <div class="cert-name">{{cert2}}</div>
-          <div class="cert-meta">{{cert2Issuer}} &middot; {{cert2Year}}</div>
-        </div>
+        {{certificationBlocks}}
       </div>
     </aside>
     <main>
@@ -66,18 +60,19 @@
       </section>
       <section class="section">
         <p class="label">Experience</p>
-        <p><strong>{{job1Title}}</strong><br>{{job1Company}} | {{job1Start}} – {{job1End}}<br>{{job1Bullet1}}</p>
-        <p><strong>{{job2Title}}</strong><br>{{job2Company}} | {{job2Start}} – {{job2End}}<br>{{job2Bullet1}}</p>
+        {{experienceBlocks}}
+      </section>
+      <section class="section" style="display:{{projectsSectionDisplay}}">
+        <p class="label">Projects</p>
+        {{projectBlocks}}
       </section>
       <section class="section">
         <p class="label">Education</p>
-        <p><strong>{{degree}}</strong><br>{{university}} | {{graduationYear}}</p>
-        <p><strong>{{degree2}}</strong><br>{{university2}} | {{graduationYear2}}</p>
+        {{educationBlocks}}
       </section>
       <section class="section">
         <p class="label">Languages</p>
-        <p>{{lang1}} — {{lang1Level}}</p>
-        <p>{{lang2}} — {{lang2Level}}</p>
+        {{languagesBlock}}
       </section>
     </main>
   </div>
