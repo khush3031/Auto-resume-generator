@@ -5,11 +5,49 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AiService {
   private client: Anthropic;
+  private isConfigured: boolean;
 
   constructor(private config: ConfigService) {
-    this.client = new Anthropic({
-      apiKey: this.config.get('ANTHROPIC_API_KEY'),
+    const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
+    this.isConfigured = !!(
+      apiKey &&
+      apiKey.length > 20 &&
+      !apiKey.includes('your_') &&
+      !apiKey.includes('your-')
+    );
+    console.log(
+      `[AiService] ANTHROPIC_API_KEY configured: ${this.isConfigured}`,
+      apiKey ? `(key starts with: ${apiKey.slice(0, 12)}...)` : '(key is missing)',
+    );
+    this.client = new Anthropic({ apiKey: apiKey || 'placeholder' });
+  }
+
+  private checkConfigured(): void {
+    if (!this.isConfigured) {
+      throw new Error(
+        'ANTHROPIC_API_KEY is not configured. Add your key to apps/api/.env and restart the API server.',
+      );
+    }
+  }
+
+  private async callClaude(prompt: string, maxTokens: number): Promise<string> {
+    this.checkConfigured();
+    const response = await this.client.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: maxTokens,
+      messages: [{ role: 'user', content: prompt }],
     });
+    return (response.content[0] as Anthropic.TextBlock).text.trim();
+  }
+
+  private safeParseJson<T>(text: string, fallback: T): T {
+    try {
+      const clean = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+      return JSON.parse(clean) as T;
+    } catch {
+      console.error('[AiService] JSON parse failed. Raw text:', text.slice(0, 200));
+      return fallback;
+    }
   }
 
   async suggestExperienceBullets(dto: {
@@ -34,15 +72,13 @@ Generate exactly 4 strong, quantified, action-verb-led resume bullet points for 
 Return ONLY a JSON array of 4 strings. No explanation, no markdown, no numbering.
 Example: ["Led migration of monolith to microservices reducing deployment time by 60%", "..."]`;
 
-    const response = await this.client.messages.create({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 600,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    const text = (response.content[0] as Anthropic.TextBlock).text.trim();
-    const clean = text.replace(/```json|```/g, '').trim();
-    return JSON.parse(clean);
+    const text = await this.callClaude(prompt, 600);
+    return this.safeParseJson<string[]>(text, [
+      `Led key initiatives as ${dto.jobTitle} at ${dto.company}`,
+      'Collaborated cross-functionally to deliver projects on time',
+      'Improved team processes and workflows',
+      'Contributed to product quality and performance',
+    ]);
   }
 
   async suggestSkills(dto: {
@@ -68,15 +104,11 @@ Rules:
 - Short skill names only (2-4 words max each)
 - No explanation, no markdown, just the JSON object`;
 
-    const response = await this.client.messages.create({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 400,
-      messages: [{ role: 'user', content: prompt }],
+    const text = await this.callClaude(prompt, 400);
+    return this.safeParseJson<{ technical: string[]; soft: string[] }>(text, {
+      technical: ['Communication', 'Problem Solving', 'Teamwork', 'Time Management'],
+      soft: ['Adaptability', 'Leadership', 'Critical Thinking', 'Collaboration'],
     });
-
-    const text = (response.content[0] as Anthropic.TextBlock).text.trim();
-    const clean = text.replace(/```json|```/g, '').trim();
-    return JSON.parse(clean);
   }
 
   async suggestSummary(dto: {
@@ -106,14 +138,9 @@ Each summary must:
 Return ONLY a JSON array of 3 strings.
 No explanation, no markdown, no numbering outside the array.`;
 
-    const response = await this.client.messages.create({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 800,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    const text = (response.content[0] as Anthropic.TextBlock).text.trim();
-    const clean = text.replace(/```json|```/g, '').trim();
-    return JSON.parse(clean);
+    const text = await this.callClaude(prompt, 800);
+    return this.safeParseJson<string[]>(text, [
+      `Experienced ${dto.jobTitle} with ${dto.yearsOfExperience} years of industry expertise. Passionate about delivering high-quality results and collaborating with cross-functional teams to achieve business goals.`,
+    ]);
   }
 }

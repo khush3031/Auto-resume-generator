@@ -26,18 +26,24 @@ export function AiBulletSuggestions({
       setOpen(true);
       return;
     }
+    setOpen(true);
     setLoading(true);
     setError('');
-    setOpen(true);
+    setSuggestions([]);
     try {
       const results = await aiApi.suggestBullets(
-        jobTitle,
-        company,
+        jobTitle || 'Professional',
+        company || 'Company',
         existingBullets,
       );
       setSuggestions(results);
-    } catch {
-      setError('Could not generate suggestions. Try again.');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(
+        e?.response?.data?.message ||
+          e?.message ||
+          'Could not generate suggestions. Check that your API key is configured.',
+      );
     } finally {
       setLoading(false);
     }

@@ -180,8 +180,13 @@ export async function deleteResume(resumeId: string) {
   await api.delete(`/resumes/${resumeId}`);
 }
 
-export async function exportResumePdf(resumeId: string) {
-  const response = await api.post(`/resumes/${resumeId}/export`, {}, { responseType: 'blob' });
+export async function exportResumePdf(resumeId: string, formData?: Record<string, string>) {
+  console.log('Exporting PDF for resume ID:', resumeId, 'with formData:', formData);
+  const response = await api.post(
+    `/resumes/${resumeId}/export`,
+    formData ? { formData } : {},
+    { responseType: 'blob' },
+  );
   return response.data;
 }
 

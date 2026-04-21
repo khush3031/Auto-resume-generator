@@ -24,6 +24,18 @@ type AuthState = {
 
 const storageKey = 'resumeforge-auth';
 
+/** Pull the human-readable message out of an axios error response body. */
+function extractApiMessage(error: unknown, fallback: string): string {
+  const e = error as {
+    response?: { data?: { message?: string | string[] } };
+    message?: string;
+  };
+  const data = e?.response?.data?.message;
+  if (Array.isArray(data)) return data[0] ?? fallback;
+  if (typeof data === 'string' && data.trim()) return data;
+  return e?.message || fallback;
+}
+
 function getStoredTokens() {
   if (typeof window === 'undefined') return null;
   const raw = window.localStorage.getItem(storageKey);
@@ -54,8 +66,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       window.localStorage.setItem(storageKey, JSON.stringify({ accessToken: result.accessToken, refreshToken: result.refreshToken }));
       set({ user: result.user, isAuthenticated: true, isLoading: false });
     } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
-      throw error;
+      const msg = extractApiMessage(error, 'Login failed. Check your credentials.');
+      set({ error: msg, isLoading: false });
+      throw new Error(msg);
     }
   },
   register: async (fullName, email, password) => {
@@ -65,8 +78,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       window.localStorage.setItem(storageKey, JSON.stringify({ accessToken: result.accessToken, refreshToken: result.refreshToken }));
       set({ user: result.user, isAuthenticated: true, isLoading: false });
     } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
-      throw error;
+      const msg = extractApiMessage(error, 'Registration failed. Try a different email.');
+      set({ error: msg, isLoading: false });
+      throw new Error(msg);
     }
   },
   logout: async () => {

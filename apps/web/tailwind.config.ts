@@ -23,6 +23,9 @@ const config: Config = {
           600: '#15639e'
         }
       },
+      fontFamily: {
+        sans: ['var(--font-inter)', 'Inter', 'ui-sans-serif', 'system-ui'],
+      },
       width: {
         resume: '794px'
       },

@@ -82,7 +82,7 @@ export default async function PreviewPage({ params }: PageProps) {
 
       {/* Resume display */}
       <div className="preview-content">
-        <ResumePreviewer html={html} sidePadding={24} />
+        <ResumePreviewer html={html} />
       </div>
 
       {/* Floating download bar — mobile only */}

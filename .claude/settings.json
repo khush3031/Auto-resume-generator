@@ -37,7 +37,13 @@
       "Bash(grep -l \"experience1Title\\\\|education1Degree\\\\|language1Level\\\\|certification1\" d:/In/Auto-resume-generator/packages/templates/*.html)",
       "WebFetch(domain:www.npmjs.com)",
       "Bash(grep -rl \"â€\" d:/In/Auto-resume-generator/packages/templates/*.html)",
-      "Bash(grep -c \"â€\" d:/In/Auto-resume-generator/packages/templates/*.html)"
+      "Bash(grep -c \"â€\" d:/In/Auto-resume-generator/packages/templates/*.html)",
+      "Bash(python -c \" import sys, json lines = sys.stdin.read\\(\\).strip\\(\\).split\\('\\\\n'\\) for line in lines[-10:]: try: obj = json.loads\\(line\\) role = obj.get\\('role',''\\) content = obj.get\\('content',''\\) if isinstance\\(content, list\\): for c in content: if isinstance\\(c, dict\\) and c.get\\('type'\\) == 'text': print\\(f'[{role}]:', c['text'][:500]\\) elif isinstance\\(content, str\\): print\\(f'[{role}]:', content[:500]\\) except: pass \")",
+      "Read(//d/d/In/**)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }

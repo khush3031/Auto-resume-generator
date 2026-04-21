@@ -23,25 +23,31 @@ export function AiSummarySuggestions({
   const [error, setError] = useState('');
 
   const handleGenerate = async () => {
-    if (!jobTitle) {
+    if (!jobTitle.trim()) {
       setError('Please fill in your job title first.');
       setOpen(true);
       return;
     }
+    setOpen(true);
     setLoading(true);
     setError('');
-    setOpen(true);
+    setSuggestions([]);
     try {
       const results = await aiApi.suggestSummary({
-        jobTitle,
+        jobTitle: jobTitle || 'Professional',
         yearsOfExperience: yearsOfExperience || '3+',
         topSkills,
         currentRole,
-        targetRole: jobTitle,
+        targetRole: jobTitle || 'Professional',
       });
       setSuggestions(results);
-    } catch {
-      setError('Could not generate summaries. Try again.');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(
+        e?.response?.data?.message ||
+          e?.message ||
+          'Could not generate summaries. Check that your API key is configured.',
+      );
     } finally {
       setLoading(false);
     }

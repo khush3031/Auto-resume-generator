@@ -31,14 +31,23 @@ export function AiSkillSuggestions({
       setOpen(true);
       return;
     }
+    setOpen(true);
     setLoading(true);
     setError('');
-    setOpen(true);
+    setSkills(null);
     try {
-      const result = await aiApi.suggestSkills(jobTitle, experienceSummary);
+      const result = await aiApi.suggestSkills(
+        jobTitle || 'Professional',
+        experienceSummary,
+      );
       setSkills(result);
-    } catch {
-      setError('Could not generate skill suggestions. Try again.');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(
+        e?.response?.data?.message ||
+          e?.message ||
+          'Could not generate skill suggestions. Check that your API key is configured.',
+      );
     } finally {
       setLoading(false);
     }
