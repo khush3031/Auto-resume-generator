@@ -88,6 +88,7 @@ export class ResumesService {
       : (resume.formData ?? {}) as Record<string, string>;
 
     const freshHtml = await this.generateRenderedHtml(resume.templateId, formData);
+    console.log("freshHtml : ", freshHtml)
     const candidateName = (formData['fullName'] ?? 'Resume').trim();
     const buffer = await this.createPdfBuffer(this.prepareHtmlForPdf(freshHtml), candidateName);
 
@@ -383,52 +384,55 @@ export class ResumesService {
       const pageEl = document.querySelector('.page') as HTMLElement;
       if (!pageEl) return;
 
-      const allChildren = Array.from(pageEl.children) as HTMLElement[];
-      const allElements: HTMLElement[] = [
-        ...allChildren,
-        ...allChildren.flatMap((c) => Array.from(c.children) as HTMLElement[]),
-      ];
+      const pageW = 794;
 
-      const isColored = (el: HTMLElement): boolean => {
+      const allEls = Array.from(pageEl.querySelectorAll('*')) as HTMLElement[];
+
+      const coloredEls = allEls.filter((el) => {
         const bg = window.getComputedStyle(el).backgroundColor;
         if (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') return false;
         const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
         if (!m) return false;
         const [r, g, b] = [+m[1], +m[2], +m[3]];
         return !(r > 240 && g > 240 && b > 240);
-      };
+      });
 
-      const coloredEls = allElements.filter(isColored);
       if (!coloredEls.length) return;
 
-      const pageRect = pageEl.getBoundingClientRect();
-      let maxHeight = pageEl.scrollHeight;
-      allElements.forEach((el) => {
-        const rect = el.getBoundingClientRect();
-        const elBottom = rect.bottom - pageRect.top;
-        if (elBottom > maxHeight) maxHeight = elBottom;
-      });
-      maxHeight = Math.max(maxHeight, pageEl.scrollHeight);
+      const totalH = Math.max(pageEl.scrollHeight, document.body.scrollHeight);
 
       coloredEls.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        const elW  = rect.width;
+
+        // Full-width header band (e.g. Bold red header, Corporate header)
+        // → only ensure color prints, do NOT extend height
+        if (elW >= pageW * 0.8) {
+          el.style.setProperty('-webkit-print-color-adjust', 'exact', 'important');
+          el.style.setProperty('print-color-adjust', 'exact', 'important');
+          return;
+        }
+
+        // Sidebar column or medium panel → extend to full content height
         const bg = window.getComputedStyle(el).backgroundColor;
         el.style.setProperty('background-color', bg, 'important');
-        el.style.setProperty('min-height', maxHeight + 'px', 'important');
+        el.style.setProperty('min-height', totalH + 'px', 'important');
         el.style.setProperty('align-self', 'stretch', 'important');
+        el.style.setProperty('-webkit-print-color-adjust', 'exact', 'important');
+        el.style.setProperty('print-color-adjust', 'exact', 'important');
       });
 
-      pageEl.style.setProperty('min-height', maxHeight + 'px', 'important');
+      pageEl.style.setProperty('min-height', totalH + 'px', 'important');
 
       const pageStyle = window.getComputedStyle(pageEl);
       if (pageStyle.display === 'grid' || pageStyle.display === 'flex') {
         pageEl.style.setProperty('align-items', 'stretch', 'important');
       }
 
-      allChildren.forEach((child) => {
-        const cs = window.getComputedStyle(child);
+      Array.from(pageEl.children).forEach((child) => {
+        const cs = window.getComputedStyle(child as HTMLElement);
         if (cs.display === 'grid' || cs.display === 'flex') {
-          child.style.setProperty('align-items', 'stretch', 'important');
-          child.style.setProperty('min-height', maxHeight + 'px', 'important');
+          (child as HTMLElement).style.setProperty('align-items', 'stretch', 'important');
         }
       });
     });
@@ -438,6 +442,7 @@ export class ResumesService {
     let browser: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
     const A4_H = 1122;
     try {
+      console.log("html : ", html)
       browser = await puppeteer.launch({
         headless: 'new' as any,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--font-render-hinting=none'],
