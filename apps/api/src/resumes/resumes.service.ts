@@ -300,10 +300,16 @@ export class ResumesService {
 
   private buildLanguagesBlock(d: Record<string, string>): string {
     const items: string[] = [];
-    for (let n = 1; n <= 6; n++) {
-      const lang  = d[`lang${n}`]      ?? '';
-      const level = d[`lang${n}Level`] ?? '';
-      if (!lang) break;
+    let emptyStreak = 0;
+    for (let n = 1; n <= 20; n++) {
+      const lang  = (d[`lang${n}`]      ?? '').trim();
+      const level = (d[`lang${n}Level`] ?? '').trim();
+      if (!lang) {
+        emptyStreak++;
+        if (emptyStreak >= 3) break; // stop after 3 consecutive empty slots
+        continue;
+      }
+      emptyStreak = 0;
       items.push(
         `<div style="display:flex;justify-content:space-between;font-size:0.9rem;padding:3px 0;">` +
         `<span>${this.esc(lang)}</span>` +
@@ -316,9 +322,15 @@ export class ResumesService {
 
   private buildSkillsBlock(d: Record<string, string>): string {
     const skills: string[] = [];
-    for (let n = 1; n <= 20; n++) {
-      const s = d[`skill${n}`] ?? '';
-      if (!s) break;
+    let emptyStreak = 0;
+    for (let n = 1; n <= 30; n++) {
+      const s = (d[`skill${n}`] ?? '').trim();
+      if (!s) {
+        emptyStreak++;
+        if (emptyStreak >= 3) break;
+        continue;
+      }
+      emptyStreak = 0;
       skills.push(s);
     }
     return skills

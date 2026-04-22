@@ -692,6 +692,45 @@ export function BuilderShell({
     });
   }, []);
 
+  // Re-indexing remove handlers for langs and skills so gaps never form
+  const removeLang = (n: number) => {
+    const prev = langs;
+    const idx  = prev.indexOf(n);
+    if (idx < 0) return;
+    setFormData((fd) => {
+      const next = { ...fd };
+      for (let i = idx; i < prev.length - 1; i++) {
+        const fromN = prev[i + 1];
+        const toN   = prev[i];
+        next[`lang${toN}`]      = fd[`lang${fromN}`]      ?? '';
+        next[`lang${toN}Level`] = fd[`lang${fromN}Level`] ?? '';
+      }
+      const lastN = prev[prev.length - 1];
+      delete next[`lang${lastN}`];
+      delete next[`lang${lastN}Level`];
+      return next;
+    });
+    setLangs(prev.filter((x) => x !== n));
+  };
+
+  const removeSkill = (n: number) => {
+    const prev = skills;
+    const idx  = prev.indexOf(n);
+    if (idx < 0) return;
+    setFormData((fd) => {
+      const next = { ...fd };
+      for (let i = idx; i < prev.length - 1; i++) {
+        const fromN = prev[i + 1];
+        const toN   = prev[i];
+        next[`skill${toN}`] = fd[`skill${fromN}`] ?? '';
+      }
+      const lastN = prev[prev.length - 1];
+      delete next[`skill${lastN}`];
+      return next;
+    });
+    setSkills(prev.filter((x) => x !== n));
+  };
+
   const addSection = (
     setArr: React.Dispatch<React.SetStateAction<number[]>>,
     counter: React.MutableRefObject<number>,
@@ -858,7 +897,7 @@ export function BuilderShell({
                   <Input id={`field-skill${n}`} label="Skill *" field={`skill${n}`}
                     value={formData[`skill${n}`] ?? ''} onChange={updateField} error={errors[`skill${n}`]} />
                 </div>
-                <button onClick={() => removeSection(n, setSkills, skillFields)} aria-label="Remove skill"
+                <button onClick={() => removeSkill(n)} aria-label="Remove skill"
                   className="builder-remove-btn">
                   <XIcon />
                 </button>
@@ -906,7 +945,7 @@ export function BuilderShell({
               <Input label="Proficiency" field={`lang${n}Level`}
                 value={formData[`lang${n}Level`] ?? ''} onChange={updateField} />
             </div>
-            <button onClick={() => removeSection(n, setLangs, langFields)} aria-label="Remove language"
+            <button onClick={() => removeLang(n)} aria-label="Remove language"
               className="builder-remove-btn">
               <XIcon />
             </button>
