@@ -396,42 +396,58 @@ export class ResumesService {
       const pageEl = document.querySelector('.page') as HTMLElement;
       if (!pageEl) return;
 
-      const pageW = 794;
+      const totalH = Math.max(pageEl.scrollHeight, document.body.scrollHeight);
 
-      const allEls = Array.from(pageEl.querySelectorAll('*')) as HTMLElement[];
-
-      const coloredEls = allEls.filter((el) => {
-        const bg = window.getComputedStyle(el).backgroundColor;
+      const isSignificantColor = (bg: string): boolean => {
         if (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') return false;
         const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
         if (!m) return false;
         const [r, g, b] = [+m[1], +m[2], +m[3]];
-        return !(r > 240 && g > 240 && b > 240);
-      });
+        return !(r > 235 && g > 235 && b > 235);
+      };
 
-      if (!coloredEls.length) return;
+      const directChildren = Array.from(pageEl.children) as HTMLElement[];
+      const secondLevel = directChildren.flatMap((c) => Array.from(c.children) as HTMLElement[]);
+      const candidates = [...directChildren, ...secondLevel];
 
-      const totalH = Math.max(pageEl.scrollHeight, document.body.scrollHeight);
+      candidates.forEach((el) => {
+        const bg = window.getComputedStyle(el).backgroundColor;
+        if (!isSignificantColor(bg)) return;
 
-      coloredEls.forEach((el) => {
         const rect = el.getBoundingClientRect();
         const elW  = rect.width;
+        const elH  = rect.height;
 
-        // Full-width header band (e.g. Bold red header, Corporate header)
-        // → only ensure color prints, do NOT extend height
+        // Skip tiny elements (chips are ~26px tall)
+        if (elH < 60) return;
+        // Skip hairline-width elements
+        if (elW < 40) return;
+
+        const display = window.getComputedStyle(el).display;
+        if (display === 'inline' || display === 'inline-block') return;
+
+        // Skip elements in dense sibling groups (chip containers have many siblings)
+        const siblingCount = el.parentElement?.children.length ?? 1;
+        if (siblingCount > 4) return;
+
+        const pageW = 794;
+
+        // Full-width band → only ensure color prints, do NOT extend height
         if (elW >= pageW * 0.8) {
           el.style.setProperty('-webkit-print-color-adjust', 'exact', 'important');
           el.style.setProperty('print-color-adjust', 'exact', 'important');
           return;
         }
 
-        // Sidebar column or medium panel → extend to full content height
-        const bg = window.getComputedStyle(el).backgroundColor;
-        el.style.setProperty('background-color', bg, 'important');
-        el.style.setProperty('min-height', totalH + 'px', 'important');
-        el.style.setProperty('align-self', 'stretch', 'important');
-        el.style.setProperty('-webkit-print-color-adjust', 'exact', 'important');
-        el.style.setProperty('print-color-adjust', 'exact', 'important');
+        // Sidebar column → extend to full content height
+        if (elW < pageW * 0.65 && elH > 100) {
+          const elBg = window.getComputedStyle(el).backgroundColor;
+          el.style.setProperty('background-color', elBg, 'important');
+          el.style.setProperty('min-height', totalH + 'px', 'important');
+          el.style.setProperty('align-self', 'stretch', 'important');
+          el.style.setProperty('-webkit-print-color-adjust', 'exact', 'important');
+          el.style.setProperty('print-color-adjust', 'exact', 'important');
+        }
       });
 
       pageEl.style.setProperty('min-height', totalH + 'px', 'important');
@@ -441,10 +457,10 @@ export class ResumesService {
         pageEl.style.setProperty('align-items', 'stretch', 'important');
       }
 
-      Array.from(pageEl.children).forEach((child) => {
-        const cs = window.getComputedStyle(child as HTMLElement);
+      directChildren.forEach((child) => {
+        const cs = window.getComputedStyle(child);
         if (cs.display === 'grid' || cs.display === 'flex') {
-          (child as HTMLElement).style.setProperty('align-items', 'stretch', 'important');
+          child.style.setProperty('align-items', 'stretch', 'important');
         }
       });
     });
