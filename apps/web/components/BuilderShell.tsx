@@ -742,6 +742,19 @@ export function BuilderShell({
     setFormData((p) => ({ ...p, ...fields(n) }));
   };
 
+  const addAndFocus = (
+    setArr: React.Dispatch<React.SetStateAction<number[]>>,
+    counter: React.MutableRefObject<number>,
+    fields: (n: number) => Record<string, string>,
+    getFocusId: (newN: number) => string,
+  ) => {
+    addSection(setArr, counter, fields);
+    const newN = counter.current;
+    setTimeout(() => {
+      document.getElementById(getFocusId(newN))?.querySelector('input')?.focus();
+    }, 50);
+  };
+
   const removeSection = (
     n: number,
     setArr: React.Dispatch<React.SetStateAction<number[]>>,
@@ -839,7 +852,9 @@ export function BuilderShell({
       </FormSection>
 
       <FormSection title="Work Experience">
-        {jobs.map((n) => (
+        {jobs.map((n) => {
+          const isLastJob = n === jobs[jobs.length - 1];
+          return (
           <Card key={n} label={`Job ${n}`} onRemove={jobs.length > 1 ? () => removeSection(n, setJobs, jobFields) : undefined}>
             <Input id={`field-job${n}Title`}   label="Job Title *" field={`job${n}Title`}   value={formData[`job${n}Title`]   ?? ''} onChange={updateField} error={errors[`job${n}Title`]} />
             <Input id={`field-job${n}Company`} label="Company *"   field={`job${n}Company`} value={formData[`job${n}Company`] ?? ''} onChange={updateField} error={errors[`job${n}Company`]} />
@@ -850,7 +865,9 @@ export function BuilderShell({
             </div>
             <Input label="Bullet 1" field={`job${n}Bullet1`} value={formData[`job${n}Bullet1`] ?? ''} onChange={updateField} />
             <Input label="Bullet 2" field={`job${n}Bullet2`} value={formData[`job${n}Bullet2`] ?? ''} onChange={updateField} />
-            <Input label="Bullet 3" field={`job${n}Bullet3`} value={formData[`job${n}Bullet3`] ?? ''} onChange={updateField} />
+            <Input label="Bullet 3" field={`job${n}Bullet3`} value={formData[`job${n}Bullet3`] ?? ''} onChange={updateField}
+              onEnter={isLastJob && jobs.length < 10 ? () => addAndFocus(setJobs, jobCounter, jobFields, (newN) => `field-job${newN}Title`) : undefined}
+            />
             {/* <AiBulletSuggestions
               jobTitle={formData[`job${n}Title`] || ''}
               company={formData[`job${n}Company`] || ''}
@@ -866,7 +883,8 @@ export function BuilderShell({
               }}
             /> */}
           </Card>
-        ))}
+          );
+        })}
         {jobs.length < 10 && (
           <AddButton label="Add Work Experience" onClick={() => addSection(setJobs, jobCounter, jobFields)} />
         )}
@@ -876,11 +894,14 @@ export function BuilderShell({
         {educations.length === 0 && <EmptyHint text="No education entries added yet." />}
         {educations.map((n) => {
           const p = n === 1 ? '' : String(n);
+          const isLastEdu = n === educations[educations.length - 1];
           return (
             <Card key={n} label={`Education ${n}`} onRemove={() => removeSection(n, setEducations, educationFields)}>
               <Input id={`field-degree${p}`}     label="Degree / Course *"     field={`degree${p}`}     value={formData[`degree${p}`]     ?? ''} onChange={updateField} error={errors[`degree${p}`]} />
               <Input id={`field-university${p}`} label="University / School *" field={`university${p}`} value={formData[`university${p}`] ?? ''} onChange={updateField} error={errors[`university${p}`]} />
-              <Input                             label="Graduation Year"        field={`graduationYear${p}`} value={formData[`graduationYear${p}`] ?? ''} onChange={updateField} />
+              <Input                             label="Graduation Year"        field={`graduationYear${p}`} value={formData[`graduationYear${p}`] ?? ''} onChange={updateField}
+                onEnter={isLastEdu ? () => addAndFocus(setEducations, eduCounter, educationFields, (newN) => `field-degree${newN === 1 ? '' : newN}`) : undefined}
+              />
             </Card>
           );
         })}
@@ -895,7 +916,9 @@ export function BuilderShell({
               <div key={n} className="builder-skill-item">
                 <div className="builder-skill-item__field">
                   <Input id={`field-skill${n}`} label="Skill *" field={`skill${n}`}
-                    value={formData[`skill${n}`] ?? ''} onChange={updateField} error={errors[`skill${n}`]} />
+                    value={formData[`skill${n}`] ?? ''} onChange={updateField} error={errors[`skill${n}`]}
+                    onEnter={() => addAndFocus(setSkills, skillCounter, skillFields, (newN) => `field-skill${newN}`)}
+                  />
                 </div>
                 <button onClick={() => removeSkill(n)} aria-label="Remove skill"
                   className="builder-remove-btn">
@@ -935,43 +958,55 @@ export function BuilderShell({
 
       <FormSection title="Languages">
         {langs.length === 0 && <EmptyHint text="No languages added yet." />}
-        {langs.map((n) => (
+        {langs.map((n) => {
+          const isLastLang = n === langs[langs.length - 1];
+          return (
           <div key={n} className="builder-lang-row">
             <div className="builder-lang-fields">
               <Input id={`field-lang${n}`} label="Language *" field={`lang${n}`}
                 value={formData[`lang${n}`] ?? ''} onChange={updateField} error={errors[`lang${n}`]} />
               <Input label="Proficiency" field={`lang${n}Level`}
-                value={formData[`lang${n}Level`] ?? ''} onChange={updateField} />
+                value={formData[`lang${n}Level`] ?? ''} onChange={updateField}
+                onEnter={isLastLang ? () => addAndFocus(setLangs, langCounter, langFields, (newN) => `field-lang${newN}`) : undefined}
+              />
             </div>
             <button onClick={() => removeLang(n)} aria-label="Remove language"
               className="builder-remove-btn">
               <XIcon />
             </button>
           </div>
-        ))}
+          );
+        })}
         <AddButton label="Add Language" onClick={() => addSection(setLangs, langCounter, langFields)} />
       </FormSection>
 
       <FormSection title="Certifications">
         {certs.length === 0 && <EmptyHint text="No certifications added yet." />}
-        {certs.map((n) => (
+        {certs.map((n) => {
+          const isLastCert = n === certs[certs.length - 1];
+          return (
           <Card key={n} label={`Certification ${n}`} onRemove={() => removeSection(n, setCerts, certFields)}>
             <Input id={`field-cert${n}`} label="Certificate Name *"       field={`cert${n}`}       value={formData[`cert${n}`]       ?? ''} onChange={updateField} error={errors[`cert${n}`]} />
             <div className="builder-date-row">
               <Input label="Issuer (e.g. AWS, Google)" field={`cert${n}Issuer`} value={formData[`cert${n}Issuer`] ?? ''} onChange={updateField} />
               <Input label="Year (e.g. 2023)"          field={`cert${n}Year`}   value={formData[`cert${n}Year`]   ?? ''} onChange={updateField} />
             </div>
-            <Input label="Certificate URL (optional)" field={`cert${n}Url`} value={formData[`cert${n}Url`] ?? ''} onChange={updateField} autoComplete="off" />
+            <Input label="Certificate URL (optional)" field={`cert${n}Url`} value={formData[`cert${n}Url`] ?? ''} onChange={updateField} autoComplete="off"
+              onEnter={isLastCert ? () => addAndFocus(setCerts, certCounter, certFields, (newN) => `field-cert${newN}`) : undefined}
+            />
           </Card>
-        ))}
+          );
+        })}
         <AddButton label="Add Certification" onClick={() => addSection(setCerts, certCounter, certFields)} />
       </FormSection>
 
       <FormSection title="Projects">
         {projects.length === 0 && <EmptyHint text="No projects added yet." />}
-        {projects.map((n) => (
+        {projects.map((n) => {
+          const isLastProject = n === projects[projects.length - 1];
+          return (
           <Card key={n} label={`Project ${n}`} onRemove={() => removeSection(n, setProjects, projectFields)}>
-            <Input label="Project Name *"     field={`project${n}Name`}        value={formData[`project${n}Name`]        ?? ''} onChange={updateField} />
+            <Input id={`field-project${n}Name`} label="Project Name *" field={`project${n}Name`} value={formData[`project${n}Name`] ?? ''} onChange={updateField} />
             <div className="builder-date-row">
               <Input label="Your Role"        field={`project${n}Role`}        value={formData[`project${n}Role`]        ?? ''} onChange={updateField} />
               <Input label="Technologies"     field={`project${n}Tech`}        value={formData[`project${n}Tech`]        ?? ''} onChange={updateField} />
@@ -981,9 +1016,12 @@ export function BuilderShell({
               <Input label="End Date"         field={`project${n}End`}         value={formData[`project${n}End`]         ?? ''} onChange={updateField} />
             </div>
             <Textarea label="Description"    field={`project${n}Description`} value={formData[`project${n}Description`] ?? ''} onChange={updateField} rows={3} />
-            <Input label="Project URL / GitHub (optional)" field={`project${n}Url`} value={formData[`project${n}Url`] ?? ''} onChange={updateField} autoComplete="off" />
+            <Input label="Project URL / GitHub (optional)" field={`project${n}Url`} value={formData[`project${n}Url`] ?? ''} onChange={updateField} autoComplete="off"
+              onEnter={isLastProject && projects.length < 10 ? () => addAndFocus(setProjects, projCounter, projectFields, (newN) => `field-project${newN}Name`) : undefined}
+            />
           </Card>
-        ))}
+          );
+        })}
         {projects.length < 10 && (
           <AddButton label="Add Project" onClick={() => addSection(setProjects, projCounter, projectFields)} />
         )}
@@ -1174,9 +1212,10 @@ function XIcon() {
   );
 }
 
-function Input({ id, label, field, value, onChange, error, autoComplete }: {
+function Input({ id, label, field, value, onChange, error, autoComplete, onEnter }: {
   id?: string; label: string; field: string; value: string; error?: string;
   autoComplete?: string;
+  onEnter?: () => void;
   onChange: (field: string, value: string) => void;
 }) {
   return (
@@ -1185,6 +1224,7 @@ function Input({ id, label, field, value, onChange, error, autoComplete }: {
       <input
         value={value}
         onChange={(e) => onChange(field, e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && onEnter) { e.preventDefault(); onEnter(); } }}
         autoComplete={autoComplete ?? 'off'}
         className={`builder-input${error ? ' builder-input--error' : ''}`}
       />
