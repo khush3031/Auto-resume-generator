@@ -6,9 +6,9 @@ import { createResume, exportResumePdf, updateResume } from '../src/lib/api';
 import { useAuthStore } from '../src/store/auth.store';
 import { AuthModal } from './AuthModal';
 import { ResumePreviewer } from './ResumePreviewer';
-import { AiBulletSuggestions } from './builder/AiBulletSuggestions';
-import { AiSkillSuggestions } from './builder/AiSkillSuggestions';
-import { AiSummarySuggestions } from './builder/AiSummarySuggestions';
+// import { AiBulletSuggestions } from './builder/AiBulletSuggestions';
+// import { AiSkillSuggestions } from './builder/AiSkillSuggestions';
+// import { AiSummarySuggestions } from './builder/AiSummarySuggestions';
 import { ColorPicker }   from './builder/ColorPicker';
 import { ZoomControls }  from './builder/ZoomControls';
 import { DEFAULT_COLOR, ResumeColor } from '../src/lib/resume-colors';
@@ -829,13 +829,13 @@ export function BuilderShell({
 
       <FormSection title="Professional Summary">
         <Textarea label="Summary" field="summary" value={formData.summary} onChange={updateField} />
-        <AiSummarySuggestions
+        {/* <AiSummarySuggestions
           jobTitle={formData.jobTitle || ''}
           topSkills={[formData.skill1, formData.skill2, formData.skill3].filter(Boolean)}
           yearsOfExperience="3+"
           currentRole={formData.job1Title || ''}
           onSelect={(s) => updateField('summary', s)}
-        />
+        /> */}
       </FormSection>
 
       <FormSection title="Work Experience">
@@ -851,7 +851,7 @@ export function BuilderShell({
             <Input label="Bullet 1" field={`job${n}Bullet1`} value={formData[`job${n}Bullet1`] ?? ''} onChange={updateField} />
             <Input label="Bullet 2" field={`job${n}Bullet2`} value={formData[`job${n}Bullet2`] ?? ''} onChange={updateField} />
             <Input label="Bullet 3" field={`job${n}Bullet3`} value={formData[`job${n}Bullet3`] ?? ''} onChange={updateField} />
-            <AiBulletSuggestions
+            {/* <AiBulletSuggestions
               jobTitle={formData[`job${n}Title`] || ''}
               company={formData[`job${n}Company`] || ''}
               existingBullets={[
@@ -864,7 +864,7 @@ export function BuilderShell({
                 const empty = slots.find((s) => !formData[s]);
                 updateField(empty ?? `job${n}Bullet3`, bullet);
               }}
-            />
+            /> */}
           </Card>
         ))}
         {jobs.length < 10 && (
@@ -905,7 +905,7 @@ export function BuilderShell({
             ))}
           </div>
         )}
-        <AiSkillSuggestions
+        {/* <AiSkillSuggestions
           jobTitle={formData.jobTitle || ''}
           experienceSummary={[
             formData.job1Title, formData.job1Company,
@@ -914,13 +914,11 @@ export function BuilderShell({
           ].filter(Boolean).join('. ')}
           selectedSkills={skills.map((n) => formData[`skill${n}`]).filter(Boolean)}
           onAdd={(skill) => {
-            // Find first empty slot or add a new one
             const emptySlot = skills.find((n) => !formData[`skill${n}`]);
             if (emptySlot != null) {
               updateField(`skill${emptySlot}`, skill);
             } else {
               addSection(setSkills, skillCounter, skillFields);
-              // After state update, set the new field via a tiny delay
               setTimeout(() => {
                 const newN = skillCounter.current;
                 updateField(`skill${newN}`, skill);
@@ -931,7 +929,7 @@ export function BuilderShell({
             const slot = skills.find((n) => formData[`skill${n}`] === skill);
             if (slot != null) updateField(`skill${slot}`, '');
           }}
-        />
+        /> */}
         <AddButton label="Add Skill" onClick={() => addSection(setSkills, skillCounter, skillFields)} />
       </FormSection>
 

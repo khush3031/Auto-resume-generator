@@ -34,11 +34,12 @@ export function ResumePreviewer({ html, zoomLevel = 1 }: Props) {
     if (!html) return `<!DOCTYPE html>
 <html><head><meta charset="UTF-8">
 <style>body{margin:0;background:#fff;display:flex;
-align-items:center;justify-content:center;height:100vh;
+align-items:center;justify-content:center;height:auto;
 font-family:sans-serif;color:#bbb;font-size:13px;
 text-align:center;padding:40px;box-sizing:border-box;}</style>
 </head><body>Fill in the form to see your resume preview</body>
 </html>`;
+    console.log("html in previewer : ", html)
     return html.includes('<meta charset')
       ? html
       : html.replace('<head>', '<head><meta charset="UTF-8">');
