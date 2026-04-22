@@ -45,16 +45,12 @@
       <div class="block">
         <h2>Skills</h2>
         <div>
-          <span class="tag">{{skill1}}</span>
-          <span class="tag">{{skill2}}</span>
-          <span class="tag">{{skill3}}</span>
-          <span class="tag">{{skill4}}</span>
+         {{skillsBlock}}
         </div>
       </div>
       <div class="block">
         <h2>Languages</h2>
-        <p>{{lang1}} — {{lang1Level}}</p>
-        <p>{{lang2}} — {{lang2Level}}</p>
+        {{languagesBlock}}
       </div>
     </div>
     <div class="main">
@@ -63,16 +59,16 @@
         <p>{{summary}}</p>
       </div>
       <div class="block">
-        <h2>Experience</h2>
-        <p><strong>{{job1Title}}</strong> &middot; {{job1Company}} &middot; {{job1Start}} &ndash; {{job1End}}</p>
-        <p>{{job1Bullet1}}</p>
-        <p><strong>{{job2Title}}</strong> &middot; {{job2Company}} &middot; {{job2Start}} &ndash; {{job2End}}</p>
-        <p>{{job2Bullet1}}</p>
+        <h2>Education</h2>
+        {{educationBlocks}}
       </div>
       <div class="block">
-        <h2>Education</h2>
-        <p><strong>{{degree}}</strong> &middot; {{university}} &middot; {{graduationYear}}</p>
-        <p><strong>{{degree2}}</strong> &middot; {{university2}} &middot; {{graduationYear2}}</p>
+        <h2>Experience</h2>
+        {{experienceBlocks}}
+      </div>
+       <div class="block" style="display:{{projectsSectionDisplay}}">
+        <h2>Projects</h2>
+        {{projectBlocks}}
       </div>
       <div class="block">
         <h2>Certifications</h2>

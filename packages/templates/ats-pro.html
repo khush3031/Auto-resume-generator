@@ -46,41 +46,30 @@
   </div>
   <div class="section">
     <div class="sec-title">Work Experience</div>
-    <div class="exp-item">
-      <div class="ei-top"><span class="ei-title">{{job1Title}}</span><span class="ei-date">{{job1Start}} – {{job1End}}</span></div>
-      <div class="ei-co">{{job1Company}}, {{job1Location}}</div>
-      <ul class="ei-list"><li>{{job1Bullet1}}</li><li>{{job1Bullet2}}</li><li>{{job1Bullet3}}</li></ul>
-    </div>
-    <div class="exp-item">
-      <div class="ei-top"><span class="ei-title">{{job2Title}}</span><span class="ei-date">{{job2Start}} – {{job2End}}</span></div>
-      <div class="ei-co">{{job2Company}}, {{job2Location}}</div>
-      <ul class="ei-list"><li>{{job2Bullet1}}</li><li>{{job2Bullet2}}</li></ul>
-    </div>
+    {{experienceBlocks}}
   </div>
   <div class="section">
     <div class="sec-title">Education</div>
-    <div class="edu-item">
-      <div><div class="edu-deg">{{degree}}</div><div class="edu-uni">{{university}}</div></div>
-      <div class="edu-year">{{graduationYear}}</div>
-    </div>
+    {{educationBlocks}}
   </div>
   <div class="section">
     <div class="sec-title">Skills</div>
     <div class="two-col">
-      <div class="tc-item">{{skill1}}</div><div class="tc-item">{{skill2}}</div>
-      <div class="tc-item">{{skill3}}</div><div class="tc-item">{{skill4}}</div>
-      <div class="tc-item">{{skill5}}</div>
+      {{skillsBlock}}
     </div>
   </div>
   <div class="section">
+    <div class="sec-title">Projects</div>
+    {{projectBlocks}}
+  </div>
+  <div class="section">
     <div class="sec-title">Certifications</div>
-    <div class="cert-row"><span>{{cert1}}</span><span>{{cert1Issuer}} · {{cert1Year}}</span></div>
-    <div class="cert-row"><span>{{cert2}}</span><span>{{cert2Issuer}} · {{cert2Year}}</span></div>
+    {{certificationBlocks}}
   </div>
   <div class="section">
     <div class="sec-title">Languages</div>
-    <div class="cert-row"><span>{{lang1}}</span><span>{{lang1Level}}</span></div>
-    <div class="cert-row"><span>{{lang2}}</span><span>{{lang2Level}}</span></div>
+    {{languagesBlock}}
+  </div>
   </div>
 </div>
 </body>

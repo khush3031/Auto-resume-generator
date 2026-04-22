@@ -17,10 +17,6 @@
   .l-section { padding:20px 24px; border-bottom:1px solid rgba(255,255,255,0.1); }
   .l-label { font-size:9px; font-weight:800; letter-spacing:2.5px; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:10px; }
   .l-contact { font-size:11px; color:rgba(255,255,255,0.8); margin-bottom:6px; line-height:1.4; }
-  .vis-skill { margin-bottom:10px; }
-  .vis-skill-name { font-size:11px; color:rgba(255,255,255,0.85); margin-bottom:4px; font-weight:500; }
-  .vis-bar-bg { height:4px; background:rgba(255,255,255,0.15); border-radius:2px; }
-  .vis-bar-fill { height:4px; background:rgba(255,255,255,0.8); border-radius:2px; }
   .l-lang { display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.8); margin-bottom:6px; }
   .l-edu { font-size:11px; color:rgba(255,255,255,0.85); line-height:1.5; }
   .l-edu strong { display:block; font-weight:700; font-size:12px; color:#fff; }
@@ -61,21 +57,15 @@
     </div>
     <div class="l-section">
       <div class="l-label">Skills</div>
-      <div class="vis-skill"><div class="vis-skill-name">{{skill1}}</div><div class="vis-bar-bg"><div class="vis-bar-fill" style="width:92%"></div></div></div>
-      <div class="vis-skill"><div class="vis-skill-name">{{skill2}}</div><div class="vis-bar-bg"><div class="vis-bar-fill" style="width:82%"></div></div></div>
-      <div class="vis-skill"><div class="vis-skill-name">{{skill3}}</div><div class="vis-bar-bg"><div class="vis-bar-fill" style="width:88%"></div></div></div>
-      <div class="vis-skill"><div class="vis-skill-name">{{skill4}}</div><div class="vis-bar-bg"><div class="vis-bar-fill" style="width:72%"></div></div></div>
-      <div class="vis-skill"><div class="vis-skill-name">{{skill5}}</div><div class="vis-bar-bg"><div class="vis-bar-fill" style="width:78%"></div></div></div>
+      {{skillsBlock}}
     </div>
     <div class="l-section">
       <div class="l-label">Languages</div>
-      <div class="l-lang"><span>{{lang1}}</span><span>{{lang1Level}}</span></div>
-      <div class="l-lang"><span>{{lang2}}</span><span>{{lang2Level}}</span></div>
+      {{languagesBlock}}
     </div>
     <div class="l-section">
       <div class="l-label">Education</div>
-      <div class="l-edu"><strong>{{degree}}</strong>{{university}}</div>
-      <div class="l-contact" style="margin-top:4px;font-weight:700;color:rgba(255,255,255,0.9)">{{graduationYear}}</div>
+      {{educationBlocks}}
     </div>
   </div>
   <div class="right">
@@ -85,21 +75,15 @@
     </div>
     <div class="r-section">
       <div class="r-title">Experience</div>
-      <div class="exp-card">
-        <div class="ec-top"><span class="ec-role">{{job1Title}}</span><span class="ec-date">{{job1Start}} &ndash; {{job1End}}</span></div>
-        <div class="ec-co">{{job1Company}} &middot; {{job1Location}}</div>
-        <ul class="ec-list"><li>{{job1Bullet1}}</li><li>{{job1Bullet2}}</li><li>{{job1Bullet3}}</li></ul>
-      </div>
-      <div class="exp-card">
-        <div class="ec-top"><span class="ec-role">{{job2Title}}</span><span class="ec-date">{{job2Start}} &ndash; {{job2End}}</span></div>
-        <div class="ec-co">{{job2Company}} &middot; {{job2Location}}</div>
-        <ul class="ec-list"><li>{{job2Bullet1}}</li><li>{{job2Bullet2}}</li></ul>
-      </div>
+      {{experienceBlocks}}
+    </div>
+    <div class="r-section" style="display:{{projectsSectionDisplay}}">
+      <div class="r-title">Projects</div>
+      {{projectBlocks}}
     </div>
     <div class="r-section">
       <div class="r-title">Certifications</div>
-      <div class="cert-pill"><div class="cert-left"><div class="cert-name">{{cert1}}</div><div class="cert-issuer">{{cert1Issuer}}</div></div><span class="cert-year">{{cert1Year}}</span></div>
-      <div class="cert-pill"><div class="cert-left"><div class="cert-name">{{cert2}}</div><div class="cert-issuer">{{cert2Issuer}}</div></div><span class="cert-year">{{cert2Year}}</span></div>
+      {{certificationBlocks}}
     </div>
   </div>
 </div>

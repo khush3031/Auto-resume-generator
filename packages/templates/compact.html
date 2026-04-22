@@ -54,54 +54,31 @@
     </div>
     <div class="section">
       <div class="sec-title">Experience</div>
-      <div class="exp-row">
-        <div class="er-header"><span class="er-role">{{job1Title}}</span><span class="er-date">{{job1Start}} – {{job1End}}</span></div>
-        <div class="er-co">{{job1Company}} · {{job1Location}}</div>
-        <ul class="er-list">
-          <li>{{job1Bullet1}}</li>
-          <li>{{job1Bullet2}}</li>
-          <li>{{job1Bullet3}}</li>
-        </ul>
-      </div>
-      <div class="exp-row">
-        <div class="er-header"><span class="er-role">{{job2Title}}</span><span class="er-date">{{job2Start}} – {{job2End}}</span></div>
-        <div class="er-co">{{job2Company}} · {{job2Location}}</div>
-        <ul class="er-list">
-          <li>{{job2Bullet1}}</li>
-          <li>{{job2Bullet2}}</li>
-        </ul>
-      </div>
+      {{experienceBlocks}}
+    </div>
+    <div class="section" style="display:{{projectsSectionDisplay}}">
+      <div class="sec-title">Projects</div>
+      {{projectBlocks}}
     </div>
     <div class="two-col">
       <div>
         <div class="section">
           <div class="sec-title">Education</div>
-          <div class="edu-row">
-            <div class="edu-left"><div class="deg">{{degree}}</div><div class="uni">{{university}}</div></div>
-            <div class="edu-year">{{graduationYear}}</div>
-          </div>
+          {{educationBlocks}}
         </div>
         <div class="section">
           <div class="sec-title">Skills</div>
-          <div class="skill-grid">
-            <div class="skill-item">{{skill1}}</div>
-            <div class="skill-item">{{skill2}}</div>
-            <div class="skill-item">{{skill3}}</div>
-            <div class="skill-item">{{skill4}}</div>
-            <div class="skill-item">{{skill5}}</div>
-          </div>
+          {{skillsBlock}}
         </div>
       </div>
       <div>
         <div class="section">
           <div class="sec-title">Languages</div>
-          <div class="lang-row"><span>{{lang1}}</span><span>{{lang1Level}}</span></div>
-          <div class="lang-row"><span>{{lang2}}</span><span>{{lang2Level}}</span></div>
+          {{languagesBlock}}
         </div>
         <div class="section">
           <div class="sec-title">Certifications</div>
-          <div class="cert-row"><span>{{cert1}}</span><span class="cert-meta">{{cert1Year}}</span></div>
-          <div class="cert-row"><span>{{cert2}}</span><span class="cert-meta">{{cert2Year}}</span></div>
+          {{certificationBlocks}}
         </div>
       </div>
     </div>

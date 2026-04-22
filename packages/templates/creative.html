@@ -64,17 +64,12 @@
         <div class="s-divider"></div>
         <div class="s-section">
           <div class="s-label">Skills</div>
-          <span class="tag">{{skill1}}</span>
-          <span class="tag tag-alt">{{skill2}}</span>
-          <span class="tag tag-alt2">{{skill3}}</span>
-          <span class="tag">{{skill4}}</span>
-          <span class="tag tag-alt">{{skill5}}</span>
+          {{skillsBlock}}
         </div>
         <div class="s-divider"></div>
         <div class="s-section">
           <div class="s-label">Languages</div>
-          <div class="s-item">{{lang1}} — {{lang1Level}}</div>
-          <div class="s-item">{{lang2}} — {{lang2Level}}</div>
+          {{languagesBlock}}
         </div>
         <div class="s-divider"></div>
         <div class="s-section">
@@ -96,11 +91,7 @@
         </div>
         <div class="m-section">
           <div class="m-label">Education</div>
-          <div class="edu-card">
-            <div class="edu-deg">{{degree}}</div>
-            <div class="edu-uni">{{university}}</div>
-            <div class="edu-year">Class of {{graduationYear}}</div>
-          </div>
+          {{educationBlocks}}
         </div>
         <div class="m-section" style="display:{{projectsSectionDisplay}}">
           <div class="m-label">Projects</div>

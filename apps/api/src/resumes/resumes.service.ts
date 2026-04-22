@@ -88,7 +88,7 @@ export class ResumesService {
       : (resume.formData ?? {}) as Record<string, string>;
 
     const freshHtml = await this.generateRenderedHtml(resume.templateId, formData);
-    console.log("freshHtml : ", freshHtml)
+    // console.log("freshHtml : ", freshHtml)
     const candidateName = (formData['fullName'] ?? 'Resume').trim();
     const buffer = await this.createPdfBuffer(this.prepareHtmlForPdf(freshHtml), candidateName);
 
@@ -157,8 +157,10 @@ export class ResumesService {
     if (!template) throw new BadRequestException('Template not found');
 
     const templatePath = join(process.cwd(), '..', '..', 'packages', 'templates', template.htmlPath);
+    console.log("templatePath : ", templatePath)
     let html = await fs.readFile(templatePath, 'utf-8');
 
+    console.log("html before replacement : ", html)
     // Inject dynamic blocks before placeholder replacement
     html = html.replace('{{experienceBlocks}}',   this.buildExperienceBlocks(formData));
     html = html.replace('{{certificationBlocks}}', this.buildCertBlocks(formData));
@@ -301,6 +303,7 @@ export class ResumesService {
   private buildLanguagesBlock(d: Record<string, string>): string {
     const items: string[] = [];
     let emptyStreak = 0;
+    console.log("buildLanguagesBlock -> d : ", d)
     for (let n = 1; n <= 20; n++) {
       const lang  = (d[`lang${n}`]      ?? '').trim();
       const level = (d[`lang${n}Level`] ?? '').trim();
@@ -323,6 +326,7 @@ export class ResumesService {
   private buildSkillsBlock(d: Record<string, string>): string {
     const skills: string[] = [];
     let emptyStreak = 0;
+    console.log("buildSkillsBlock -> d : ", d)
     for (let n = 1; n <= 30; n++) {
       const s = (d[`skill${n}`] ?? '').trim();
       if (!s) {
@@ -470,7 +474,7 @@ export class ResumesService {
     let browser: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
     const A4_H = 1122;
     try {
-      console.log("html : ", html)
+      // console.log("html : ", html)
       browser = await puppeteer.launch({
         headless: 'new' as any,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--font-render-hinting=none'],
@@ -521,7 +525,7 @@ export class ResumesService {
           : document.body.scrollHeight;
       });
       const isMultiPage = totalHeight > A4_H;
-      console.log(`[PDF] Height: ${totalHeight}px | Pages: ${Math.ceil(totalHeight / A4_H)}`);
+      // console.log(`[PDF] Height: ${totalHeight}px | Pages: ${Math.ceil(totalHeight / A4_H)}`);
 
       // Step 4: Generate PDF
       const headerHtml = `<div style="width:100%;padding:5px 24px 4px;display:flex;justify-content:space-between;align-items:center;font-family:Arial,sans-serif;font-size:8px;color:#666;border-bottom:1px solid #e5e7eb;background:#fff;box-sizing:border-box;-webkit-print-color-adjust:exact;"><span style="font-weight:700;color:#374151;font-size:9px;">${this.escHtml(candidateName)}</span><span style="color:#9ca3af;">ResumeForge</span></div>`;

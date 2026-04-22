@@ -33,15 +33,11 @@
       </div>
       <div id="skills-section">
         <p class="label">Skills</p>
-        <p class="pill">{{skill1}}</p>
-        <p class="pill">{{skill2}}</p>
-        <p class="pill">{{skill3}}</p>
-        <p class="pill">{{skill4}}</p>
+        {{skillsBlock}}
       </div>
       <div id="languages-section">
         <p class="label">Languages</p>
-        <p>{{lang1}} — {{lang1Level}}</p>
-        <p>{{lang2}} — {{lang2Level}}</p>
+        {{languagesBlock}}
       </div>
     </aside>
     <main class="main">
@@ -61,10 +57,7 @@
       </section>
       <section class="section">
         <h2>Education</h2>
-        <div class="info">
-          <p><strong>{{degree}}</strong> &middot; {{university}} &middot; {{graduationYear}}</p>
-          <p><strong>{{degree2}}</strong> &middot; {{university2}} &middot; {{graduationYear2}}</p>
-        </div>
+        <div class="info">{{educationBlocks}}</div>
       </section>
       <section class="section">
         <h2>Certifications</h2>

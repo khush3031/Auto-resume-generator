@@ -34,37 +34,27 @@
     </section>
     <section class="section">
       <h2>Experience</h2>
-      <p><strong>{{job1Title}}</strong></p>
-      <p>{{job1Company}} | {{job1Start}} – {{job1End}}</p>
-      <p>{{job1Bullet1}}</p>
-      <p><strong>{{job2Title}}</strong></p>
-      <p>{{job2Company}} | {{job2Start}} – {{job2End}}</p>
-      <p>{{job2Bullet1}}</p>
+      {{experienceBlocks}}
     </section>
     <section class="section">
       <h2>Education</h2>
-      <p><strong>{{degree}}</strong></p>
-      <p>{{university}} | {{graduationYear}}</p>
-      <p><strong>{{degree2}}</strong></p>
-      <p>{{university2}} | {{graduationYear2}}</p>
+      {{educationBlocks}}
     </section>
     <section class="section">
       <h2>Skills</h2>
-      <ul>
-        <li>{{skill1}}</li>
-        <li>{{skill2}}</li>
-        <li>{{skill3}}</li>
-        <li>{{skill4}}</li>
-      </ul>
+      {{skillsBlock}}
     </section>
     <section class="section">
       <h2>Languages</h2>
-      <p>{{lang1}} ({{lang1Level}}), {{lang2}} ({{lang2Level}})</p>
+      {{languagesBlock}}
+    </section>
+    <section class="section" style="display:{{projectsSectionDisplay}}">
+      <h2>Projects</h2>
+      {{projectBlocks}}
     </section>
     <section class="section">
       <h2>Certifications</h2>
-      <p><strong>{{cert1}}</strong> &mdash; {{cert1Issuer}}, {{cert1Year}}</p>
-      <p><strong>{{cert2}}</strong> &mdash; {{cert2Issuer}}, {{cert2Year}}</p>
+      {{certificationBlocks}}
     </section>
   </div>
 </body>

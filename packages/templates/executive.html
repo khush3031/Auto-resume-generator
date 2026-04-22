@@ -43,10 +43,7 @@
       </div>
       <div id="skills-section" class="section">
         <p class="label">Skills</p>
-        <span class="skill">{{skill1}}</span>
-        <span class="skill">{{skill2}}</span>
-        <span class="skill">{{skill3}}</span>
-        <span class="skill">{{skill4}}</span>
+        {{skillsBlock}}
       </div>
       <div id="certs-section" class="section">
         <p class="label">Certifications</p>
@@ -58,6 +55,10 @@
         <p class="label">Summary</p>
         <p>{{summary}}</p>
       </section>
+       <section class="section">
+        <p class="label">Education</p>
+        {{educationBlocks}}
+      </section>
       <section class="section">
         <p class="label">Experience</p>
         {{experienceBlocks}}
@@ -65,11 +66,7 @@
       <section class="section" style="display:{{projectsSectionDisplay}}">
         <p class="label">Projects</p>
         {{projectBlocks}}
-      </section>
-      <section class="section">
-        <p class="label">Education</p>
-        {{educationBlocks}}
-      </section>
+      </section>     
       <section class="section">
         <p class="label">Languages</p>
         {{languagesBlock}}

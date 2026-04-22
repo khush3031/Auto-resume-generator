@@ -57,48 +57,31 @@
   </div>
   <div class="section">
     <div class="sec-title">Professional Experience</div>
-    <div class="exp-item">
-      <div class="exp-dates"><div class="exp-date-text">{{job1Start}}<br>&ndash;<br>{{job1End}}</div></div>
-      <div><div class="exp-role">{{job1Title}}</div><div class="exp-co">{{job1Company}}, {{job1Location}}</div><ul class="exp-list"><li>{{job1Bullet1}}</li><li>{{job1Bullet2}}</li><li>{{job1Bullet3}}</li></ul></div>
-    </div>
-    <div class="exp-item">
-      <div class="exp-dates"><div class="exp-date-text">{{job2Start}}<br>&ndash;<br>{{job2End}}</div></div>
-      <div><div class="exp-role">{{job2Title}}</div><div class="exp-co">{{job2Company}}, {{job2Location}}</div><ul class="exp-list"><li>{{job2Bullet1}}</li><li>{{job2Bullet2}}</li></ul></div>
-    </div>
+    {{experienceBlocks}}
+  </div>
+  <div class="section" style="display:{{projectsSectionDisplay}}">
+    <div class="sec-title">Projects</div>
+    {{projectBlocks}}
   </div>
   <div class="two-col">
     <div>
       <div class="section">
         <div class="sec-title">Education</div>
-        <div class="s-item"><strong>{{degree}}</strong></div>
-        <div class="s-item" style="font-style:italic">{{university}}</div>
-        <div class="s-item" style="color:var(--accent)">{{graduationYear}}</div>
+        {{educationBlocks}}
       </div>
       <div class="section">
         <div class="sec-title">Skills</div>
-        <div class="skill-list">
-          <span class="skill-word">{{skill1}}</span><span class="skill-word">{{skill2}}</span>
-          <span class="skill-word">{{skill3}}</span><span class="skill-word">{{skill4}}</span>
-          <span class="skill-word">{{skill5}}</span>
-        </div>
+        {{skillsBlock}}
       </div>
     </div>
     <div>
       <div class="section">
         <div class="sec-title">Certifications</div>
-        <div class="cert-academic">
-          <div class="cert-year-text">{{cert1Year}}</div>
-          <div><div class="cert-name">{{cert1}}</div><div class="cert-issuer">{{cert1Issuer}}</div></div>
-        </div>
-        <div class="cert-academic">
-          <div class="cert-year-text">{{cert2Year}}</div>
-          <div><div class="cert-name">{{cert2}}</div><div class="cert-issuer">{{cert2Issuer}}</div></div>
-        </div>
+        {{certificationBlocks}}
       </div>
       <div class="section">
         <div class="sec-title">Languages</div>
-        <div class="s-item"><strong>{{lang1}}:</strong> {{lang1Level}}</div>
-        <div class="s-item"><strong>{{lang2}}:</strong> {{lang2Level}}</div>
+        {{languagesBlock}}
       </div>
     </div>
   </div>
