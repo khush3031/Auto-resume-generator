@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -37,7 +37,7 @@ function EyeIcon({ open }: { open: boolean }) {
   );
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const returnUrl    = searchParams.get('returnUrl') || '/templates';
@@ -59,6 +59,68 @@ export default function LoginPage() {
     }
   };
 
+  return (
+    <div className="auth-form">
+      <p className="auth-form__eyebrow">Login</p>
+      <h1 className="auth-form__title">Welcome back to ResumeForge</h1>
+      <p className="auth-form__subtitle">
+        Log in to access your dashboard, manage resumes, and download PDFs.
+      </p>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="auth-form__body" noValidate>
+        <div className="form-field">
+          <label className="form-label">Email address</label>
+          <input type="email" {...register('email')} placeholder="you@example.com" className="form-input" />
+          {formState.errors.email && (
+            <p className="form-error">{formState.errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="form-field">
+          <label className="form-label">Password</label>
+          <div className="form-input-wrap">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              {...register('password')}
+              placeholder="••••••••"
+              className="form-input form-input--with-icon"
+            />
+            <button
+              type="button"
+              className="form-eye-btn"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              <EyeIcon open={showPassword} />
+            </button>
+          </div>
+          {formState.errors.password && (
+            <p className="form-error">{formState.errors.password.message}</p>
+          )}
+        </div>
+
+        {formError && <p className="form-server-error">{formError}</p>}
+
+        <button type="submit" disabled={formState.isSubmitting} className="form-submit">
+          {formState.isSubmitting ? 'Signing in…' : 'Sign in'}
+        </button>
+      </form>
+
+      <p className="auth-form__footer">
+        New to ResumeForge?{' '}
+        <Link href="/register" className="auth-form__link">Create an account</Link>
+      </p>
+      <p className="auth-form__footer" style={{ marginTop: '8px', fontSize: '12px', color: 'var(--color-text-muted)' }}>
+        By signing in you agree to our{' '}
+        <Link href="/terms" target="_blank" className="auth-form__link">Terms</Link>
+        {' '}and{' '}
+        <Link href="/privacy" target="_blank" className="auth-form__link">Privacy Policy</Link>.
+      </p>
+    </div>
+  );
+}
+
+export default function LoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
@@ -86,64 +148,11 @@ export default function LoginPage() {
           </ul>
         </div>
 
-        {/* Right: Form */}
-        <div className="auth-form">
-          <p className="auth-form__eyebrow">Login</p>
-          <h1 className="auth-form__title">Welcome back to ResumeForge</h1>
-          <p className="auth-form__subtitle">
-            Log in to access your dashboard, manage resumes, and download PDFs.
-          </p>
+        {/* Right: Form — wrapped in Suspense for useSearchParams */}
+        <Suspense fallback={<div className="auth-form" />}>
+          <LoginForm />
+        </Suspense>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="auth-form__body" noValidate>
-            <div className="form-field">
-              <label className="form-label">Email address</label>
-              <input type="email" {...register('email')} placeholder="you@example.com" className="form-input" />
-              {formState.errors.email && (
-                <p className="form-error">{formState.errors.email.message}</p>
-              )}
-            </div>
-
-            <div className="form-field">
-              <label className="form-label">Password</label>
-              <div className="form-input-wrap">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  {...register('password')}
-                  placeholder="••••••••"
-                  className="form-input form-input--with-icon"
-                />
-                <button
-                  type="button"
-                  className="form-eye-btn"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  <EyeIcon open={showPassword} />
-                </button>
-              </div>
-              {formState.errors.password && (
-                <p className="form-error">{formState.errors.password.message}</p>
-              )}
-            </div>
-
-            {formError && <p className="form-server-error">{formError}</p>}
-
-            <button type="submit" disabled={formState.isSubmitting} className="form-submit">
-              {formState.isSubmitting ? 'Signing in…' : 'Sign in'}
-            </button>
-          </form>
-
-          <p className="auth-form__footer">
-            New to ResumeForge?{' '}
-            <Link href="/register" className="auth-form__link">Create an account</Link>
-          </p>
-          <p className="auth-form__footer" style={{ marginTop: '8px', fontSize: '12px', color: 'var(--color-text-muted)' }}>
-            By signing in you agree to our{' '}
-            <Link href="/terms" target="_blank" className="auth-form__link">Terms</Link>
-            {' '}and{' '}
-            <Link href="/privacy" target="_blank" className="auth-form__link">Privacy Policy</Link>.
-          </p>
-        </div>
       </div>
     </div>
   );
