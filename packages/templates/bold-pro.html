@@ -50,44 +50,29 @@
       <div class="summary-box"><p>{{summary}}</p></div>
       <div class="section">
         <div class="sec-head"><span class="red-dash"></span>Experience</div>
-        <div class="exp-row">
-          <div class="er-top"><span class="er-title">{{job1Title}}</span><span class="er-date">{{job1Start}} – {{job1End}}</span></div>
-          <div class="er-co">{{job1Company}} · {{job1Location}}</div>
-          <ul class="er-list"><li>{{job1Bullet1}}</li><li>{{job1Bullet2}}</li><li>{{job1Bullet3}}</li></ul>
-        </div>
-        <div class="exp-row">
-          <div class="er-top"><span class="er-title">{{job2Title}}</span><span class="er-date">{{job2Start}} – {{job2End}}</span></div>
-          <div class="er-co">{{job2Company}} · {{job2Location}}</div>
-          <ul class="er-list"><li>{{job2Bullet1}}</li><li>{{job2Bullet2}}</li></ul>
-        </div>
+        {{experienceBlocks}}
+      </div>
+      <div class="section" style="display:{{projectsSectionDisplay}}">
+        <div class="sec-head"><span class="red-dash"></span>Projects</div>
+        {{projectBlocks}}
       </div>
     </div>
     <div>
       <div class="s-sec">
         <div class="s-sec-title">Education</div>
-        <div class="s-text" style="font-weight:600;color:#111">{{degree}}</div>
-        <div class="s-text">{{university}}</div>
-        <div class="s-text" style="color:#c8392b">{{graduationYear}}</div>
+        {{educationBlocks}}
       </div>
       <div class="s-sec">
         <div class="s-sec-title">Skills</div>
-        <div class="skill-item">{{skill1}}</div><div class="skill-item">{{skill2}}</div>
-        <div class="skill-item">{{skill3}}</div><div class="skill-item">{{skill4}}</div>
-        <div class="skill-item">{{skill5}}</div>
+        {{skillsBlock}}
       </div>
       <div class="s-sec">
         <div class="s-sec-title">Languages</div>
-        <div class="s-text">{{lang1}} – {{lang1Level}}</div>
-        <div class="s-text">{{lang2}} – {{lang2Level}}</div>
+        {{languagesBlock}}
       </div>
       <div class="s-sec">
         <div class="s-sec-title">Certifications</div>
-        <div class="s-text" style="font-weight:600;color:#111">{{cert1}}</div>
-        <div class="s-text">{{cert1Issuer}}</div>
-        <div class="s-text" style="color:#c8392b">{{cert1Year}}</div>
-        <div class="s-text" style="font-weight:600;color:#111;margin-top:8px">{{cert2}}</div>
-        <div class="s-text">{{cert2Issuer}}</div>
-        <div class="s-text" style="color:#c8392b">{{cert2Year}}</div>
+        {{certificationBlocks}}
       </div>
     </div>
   </div>
