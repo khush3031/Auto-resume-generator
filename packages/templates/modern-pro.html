@@ -32,6 +32,10 @@
   .edu-left .deg { font-size: 13px; font-weight: 600; }
   .edu-left .uni { font-size: 12px; color: #777; }
   .edu-year { font-size: 12px; color: #0d7c6b; }
+  /* Sidebar block overrides — block builders emit inline styles unreadable on dark bg */
+  .sidebar span[style]  { background: rgba(255,255,255,0.15) !important; color: #e0f5f3 !important; }
+  .sidebar div[style]   { color: #cceee9 !important; }
+  .sidebar strong       { color: #fff !important; }
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
 </style>
 </head>
