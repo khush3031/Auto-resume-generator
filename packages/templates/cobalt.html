@@ -63,43 +63,24 @@
         </div>
         <div class="m-section">
           <div class="m-head">Experience</div>
-          <div class="exp-block">
-            <div class="eb-top"><span class="eb-role">{{job1Title}}</span><span class="eb-date">{{job1Start}} – {{job1End}}</span></div>
-            <div class="eb-co">{{job1Company}} · {{job1Location}}</div>
-            <ul class="eb-list">
-              <li>{{job1Bullet1}}</li>
-              <li>{{job1Bullet2}}</li>
-              <li>{{job1Bullet3}}</li>
-            </ul>
-          </div>
-          <div class="exp-block">
-            <div class="eb-top"><span class="eb-role">{{job2Title}}</span><span class="eb-date">{{job2Start}} – {{job2End}}</span></div>
-            <div class="eb-co">{{job2Company}} · {{job2Location}}</div>
-            <ul class="eb-list">
-              <li>{{job2Bullet1}}</li>
-              <li>{{job2Bullet2}}</li>
-            </ul>
-          </div>
+          {{experienceBlocks}}
         </div>
         <div class="m-section">
           <div class="m-head">Education</div>
-          <div class="eb-top"><span class="eb-role">{{degree}}</span><span class="eb-date">{{graduationYear}}</span></div>
-          <div class="eb-co">{{university}}</div>
+          {{educationBlocks}}
+        </div>
+        <div class="m-section" style="display:{{projectsSectionDisplay}}">
+          <div class="m-head">Projects</div>
+          {{projectBlocks}}
         </div>
       </div>
       <div>
         <div class="s-head">Core Skills</div>
-        <div class="skill-bar"><div class="skill-name">{{skill1}}</div><div class="skill-track"><div class="skill-fill" style="width:95%"></div></div></div>
-        <div class="skill-bar"><div class="skill-name">{{skill2}}</div><div class="skill-track"><div class="skill-fill" style="width:88%"></div></div></div>
-        <div class="skill-bar"><div class="skill-name">{{skill3}}</div><div class="skill-track"><div class="skill-fill" style="width:82%"></div></div></div>
-        <div class="skill-bar"><div class="skill-name">{{skill4}}</div><div class="skill-track"><div class="skill-fill" style="width:75%"></div></div></div>
-        <div class="skill-bar"><div class="skill-name">{{skill5}}</div><div class="skill-track"><div class="skill-fill" style="width:70%"></div></div></div>
+        {{skillsBlock}}
         <div class="s-head">Languages</div>
-        <div class="lang-row"><span>{{lang1}}</span><span class="lang-level">{{lang1Level}}</span></div>
-        <div class="lang-row"><span>{{lang2}}</span><span class="lang-level">{{lang2Level}}</span></div>
+        {{languagesBlock}}
         <div class="s-head">Certifications</div>
-        <div class="s-text"><span class="s-bold">{{cert1}}</span><br>{{cert1Issuer}} · {{cert1Year}}</div>
-        <div class="s-text"><span class="s-bold">{{cert2}}</span><br>{{cert2Issuer}} · {{cert2Year}}</div>
+        {{certificationBlocks}}
       </div>
     </div>
   </div>
