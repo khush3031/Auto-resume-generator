@@ -30,10 +30,10 @@ export function Navbar() {
         {/* Desktop nav */}
         <nav className="navbar__desktop" aria-label="Main navigation">
           <Link href="/templates" className="navbar__link">Templates</Link>
-          <Link href="/upload" className="navbar__link">Upload Resume</Link>
+          {/* <Link href="/upload" className="navbar__link">Upload Resume</Link> */}
           {isAuthenticated ? (
             <>
-              <Link href="/dashboard" className="navbar__link">Dashboard</Link>
+              {/* <Link href="/dashboard" className="navbar__link">Dashboard</Link> */}
               <span className="navbar__user-badge">{user?.fullName}</span>
               <button onClick={logout} className="navbar__btn">Logout</button>
             </>
@@ -74,10 +74,10 @@ export function Navbar() {
         <nav className="navbar__mobile-nav" aria-label="Mobile navigation">
           <div className="navbar__mobile-links">
             <Link href="/templates" className="navbar__mobile-link">Templates</Link>
-            <Link href="/upload" className="navbar__mobile-link">Upload Resume</Link>
+            {/* <Link href="/upload" className="navbar__mobile-link">Upload Resume</Link> */}
             {isAuthenticated ? (
               <>
-                <Link href="/dashboard" className="navbar__mobile-link">Dashboard</Link>
+                {/* <Link href="/dashboard" className="navbar__mobile-link">Dashboard</Link> */}
                 <div className="navbar__divider" />
                 <span className="navbar__mobile-user">{user?.fullName}</span>
                 <button
