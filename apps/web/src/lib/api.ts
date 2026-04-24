@@ -110,11 +110,12 @@ export async function login(email: string, password: string) {
   return response.data.data;
 }
 
-export async function register(fullName: string, email: string, password: string) {
+export async function register(fullName: string, email: string, password: string, agreedToTerms = false) {
   const response = await api.post<ApiResponse<{ accessToken: string; refreshToken: string; user: any }>>('/auth/register', {
     fullName,
     email,
-    password
+    password,
+    agreedToTerms,
   });
   saveTokens({ accessToken: response.data.data.accessToken, refreshToken: response.data.data.refreshToken });
   return response.data.data;

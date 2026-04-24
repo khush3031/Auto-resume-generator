@@ -13,11 +13,12 @@ const registerSchema = z
     fullName:        z.string().min(2, 'Full name is required'),
     email:           z.string().email('Enter a valid email'),
     password:        z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string().min(6)
+    confirmPassword: z.string().min(6),
+    agreedToTerms:   z.literal(true, { errorMap: () => ({ message: 'You must agree to the Terms and Privacy Policy' }) }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ['confirmPassword'],
-    message: 'Passwords must match'
+    message: 'Passwords must match',
   });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -29,19 +30,36 @@ const brandFeatures = [
   'Switch templates anytime',
 ];
 
+function EyeIcon({ open }: { open: boolean }) {
+  return open ? (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ) : (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" />
+      <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  );
+}
+
 export default function RegisterPage() {
   const router         = useRouter();
   const registerAction = useAuthStore((s) => s.register);
-  const [formError, setFormError] = useState<string | null>(null);
+  const [formError, setFormError]       = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm]   = useState(false);
 
   const { register, handleSubmit, formState } = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema)
+    resolver: zodResolver(registerSchema),
   });
 
   const onSubmit = async (values: RegisterFormValues) => {
     setFormError(null);
     try {
-      await registerAction(values.fullName, values.email, values.password);
+      await registerAction(values.fullName, values.email, values.password, true);
       router.push('/templates');
     } catch (err) {
       setFormError((err as Error).message || 'Registration failed');
@@ -101,7 +119,22 @@ export default function RegisterPage() {
 
             <div className="form-field">
               <label className="form-label">Password</label>
-              <input type="password" {...register('password')} placeholder="••••••••" className="form-input" />
+              <div className="form-input-wrap">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  {...register('password')}
+                  placeholder="••••••••"
+                  className="form-input form-input--with-icon"
+                />
+                <button
+                  type="button"
+                  className="form-eye-btn"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  <EyeIcon open={showPassword} />
+                </button>
+              </div>
               {formState.errors.password && (
                 <p className="form-error">{formState.errors.password.message}</p>
               )}
@@ -109,9 +142,43 @@ export default function RegisterPage() {
 
             <div className="form-field">
               <label className="form-label">Confirm password</label>
-              <input type="password" {...register('confirmPassword')} placeholder="••••••••" className="form-input" />
+              <div className="form-input-wrap">
+                <input
+                  type={showConfirm ? 'text' : 'password'}
+                  {...register('confirmPassword')}
+                  placeholder="••••••••"
+                  className="form-input form-input--with-icon"
+                />
+                <button
+                  type="button"
+                  className="form-eye-btn"
+                  onClick={() => setShowConfirm((v) => !v)}
+                  aria-label={showConfirm ? 'Hide password' : 'Show password'}
+                >
+                  <EyeIcon open={showConfirm} />
+                </button>
+              </div>
               {formState.errors.confirmPassword && (
                 <p className="form-error">{formState.errors.confirmPassword.message}</p>
+              )}
+            </div>
+
+            <div className="form-field">
+              <label className="form-checkbox-label">
+                <input
+                  type="checkbox"
+                  {...register('agreedToTerms')}
+                  className="form-checkbox"
+                />
+                <span className="form-checkbox-text">
+                  I have read and agree to the{' '}
+                  <Link href="/terms" target="_blank" className="auth-form__link">Terms &amp; Conditions</Link>
+                  {' '}and{' '}
+                  <Link href="/privacy" target="_blank" className="auth-form__link">Privacy Policy</Link>
+                </span>
+              </label>
+              {formState.errors.agreedToTerms && (
+                <p className="form-error">{formState.errors.agreedToTerms.message}</p>
               )}
             </div>
 

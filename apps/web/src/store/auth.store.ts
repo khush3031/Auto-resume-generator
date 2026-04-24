@@ -15,7 +15,7 @@ type AuthState = {
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (fullName: string, email: string, password: string) => Promise<void>;
+  register: (fullName: string, email: string, password: string, agreedToTerms?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   refreshTokens: () => Promise<void>;
   loadFromStorage: () => Promise<void>;
@@ -71,10 +71,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       throw new Error(msg);
     }
   },
-  register: async (fullName, email, password) => {
+  register: async (fullName, email, password, agreedToTerms = false) => {
     set({ isLoading: true, error: null });
     try {
-      const result = await api.register(fullName, email, password);
+      const result = await api.register(fullName, email, password, agreedToTerms);
       window.localStorage.setItem(storageKey, JSON.stringify({ accessToken: result.accessToken, refreshToken: result.refreshToken }));
       set({ user: result.user, isAuthenticated: true, isLoading: false });
     } catch (error) {

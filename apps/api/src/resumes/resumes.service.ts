@@ -400,8 +400,6 @@ export class ResumesService {
       const pageEl = document.querySelector('.page') as HTMLElement;
       if (!pageEl) return;
 
-      const totalH = Math.max(pageEl.scrollHeight, document.body.scrollHeight);
-
       const isSignificantColor = (bg: string): boolean => {
         if (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') return false;
         const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
@@ -410,61 +408,13 @@ export class ResumesService {
         return !(r > 235 && g > 235 && b > 235);
       };
 
-      const directChildren = Array.from(pageEl.children) as HTMLElement[];
-      const secondLevel = directChildren.flatMap((c) => Array.from(c.children) as HTMLElement[]);
-      const candidates = [...directChildren, ...secondLevel];
-
-      candidates.forEach((el) => {
+      // Ensure all colored elements print their background correctly
+      const allEls = Array.from(pageEl.querySelectorAll('*')) as HTMLElement[];
+      allEls.forEach((el) => {
         const bg = window.getComputedStyle(el).backgroundColor;
-        if (!isSignificantColor(bg)) return;
-
-        const rect = el.getBoundingClientRect();
-        const elW  = rect.width;
-        const elH  = rect.height;
-
-        // Skip tiny elements (chips are ~26px tall)
-        if (elH < 60) return;
-        // Skip hairline-width elements
-        if (elW < 40) return;
-
-        const display = window.getComputedStyle(el).display;
-        if (display === 'inline' || display === 'inline-block') return;
-
-        // Skip elements in dense sibling groups (chip containers have many siblings)
-        const siblingCount = el.parentElement?.children.length ?? 1;
-        if (siblingCount > 4) return;
-
-        const pageW = 794;
-
-        // Full-width band → only ensure color prints, do NOT extend height
-        if (elW >= pageW * 0.8) {
+        if (isSignificantColor(bg)) {
           el.style.setProperty('-webkit-print-color-adjust', 'exact', 'important');
           el.style.setProperty('print-color-adjust', 'exact', 'important');
-          return;
-        }
-
-        // Sidebar column → extend to full content height
-        if (elW < pageW * 0.65 && elH > 100) {
-          const elBg = window.getComputedStyle(el).backgroundColor;
-          el.style.setProperty('background-color', elBg, 'important');
-          el.style.setProperty('min-height', totalH + 'px', 'important');
-          el.style.setProperty('align-self', 'stretch', 'important');
-          el.style.setProperty('-webkit-print-color-adjust', 'exact', 'important');
-          el.style.setProperty('print-color-adjust', 'exact', 'important');
-        }
-      });
-
-      pageEl.style.setProperty('min-height', totalH + 'px', 'important');
-
-      const pageStyle = window.getComputedStyle(pageEl);
-      if (pageStyle.display === 'grid' || pageStyle.display === 'flex') {
-        pageEl.style.setProperty('align-items', 'stretch', 'important');
-      }
-
-      directChildren.forEach((child) => {
-        const cs = window.getComputedStyle(child);
-        if (cs.display === 'grid' || cs.display === 'flex') {
-          child.style.setProperty('align-items', 'stretch', 'important');
         }
       });
     });
@@ -527,19 +477,14 @@ export class ResumesService {
       const isMultiPage = totalHeight > A4_H;
       // console.log(`[PDF] Height: ${totalHeight}px | Pages: ${Math.ceil(totalHeight / A4_H)}`);
 
-      // Step 4: Generate PDF
-      const headerHtml = `<div style="width:100%;padding:5px 24px 4px;display:flex;justify-content:space-between;align-items:center;font-family:Arial,sans-serif;font-size:8px;color:#666;border-bottom:1px solid #e5e7eb;background:#fff;box-sizing:border-box;-webkit-print-color-adjust:exact;"><span style="font-weight:700;color:#374151;font-size:9px;">${this.escHtml(candidateName)}</span><span style="color:#9ca3af;">ResumeForge</span></div>`;
-      const footerHtml = `<div style="width:100%;padding:4px 24px;display:flex;justify-content:space-between;font-family:Arial,sans-serif;font-size:8px;color:#9ca3af;box-sizing:border-box;-webkit-print-color-adjust:exact;"><span>ResumeForge.com</span><span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span></div>`;
-
+      // Step 4: Generate PDF (no header/footer — clean professional resume)
       const buffer = await page.pdf({
         format:              'A4',
         printBackground:     true,
         margin: isMultiPage
-          ? { top: '22px', bottom: '18px', left: '0', right: '0' }
+          ? { top: '14px', bottom: '12px', left: '0', right: '0' }
           : { top: '0',    bottom: '0',    left: '0', right: '0' },
-        displayHeaderFooter: isMultiPage,
-        headerTemplate:      isMultiPage ? headerHtml : '<span></span>',
-        footerTemplate:      isMultiPage ? footerHtml : '<span></span>',
+        displayHeaderFooter: false,
         preferCSSPageSize:   false,
       });
 
@@ -565,7 +510,7 @@ export class ResumesService {
   print-color-adjust: exact !important;
   box-sizing: border-box;
 }
-@page { size: A4; margin: 0; }
+@page { size: A4; }
 html, body {
   margin: 0 !important;
   padding: 0 !important;
@@ -580,10 +525,6 @@ html, body {
   margin: 0 !important;
   box-shadow: none !important;
   overflow: visible !important;
-  align-items: stretch !important;
-}
-.page > * {
-  align-self: stretch !important;
 }
 p, div, span, li, td, h1, h2, h3, h4 {
   word-break: break-word !important;

@@ -27,7 +27,9 @@ export class AuthService {
       fullName: payload.fullName,
       email: payload.email,
       password: payload.password,
-      provider: 'local'
+      provider: 'local',
+      agreedToTerms: payload.agreedToTerms ?? false,
+      agreedToTermsAt: payload.agreedToTerms ? new Date() : undefined,
     });
 
     const tokens = await this.getTokenPair(user._id.toString(), user.email);

@@ -1322,3 +1322,185 @@ img, svg { display: block; }
     padding: 12px 16px;
   }
 }
+
+/* ============================================================
+   ALPHA BANNER — sticky info footer
+   ============================================================ */
+.alpha-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-top: 1px solid var(--color-border);
+  padding: 5px 16px;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.site-footer {
+  background: var(--color-slate-900);
+  color: var(--color-slate-400);
+  padding: 20px 24px 52px; /* bottom padding leaves room for alpha-banner */
+  text-align: center;
+}
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+}
+.site-footer__brand {
+  font-weight: 700;
+  color: var(--color-white);
+}
+.site-footer__sep {
+  color: var(--color-slate-600);
+}
+.site-footer__link {
+  color: var(--color-slate-400);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.site-footer__link:hover { color: var(--color-white); }
+.site-footer__copy { color: var(--color-slate-600); }
+
+/* ============================================================
+   LEGAL PAGES (Terms & Privacy)
+   ============================================================ */
+.legal-page {
+  min-height: calc(100vh - var(--navbar-height));
+  background: var(--color-bg);
+  padding: clamp(40px, 6vh, 80px) clamp(20px, 5%, 40px) 80px;
+}
+.legal-container {
+  max-width: 760px;
+  margin: 0 auto;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: clamp(32px, 5vw, 56px);
+}
+.legal-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-brand);
+  margin: 0 0 10px;
+}
+.legal-title {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 8px;
+  line-height: 1.2;
+}
+.legal-updated {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: 0 0 36px;
+}
+.legal-body { display: flex; flex-direction: column; gap: 28px; }
+.legal-section h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 10px;
+}
+.legal-section p {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: var(--color-text-secondary);
+  margin: 0 0 10px;
+}
+.legal-section p:last-child { margin-bottom: 0; }
+.legal-section ul {
+  padding-left: 20px;
+  margin: 8px 0 10px;
+}
+.legal-section ul li {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+.legal-link {
+  color: var(--color-brand);
+  text-decoration: none;
+  font-weight: 500;
+}
+.legal-link:hover { text-decoration: underline; }
+.legal-footer-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.85rem;
+}
+.legal-sep { color: var(--color-border-dark); }
+
+/* ============================================================
+   PASSWORD EYE TOGGLE
+   ============================================================ */
+.form-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.form-input--with-icon {
+  padding-right: 2.75rem !important;
+  width: 100%;
+}
+.form-eye-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+.form-eye-btn:hover { color: var(--color-text-secondary); }
+.form-eye-btn:focus-visible { outline: 2px solid var(--color-brand); border-radius: 2px; }
+
+/* ============================================================
+   TERMS CHECKBOX
+   ============================================================ */
+.form-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+.form-checkbox {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  margin-top: 2px;
+  accent-color: var(--color-brand);
+  cursor: pointer;
+}
+.form-checkbox-text {
+  font-size: 0.825rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}

@@ -38,6 +38,12 @@ export class User {
   @Prop()
   lastLoginAt?: Date;
 
+  @Prop({ default: false })
+  agreedToTerms: boolean;
+
+  @Prop()
+  agreedToTermsAt?: Date;
+
   @Prop({ type: [{ type: Types.ObjectId, ref: 'UserResume' }] })
   userResumes: Types.ObjectId[];
 }

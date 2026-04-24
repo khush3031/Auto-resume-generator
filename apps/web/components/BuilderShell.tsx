@@ -359,6 +359,22 @@ function buildLanguagesBlockFront(d: Record<string, string>): string {
   return rows.join('');
 }
 
+/** Build skills HTML for templates using {{skillsBlock}} placeholder. */
+function buildSkillsBlockFront(d: Record<string, string>): string {
+  const skills: string[] = [];
+  for (let i = 1; i <= 30; i++) {
+    const s = (d[`skill${i}`] ?? '').trim();
+    if (!s) continue;
+    skills.push(s);
+  }
+  return skills
+    .map(
+      (s) =>
+        `<span style="display:inline-block;padding:5px 10px;margin:3px 4px 3px 0;border-radius:999px;font-size:0.85rem;background:rgba(59,130,246,0.1);color:inherit;">${s}</span>`,
+    )
+    .join('');
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 function populateTemplate(html: string, data: Record<string, string>): string {
@@ -376,7 +392,8 @@ function populateTemplate(html: string, data: Record<string, string>): string {
     .replace(/\{\{projectBlocks\}\}/g,         buildProjBlocksFront(data))
     .replace(/\{\{projectsSectionDisplay\}\}/g, hasProjects ? 'block' : 'none')
     .replace(/\{\{educationBlocks\}\}/g,       buildEducationBlocksFront(data))
-    .replace(/\{\{languagesBlock\}\}/g,        buildLanguagesBlockFront(data));
+    .replace(/\{\{languagesBlock\}\}/g,        buildLanguagesBlockFront(data))
+    .replace(/\{\{skillsBlock\}\}/g,           buildSkillsBlockFront(data));
 
   return withBlocks.replace(/{{\s*([^}\s]+)\s*}}/g, (_, key: string) => {
     const v = data[key];
