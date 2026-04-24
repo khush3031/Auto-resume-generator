@@ -18,6 +18,10 @@ jobs:
     name: Build & Type-check
     runs-on: ubuntu-latest
 
+    env:
+      # Skip Puppeteer Chromium download in CI — not needed for builds
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,8 +34,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
@@ -42,8 +54,7 @@ jobs:
       - name: Build Web
         run: pnpm --filter resumeforge-web build
         env:
-          # Needed so Next.js build doesn't fail on missing env var
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:3001' }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
   # ─────────────────────────────────────────────────────────────
   # CD — trigger Render deploys (only on push to main)
@@ -58,15 +69,9 @@ jobs:
       - name: Deploy API
         run: |
           curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_API }}" \
-            -H "Content-Type: application/json" \
             --silent --show-error
-        # Set RENDER_DEPLOY_HOOK_API in GitHub → Settings → Secrets and variables → Actions
-        # Get the hook URL from: Render dashboard → resumeforge-api → Settings → Deploy Hook
 
       - name: Deploy Web
         run: |
           curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_WEB }}" \
-            -H "Content-Type: application/json" \
             --silent --show-error
-        # Set RENDER_DEPLOY_HOOK_WEB in GitHub → Settings → Secrets and variables → Actions
-        # Get the hook URL from: Render dashboard → resumeforge-web → Settings → Deploy Hook
