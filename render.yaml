@@ -1,0 +1,91 @@
+# render.yaml — Render Blueprint for ResumeForge
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Two services:
+#   resumeforge-api  — NestJS backend (port from $PORT env var)
+#   resumeforge-web  — Next.js frontend (port from $PORT env var)
+#
+# Required secrets (set in Render dashboard, NOT committed here):
+#   MONGODB_URI, JWT_SECRET, JWT_REFRESH_SECRET,
+#   ANTHROPIC_API_KEY, CORS_ORIGINS, NEXT_PUBLIC_API_URL
+
+services:
+  # ─────────────────────────────────────────────────────────────
+  # BACKEND — NestJS API
+  # ─────────────────────────────────────────────────────────────
+  - type: web
+    name: resumeforge-api
+    env: node
+    region: singapore
+    plan: free
+    rootDir: .
+
+    buildCommand: >-
+      npm install -g pnpm@9 &&
+      pnpm install --no-frozen-lockfile &&
+      pnpm --filter resumeforge-api build
+
+    startCommand: cd apps/api && node dist/main.js
+
+    healthCheckPath: /__ping
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # Render injects PORT automatically — NestJS reads it in main.ts
+      - key: PORT
+        value: 10000
+
+      # Puppeteer — persist Chromium download in Render's cache dir
+      - key: PUPPETEER_CACHE_DIR
+        value: /opt/render/project/.cache/puppeteer
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: "false"
+
+      # ── Secrets — fill these in the Render dashboard ──
+      - key: MONGODB_URI
+        sync: false          # MongoDB Atlas connection string
+
+      - key: JWT_SECRET
+        sync: false          # Long random string, min 32 chars
+
+      - key: JWT_REFRESH_SECRET
+        sync: false          # Different long random string
+
+      - key: CORS_ORIGINS
+        sync: false          # e.g. https://resumeforge-web.onrender.com
+
+      - key: ANTHROPIC_API_KEY
+        sync: false          # sk-ant-...
+
+  # ─────────────────────────────────────────────────────────────
+  # FRONTEND — Next.js
+  # ─────────────────────────────────────────────────────────────
+  - type: web
+    name: resumeforge-web
+    env: node
+    region: singapore
+    plan: free
+    rootDir: .
+
+    buildCommand: >-
+      npm install -g pnpm@9 &&
+      pnpm install --no-frozen-lockfile &&
+      pnpm --filter resumeforge-web build
+
+    startCommand: pnpm --filter resumeforge-web start
+
+    healthCheckPath: /
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # Render injects PORT automatically — Next.js start reads it
+      - key: PORT
+        value: 10000
+
+      # ── Secrets — fill these in the Render dashboard ──
+      - key: NEXT_PUBLIC_API_URL
+        sync: false          # e.g. https://resumeforge-api.onrender.com

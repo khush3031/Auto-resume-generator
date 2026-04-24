@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createResume, exportResumePdf, updateResume } from '../src/lib/api';
+import { createResume, exportResumePdf, fetchResume, updateResume } from '../src/lib/api';
 import { useAuthStore } from '../src/store/auth.store';
 import { AuthModal } from './AuthModal';
 import { ResumePreviewer } from './ResumePreviewer';
@@ -11,7 +11,7 @@ import { ResumePreviewer } from './ResumePreviewer';
 // import { AiSummarySuggestions } from './builder/AiSummarySuggestions';
 import { ColorPicker }   from './builder/ColorPicker';
 import { ZoomControls }  from './builder/ZoomControls';
-import { DEFAULT_COLOR, ResumeColor } from '../src/lib/resume-colors';
+import { DEFAULT_COLOR, RESUME_COLORS, ResumeColor } from '../src/lib/resume-colors';
 
 
 const baseFormData: Record<string, string> = {
@@ -497,8 +497,10 @@ function validate(
 
 export function BuilderShell({
   template,
+  resumeId: initialResumeId,
 }: {
   template: { id: string; name: string; style: string; htmlContent: string };
+  resumeId?: string;
 }) {
   const { isAuthenticated, loadFromStorage } = useAuthStore();
 
@@ -672,24 +674,71 @@ export function BuilderShell({
     setHtml(injectAccentColor(populateTemplate(template.htmlContent, formData), accentColor.hex, template.id));
   }, [formData, template.htmlContent, accentColor.hex, template.id]);
 
+  // Load existing resume when editing from dashboard
   useEffect(() => {
-    createResume({ templateId: template.id, formData })
-      .then((resume) => setResumeId((resume?._id ?? resume?.id ?? null) as string | null))
-      .catch(() => {});
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!initialResumeId) return;
+    setResumeId(initialResumeId);
+    fetchResume(initialResumeId).then((resume) => {
+      if (!resume?.formData) return;
+      const d: Record<string, string> = resume.formData;
+      setFormData((prev) => ({ ...prev, ...d }));
 
+      // Restore section counters from saved formData
+      let jc = 0;
+      for (let i = 1; i <= 10; i++) { if (d[`job${i}Title`]?.trim()) jc = i; else break; }
+      if (jc > 0) { setJobs(Array.from({ length: jc }, (_, i) => i + 1)); jobCounter.current = jc; }
+
+      let cc = 0;
+      for (let i = 1; i <= 10; i++) { if (d[`cert${i}`]?.trim()) cc = i; else break; }
+      if (cc > 0) { setCerts(Array.from({ length: cc }, (_, i) => i + 1)); certCounter.current = cc; }
+
+      let skc = 0;
+      for (let i = 1; i <= 30; i++) { if (d[`skill${i}`]?.trim()) skc = i; else if (i > 5) break; }
+      if (skc > 0) { setSkills(Array.from({ length: skc }, (_, i) => i + 1)); skillCounter.current = skc; }
+
+      let lc = 0;
+      for (let i = 1; i <= 20; i++) { if (d[`lang${i}`]?.trim()) lc = i; else break; }
+      if (lc > 0) { setLangs(Array.from({ length: lc }, (_, i) => i + 1)); langCounter.current = lc; }
+
+      let ec = 0;
+      for (let i = 1; i <= 5; i++) {
+        const key = i === 1 ? 'degree' : `degree${i}`;
+        if (d[key]?.trim()) ec = i; else break;
+      }
+      if (ec > 0) { setEducations(Array.from({ length: ec }, (_, i) => i + 1)); eduCounter.current = ec; }
+
+      let pc = 0;
+      for (let i = 1; i <= 10; i++) { if (d[`project${i}Name`]?.trim()) pc = i; else break; }
+      if (pc > 0) { setProjects(Array.from({ length: pc }, (_, i) => i + 1)); projCounter.current = pc; }
+
+      if (d['_accentColor']) {
+        const found = RESUME_COLORS.find((c) => c.hex === d['_accentColor']);
+        if (found) setAccentColor(found);
+      }
+    }).catch(() => {});
+  }, [initialResumeId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-save: create on first meaningful input, then update on every change
   useEffect(() => {
-    if (!resumeId) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
+      const hasContent = !!(formData['fullName']?.trim() || formData['jobTitle']?.trim());
+      if (!hasContent) return; // Don't save blank resumes
+
       setIsSaving(true);
       try {
-        await updateResume(resumeId, { formData });
+        if (!resumeId) {
+          const created = await createResume({ templateId: template.id, formData });
+          const newId = (created?._id ?? created?.id ?? null) as string | null;
+          setResumeId(newId);
+        } else {
+          await updateResume(resumeId, { formData });
+        }
         setLastSavedAt(new Date().toISOString());
       } catch { /* silent */ } finally { setIsSaving(false); }
-    }, 600);
+    }, 800);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [formData, resumeId]);
+  }, [formData, resumeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateField = useCallback((field: string, value: string) => {
     // Reject browser-autofilled URLs before they reach state

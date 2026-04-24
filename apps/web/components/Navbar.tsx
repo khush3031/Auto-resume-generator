@@ -33,7 +33,7 @@ export function Navbar() {
           {/* <Link href="/upload" className="navbar__link">Upload Resume</Link> */}
           {isAuthenticated ? (
             <>
-              {/* <Link href="/dashboard" className="navbar__link">Dashboard</Link> */}
+              <Link href="/dashboard" className="navbar__link">My Resumes</Link>
               <span className="navbar__user-badge">{user?.fullName}</span>
               <button onClick={logout} className="navbar__btn">Logout</button>
             </>
@@ -77,7 +77,7 @@ export function Navbar() {
             {/* <Link href="/upload" className="navbar__mobile-link">Upload Resume</Link> */}
             {isAuthenticated ? (
               <>
-                {/* <Link href="/dashboard" className="navbar__mobile-link">Dashboard</Link> */}
+                <Link href="/dashboard" className="navbar__mobile-link">My Resumes</Link>
                 <div className="navbar__divider" />
                 <span className="navbar__mobile-user">{user?.fullName}</span>
                 <button

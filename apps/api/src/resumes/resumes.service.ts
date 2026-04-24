@@ -33,13 +33,13 @@ export class ResumesService {
 
   async findById(id: string) {
     if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: false }).lean().exec();
+    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).lean().exec();
     if (!resume) throw new NotFoundException('Resume not found');
     return resume;
   }
 
   async updateResume(id: string, payload: UpdateResumeDto, currentUserId?: string) {
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: false }).exec();
+    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).exec();
     if (!resume) throw new NotFoundException('Resume not found');
     if (resume.userId && currentUserId && resume.userId.toString() !== currentUserId) {
       throw new ForbiddenException('You do not have permission to update this resume');
@@ -56,11 +56,17 @@ export class ResumesService {
   }
 
   async findUserResumes(userId: string) {
-    return this.resumeModel.find({ userId: new Types.ObjectId(userId), isDeleted: false }).lean().exec();
+    const oid = Types.ObjectId.isValid(userId) ? new Types.ObjectId(userId) : null;
+    const userIdFilter = oid ? { $in: [oid, userId] } : userId;
+    return this.resumeModel
+      .find({ userId: userIdFilter, isDeleted: { $ne: true } })
+      .sort({ updatedAt: -1 })
+      .lean()
+      .exec();
   }
 
   async softDeleteResume(id: string, userId: string) {
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: false }).exec();
+    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).exec();
     if (!resume) throw new NotFoundException('Resume not found');
     if (!resume.userId || resume.userId.toString() !== userId) {
       throw new ForbiddenException('You do not have permission to delete this resume');
@@ -76,7 +82,7 @@ export class ResumesService {
   ): Promise<Buffer> {
     if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
 
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: false }).lean().exec();
+    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).lean().exec();
     if (!resume) throw new NotFoundException('Resume not found');
     if (resume.userId && resume.userId.toString() !== userId) {
       throw new ForbiddenException('You do not have permission to export this resume');
@@ -88,7 +94,6 @@ export class ResumesService {
       : (resume.formData ?? {}) as Record<string, string>;
 
     const freshHtml = await this.generateRenderedHtml(resume.templateId, formData);
-    // console.log("freshHtml : ", freshHtml)
     const candidateName = (formData['fullName'] ?? 'Resume').trim();
     const buffer = await this.createPdfBuffer(this.prepareHtmlForPdf(freshHtml), candidateName);
 
@@ -101,7 +106,7 @@ export class ResumesService {
   }
 
   async claimResume(id: string, userId: string) {
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: false }).exec();
+    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).exec();
     if (!resume) throw new NotFoundException('Resume not found');
     if (resume.userId) {
       if (resume.userId.toString() !== userId) {
@@ -157,10 +162,8 @@ export class ResumesService {
     if (!template) throw new BadRequestException('Template not found');
 
     const templatePath = join(process.cwd(), '..', '..', 'packages', 'templates', template.htmlPath);
-    console.log("templatePath : ", templatePath)
     let html = await fs.readFile(templatePath, 'utf-8');
 
-    console.log("html before replacement : ", html)
     // Inject dynamic blocks before placeholder replacement
     html = html.replace('{{experienceBlocks}}',   this.buildExperienceBlocks(formData));
     html = html.replace('{{certificationBlocks}}', this.buildCertBlocks(formData));

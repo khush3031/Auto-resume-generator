@@ -1,0 +1,72 @@
+name: CI / CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # CI — build both apps and verify nothing is broken
+  # ─────────────────────────────────────────────────────────────
+  build:
+    name: Build & Type-check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build API
+        run: pnpm --filter resumeforge-api build
+
+      - name: Build Web
+        run: pnpm --filter resumeforge-web build
+        env:
+          # Needed so Next.js build doesn't fail on missing env var
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:3001' }}
+
+  # ─────────────────────────────────────────────────────────────
+  # CD — trigger Render deploys (only on push to main)
+  # ─────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to Render
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy API
+        run: |
+          curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_API }}" \
+            -H "Content-Type: application/json" \
+            --silent --show-error
+        # Set RENDER_DEPLOY_HOOK_API in GitHub → Settings → Secrets and variables → Actions
+        # Get the hook URL from: Render dashboard → resumeforge-api → Settings → Deploy Hook
+
+      - name: Deploy Web
+        run: |
+          curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_WEB }}" \
+            -H "Content-Type: application/json" \
+            --silent --show-error
+        # Set RENDER_DEPLOY_HOOK_WEB in GitHub → Settings → Secrets and variables → Actions
+        # Get the hook URL from: Render dashboard → resumeforge-web → Settings → Deploy Hook

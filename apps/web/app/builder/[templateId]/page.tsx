@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 type PageProps = {
   params: { templateId: string };
+  searchParams: { resumeId?: string };
 };
 
 export async function generateStaticParams() {
@@ -47,7 +48,7 @@ async function loadTemplate(templateId: string) {
  * The page itself is intentionally minimal; all layout logic lives in
  * BuilderShell so it can respond to breakpoints at the component level.
  */
-export default async function BuilderPage({ params }: PageProps) {
+export default async function BuilderPage({ params, searchParams }: PageProps) {
   const response = await loadTemplate(params.templateId);
   if (!response?.success) notFound();
 
@@ -57,7 +58,7 @@ export default async function BuilderPage({ params }: PageProps) {
       The builder manages its own full-viewport layout internally.
     */
     <div className="builder-page">
-      <BuilderShell template={response.data} />
+      <BuilderShell template={response.data} resumeId={searchParams.resumeId} />
     </div>
   );
 }

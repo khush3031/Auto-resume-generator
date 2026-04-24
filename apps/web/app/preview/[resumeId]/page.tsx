@@ -59,7 +59,7 @@ export default async function PreviewPage({ params }: PageProps) {
       {/* Top bar */}
       <div className="preview-topbar">
         <div className="preview-topbar__inner">
-          <Link href={`/builder/${resume.templateId}`} className="preview-back">
+          <Link href={`/builder/${resume.templateId}?resumeId=${resumeId}`} className="preview-back">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
               <path d="M19 12H5M12 5l-7 7 7 7" />
             </svg>

@@ -12,7 +12,9 @@ interface Props {
 
 export function ResumePreviewer({ html, zoomLevel = 1 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [autoScale, setAutoScale] = useState(1);
+  const iframeRef    = useRef<HTMLIFrameElement>(null);
+  const [autoScale, setAutoScale]   = useState(1);
+  const [contentH,  setContentH]    = useState(RESUME_H);
 
   const updateAutoScale = useCallback(() => {
     if (!containerRef.current) return;
@@ -27,8 +29,38 @@ export function ResumePreviewer({ html, zoomLevel = 1 }: Props) {
     return () => ro.disconnect();
   }, [updateAutoScale]);
 
+  // Reset height when HTML changes so we re-measure after load
+  useEffect(() => {
+    setContentH(RESUME_H);
+  }, [html]);
+
+  const handleLoad = useCallback(() => {
+    try {
+      const doc = iframeRef.current?.contentDocument;
+      if (!doc) return;
+      const h = Math.max(
+        doc.documentElement.scrollHeight,
+        doc.body?.scrollHeight ?? 0,
+        RESUME_H,
+      );
+      setContentH(h);
+    } catch {
+      // cross-origin fallback — keep RESUME_H
+    }
+  }, []);
+
   const finalScale = autoScale * zoomLevel;
-  const scaledH    = RESUME_H * finalScale;
+  const scaledH    = contentH * finalScale;
+
+  const PREVIEW_CSS = `<style id="rf-preview-base">
+*,*::before,*::after{box-sizing:border-box;}
+p,div,span,li,td,h1,h2,h3,h4,a{
+  word-break:break-word !important;
+  overflow-wrap:break-word !important;
+  max-width:100% !important;
+}
+img{max-width:100% !important;height:auto !important;}
+</style>`;
 
   const safeHtml = (() => {
     if (!html) return `<!DOCTYPE html>
@@ -39,10 +71,13 @@ font-family:sans-serif;color:#bbb;font-size:13px;
 text-align:center;padding:40px;box-sizing:border-box;}</style>
 </head><body>Fill in the form to see your resume preview</body>
 </html>`;
-    console.log("html in previewer : ", html)
-    return html.includes('<meta charset')
+    let h = html.includes('<meta charset')
       ? html
       : html.replace('<head>', '<head><meta charset="UTF-8">');
+    h = h.includes('</head>')
+      ? h.replace('</head>', PREVIEW_CSS + '</head>')
+      : PREVIEW_CSS + h;
+    return h;
   })();
 
   return (
@@ -69,12 +104,14 @@ text-align:center;padding:40px;box-sizing:border-box;}</style>
         }}
       >
         <iframe
+          ref={iframeRef}
           srcDoc={safeHtml}
           title="Resume Preview"
           sandbox="allow-same-origin"
+          onLoad={handleLoad}
           style={{
             width:      RESUME_W,
-            height:     RESUME_H,
+            height:     contentH,
             border:     'none',
             display:    'block',
             background: 'white',

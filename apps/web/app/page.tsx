@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { HeroCtas } from '../components/HeroCtas';
 
 export const metadata: Metadata = {
   title: 'ResumeForge — Build Your Professional Resume in Minutes',
@@ -51,14 +52,7 @@ export default function HomePage() {
                 Pick a template, fill in your details, and download a
                 recruiter-ready PDF — all from your browser, completely free.
               </p>
-              <div className="landing-hero__ctas">
-                <Link href="/templates" className="btn btn--primary btn--lg">
-                  Browse templates
-                </Link>
-                <Link href="/register" className="btn btn--outline btn--lg">
-                  Create free account
-                </Link>
-              </div>
+              <HeroCtas />
             </div>
 
             {/* Right column — stats card */}

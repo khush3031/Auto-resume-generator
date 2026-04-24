@@ -82,10 +82,7 @@ export class ResumesController {
     @Res() res: Response,
   ) {
     try {
-      console.log("Id : ", id)
       const user = req.user as any;
-      console.log("user : ", user)
-      console.log("body.formData : ", JSON.stringify(body.formData, null, 2))
       const pdf = await this.resumesService.exportToPdf(id, user.sub, body.formData);
       res.set({
         'Content-Type':        'application/pdf',

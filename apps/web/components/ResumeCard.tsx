@@ -42,9 +42,9 @@ export function ResumeCard({ resume, onDelete }: ResumeCardProps) {
         </div>
 
         <div className="resume-card__actions">
-          <Link href={`/builder/${resume.templateId}?resumeId=${resume._id}`} className="resume-card__action">
+          {/* <Link href={`/builder/${resume.templateId}?resumeId=${resume._id}`} className="resume-card__action">
             Edit
-          </Link>
+          </Link> */}
           <Link href={`/preview/${resume._id}`} className="resume-card__action">
             Preview
           </Link>
