@@ -55,47 +55,29 @@
         </div>
         <div class="m-section">
           <div class="m-label">Work Experience</div>
-          <div class="exp-card">
-            <div class="exp-top"><span class="exp-role">{{job1Title}}</span><span class="exp-date">{{job1Start}} – {{job1End}}</span></div>
-            <div class="exp-co">{{job1Company}} · {{job1Location}}</div>
-            <ul class="exp-list">
-              <li>{{job1Bullet1}}</li>
-              <li>{{job1Bullet2}}</li>
-              <li>{{job1Bullet3}}</li>
-            </ul>
-          </div>
-          <div class="exp-card">
-            <div class="exp-top"><span class="exp-role">{{job2Title}}</span><span class="exp-date">{{job2Start}} – {{job2End}}</span></div>
-            <div class="exp-co">{{job2Company}} · {{job2Location}}</div>
-            <ul class="exp-list">
-              <li>{{job2Bullet1}}</li>
-              <li>{{job2Bullet2}}</li>
-            </ul>
-          </div>
+          {{experienceBlocks}}
+        </div>
+        <div class="m-section" style="display:{{projectsSectionDisplay}}">
+          <div class="m-label">Projects</div>
+          {{projectBlocks}}
         </div>
       </div>
       <div>
         <div class="s-section">
           <div class="s-label">Skills</div>
-          <span class="skill-chip">{{skill1}}</span>
-          <span class="skill-chip">{{skill2}}</span>
-          <span class="skill-chip">{{skill3}}</span>
-          <span class="skill-chip">{{skill4}}</span>
-          <span class="skill-chip">{{skill5}}</span>
+          {{skillsBlock}}
         </div>
         <div class="s-section">
           <div class="s-label">Education</div>
-          <div class="s-text"><span class="s-bold">{{degree}}</span><br>{{university}}<br><span style="color:#4338ca;">{{graduationYear}}</span></div>
+          {{educationBlocks}}
         </div>
         <div class="s-section">
           <div class="s-label">Languages</div>
-          <div class="lang-row"><span>{{lang1}}</span><span class="lang-level">{{lang1Level}}</span></div>
-          <div class="lang-row"><span>{{lang2}}</span><span class="lang-level">{{lang2Level}}</span></div>
+          {{languagesBlock}}
         </div>
         <div class="s-section">
           <div class="s-label">Certifications</div>
-          <div class="s-text"><span class="s-bold">{{cert1}}</span><br>{{cert1Issuer}} · {{cert1Year}}</div>
-          <div class="s-text"><span class="s-bold">{{cert2}}</span><br>{{cert2Issuer}} · {{cert2Year}}</div>
+          {{certificationBlocks}}
         </div>
       </div>
     </div>
