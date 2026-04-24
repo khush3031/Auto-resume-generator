@@ -51,36 +51,29 @@
       </div>
       <div class="section">
         <div class="sec-title">Experience</div>
-        <div class="exp-row">
-          <div class="er-title">{{job1Title}}</div>
-          <div class="er-meta">{{job1Company}} · {{job1Start}} – {{job1End}}</div>
-          <ul class="er-bullets"><li>{{job1Bullet1}}</li><li>{{job1Bullet2}}</li><li>{{job1Bullet3}}</li></ul>
-        </div>
-        <div class="exp-row">
-          <div class="er-title">{{job2Title}}</div>
-          <div class="er-meta">{{job2Company}} · {{job2Start}} – {{job2End}}</div>
-          <ul class="er-bullets"><li>{{job2Bullet1}}</li><li>{{job2Bullet2}}</li></ul>
-        </div>
+        {{experienceBlocks}}
+      </div>
+      <div class="section" style="display:{{projectsSectionDisplay}}">
+        <div class="sec-title">Projects</div>
+        {{projectBlocks}}
       </div>
     </div>
     <div class="sidebar">
       <div class="section">
         <div class="sec-title" style="font-family:'Italiana',serif;font-size:18px;margin-bottom:12px">Education</div>
-        <div class="s-item"><strong>{{degree}}</strong>{{university}}<br><span style="color:#b07d4f">{{graduationYear}}</span></div>
+        {{educationBlocks}}
       </div>
       <div class="section" style="margin-top:20px">
         <div class="sec-title" style="font-family:'Italiana',serif;font-size:18px;margin-bottom:12px">Skills</div>
-        <div><span class="skill-pill">{{skill1}}</span><span class="skill-pill">{{skill2}}</span><span class="skill-pill">{{skill3}}</span><span class="skill-pill">{{skill4}}</span><span class="skill-pill">{{skill5}}</span></div>
+        {{skillsBlock}}
       </div>
       <div class="section" style="margin-top:20px">
         <div class="sec-title" style="font-family:'Italiana',serif;font-size:18px;margin-bottom:12px">Languages</div>
-        <div class="s-item"><strong>{{lang1}}</strong>{{lang1Level}}</div>
-        <div class="s-item"><strong>{{lang2}}</strong>{{lang2Level}}</div>
+        {{languagesBlock}}
       </div>
       <div class="section" style="margin-top:20px">
         <div class="sec-title" style="font-family:'Italiana',serif;font-size:18px;margin-bottom:12px">Certifications</div>
-        <div class="s-item"><strong>{{cert1}}</strong>{{cert1Issuer}} · {{cert1Year}}</div>
-        <div class="s-item"><strong>{{cert2}}</strong>{{cert2Issuer}} · {{cert2Year}}</div>
+        {{certificationBlocks}}
       </div>
     </div>
   </div>
