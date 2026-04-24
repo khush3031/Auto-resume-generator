@@ -22,13 +22,13 @@
     "@hookform/resolvers": "^3.1.0",
     "@radix-ui/react-accordion": "^1.0.1",
     "@resumeforge/shared": "workspace:*",
-    "@resumeforge/templates": "workspace:*"
+    "@resumeforge/templates": "workspace:*",
+    "tailwindcss": "^3.4.4",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.37"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
-    "autoprefixer": "^10.4.19",
-    "postcss": "^8.4.37",
-    "tailwindcss": "^3.4.4",
     "typescript": "^5.7.4"
   }
 }
