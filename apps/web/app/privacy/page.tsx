@@ -38,8 +38,7 @@ export default function PrivacyPage() {
                 customer support.
               </li>
               <li>
-                <strong>Password</strong> — stored exclusively as a one-way bcrypt hash (salted with
-                12 rounds). We never store or have access to your plain-text password.
+                <strong>Password</strong> — stored exclusively as a one-way bcrypt hash. We never store or have access to your plain-text password.
               </li>
             </ul>
             <p>
@@ -68,7 +67,7 @@ export default function PrivacyPage() {
           <section className="legal-section">
             <h2>4. Password Security</h2>
             <p>
-              Your password is hashed using the bcrypt algorithm with a cost factor of 12 before
+              Your password is hashed using the bcrypt algorithm before
               being stored in our database. This means:
             </p>
             <ul>
@@ -84,9 +83,9 @@ export default function PrivacyPage() {
           <section className="legal-section">
             <h2>5. Data Storage and Security</h2>
             <p>
-              Your data is stored in a secured MongoDB database. Access to the database is
-              restricted to authorised systems only. We use JWT (JSON Web Tokens) for session
-              management — access tokens expire in 15 minutes and refresh tokens expire in 7 days.
+              We store your data securely using industry-standard cloud infrastructure. Access to your data is restricted to authorised systems only.
+              We implement reasonable technical and organisational measures to protect your personal information from unauthorised access, loss, or misuse. However, no system can be completely secure, and we cannot guarantee absolute security.
+              You are responsible for maintaining the confidentiality of your account credentials and for using a strong password.
             </p>
             <p>
               While we take reasonable technical measures to protect your data, no system is
@@ -98,9 +97,9 @@ export default function PrivacyPage() {
           <section className="legal-section">
             <h2>6. Cookies and Local Storage</h2>
             <p>
-              ResumeForge uses browser local storage to persist your session tokens and in-progress
-              resume data across page reloads. We do not use third-party tracking cookies or
-              advertising cookies. We may use minimal first-party cookies for session management.
+              We use basic browser technologies such as cookies and local storage to keep you logged in and to save your progress while using the Service.
+              We do not use third-party tracking or advertising cookies.
+              You can control or clear cookies and local storage through your browser settings, but doing so may affect how the Service functions.
             </p>
           </section>
 
@@ -126,7 +125,7 @@ export default function PrivacyPage() {
             </ul>
             <p>
               To exercise any of these rights, contact us at{' '}
-              <a href="mailto:support@resumeforge.com" className="legal-link">support@resumeforge.com</a>.
+              <a href="mailto:khushboomakwana38@gmail.com" className="legal-link">khushboomakwana38@gmail.com</a>.
             </p>
           </section>
 
@@ -154,7 +153,7 @@ export default function PrivacyPage() {
             <p>
               If you have any questions or concerns about this Privacy Policy or how we handle your
               data, please contact us at{' '}
-              <a href="mailto:support@resumeforge.com" className="legal-link">support@resumeforge.com</a>.
+              <a href="mailto:khushboomakwana38@gmail.com" className="legal-link">khushboomakwana38@gmail.com</a>.
             </p>
           </section>
         </div>

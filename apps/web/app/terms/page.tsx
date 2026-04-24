@@ -139,7 +139,7 @@ export default function TermsPage() {
             <h2>12. Contact Us</h2>
             <p>
               If you have questions about these Terms, please contact us at{' '}
-              <a href="mailto:support@resumeforge.com" className="legal-link">support@resumeforge.com</a>.
+              <a href="mailto:khushboomakwana38@gmail.com" className="legal-link">khushboomakwana38@gmail.com</a>.
             </p>
           </section>
         </div>
