@@ -55,40 +55,26 @@
     </div>
     <div class="full-col">
       <div class="sec-label">Work Experience</div>
-      <div class="exp-block">
-        <div class="eb-top"><span class="eb-role">{{job1Title}}</span><span class="eb-date">{{job1Start}} – {{job1End}}</span></div>
-        <div class="eb-co">{{job1Company}} · {{job1Location}}</div>
-        <ul class="eb-list"><li>{{job1Bullet1}}</li><li>{{job1Bullet2}}</li><li>{{job1Bullet3}}</li></ul>
-      </div>
-      <div class="exp-block">
-        <div class="eb-top"><span class="eb-role">{{job2Title}}</span><span class="eb-date">{{job2Start}} – {{job2End}}</span></div>
-        <div class="eb-co">{{job2Company}} · {{job2Location}}</div>
-        <ul class="eb-list"><li>{{job2Bullet1}}</li><li>{{job2Bullet2}}</li></ul>
-      </div>
+      {{experienceBlocks}}
+    </div>
+    <div class="full-col" style="display:{{projectsSectionDisplay}}">
+      <div class="sec-label">Projects</div>
+      {{projectBlocks}}
     </div>
     <div>
       <div class="sec-label">Education</div>
-      <div class="edu-card">
-        <div class="ec-deg">{{degree}}</div>
-        <div class="ec-uni">{{university}}</div>
-        <div class="ec-year">{{graduationYear}}</div>
-      </div>
+      {{educationBlocks}}
       <div style="margin-top:20px">
         <div class="sec-label">Languages</div>
-        <div class="cert-row"><span class="cert-name">{{lang1}}</span><span class="cert-meta">{{lang1Level}}</span></div>
-        <div class="cert-row"><span class="cert-name">{{lang2}}</span><span class="cert-meta">{{lang2Level}}</span></div>
+        {{languagesBlock}}
       </div>
     </div>
     <div>
       <div class="sec-label">Skills</div>
-      <div class="skill-grid">
-        <span class="sk">{{skill1}}</span><span class="sk">{{skill2}}</span><span class="sk">{{skill3}}</span>
-        <span class="sk">{{skill4}}</span><span class="sk">{{skill5}}</span>
-      </div>
+      {{skillsBlock}}
       <div style="margin-top:20px">
         <div class="sec-label">Certifications</div>
-        <div class="cert-row"><div><div class="cert-name">{{cert1}}</div><div class="cert-meta">{{cert1Issuer}}</div></div><span class="cert-meta">{{cert1Year}}</span></div>
-        <div class="cert-row"><div><div class="cert-name">{{cert2}}</div><div class="cert-meta">{{cert2Issuer}}</div></div><span class="cert-meta">{{cert2Year}}</span></div>
+        {{certificationBlocks}}
       </div>
     </div>
   </div>
