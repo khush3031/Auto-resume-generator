@@ -53,18 +53,11 @@
       <div class="s-item">{{location}}</div>
       <div class="s-item">{{linkedin}}</div>
       <div class="s-section-label">Skills</div>
-      <span class="s-skill">{{skill1}}</span>
-      <span class="s-skill">{{skill2}}</span>
-      <span class="s-skill">{{skill3}}</span>
-      <span class="s-skill">{{skill4}}</span>
-      <span class="s-skill">{{skill5}}</span>
+      <span class="s-skill">{{skillsBlock}}</span>
       <div class="s-section-label">Languages</div>
-      <div class="s-lang"><span>{{lang1}}</span><span>{{lang1Level}}</span></div>
-      <div class="s-lang"><span>{{lang2}}</span><span>{{lang2Level}}</span></div>
+      <div class="s-lang"> {{languagesBlock}}</div>
       <div class="s-section-label">Education</div>
-      <div class="s-item" style="color:#cbd5e1;font-weight:500;">{{degree}}</div>
-      <div class="s-item">{{university}}</div>
-      <div class="s-item" style="color:#38bdf8;">{{graduationYear}}</div>
+      {{educationBlocks}}
     </div>
     <div class="main">
       <div class="m-section">
@@ -73,28 +66,15 @@
       </div>
       <div class="m-section">
         <div class="m-label">Experience</div>
-        <div class="exp-item">
-          <div class="exp-top"><span class="exp-role">{{job1Title}}</span><span class="exp-date">{{job1Start}} – {{job1End}}</span></div>
-          <div class="exp-co">{{job1Company}} · {{job1Location}}</div>
-          <ul class="exp-list">
-            <li>{{job1Bullet1}}</li>
-            <li>{{job1Bullet2}}</li>
-            <li>{{job1Bullet3}}</li>
-          </ul>
-        </div>
-        <div class="exp-item">
-          <div class="exp-top"><span class="exp-role">{{job2Title}}</span><span class="exp-date">{{job2Start}} – {{job2End}}</span></div>
-          <div class="exp-co">{{job2Company}} · {{job2Location}}</div>
-          <ul class="exp-list">
-            <li>{{job2Bullet1}}</li>
-            <li>{{job2Bullet2}}</li>
-          </ul>
-        </div>
+        {{experienceBlocks}}
       </div>
       <div class="m-section">
         <div class="m-label">Certifications</div>
-        <div class="cert-row"><span class="cert-name">{{cert1}}</span><span class="cert-meta">{{cert1Issuer}} · {{cert1Year}}</span></div>
-        <div class="cert-row"><span class="cert-name">{{cert2}}</span><span class="cert-meta">{{cert2Issuer}} · {{cert2Year}}</span></div>
+        {{certificationBlocks}}
+      </div>
+      <div class="m-section" style="display:{{projectsSectionDisplay}}">
+      <div class="m-label">Projects</div>
+        {{projectBlocks}}
       </div>
     </div>
   </div>

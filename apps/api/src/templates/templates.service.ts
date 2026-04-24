@@ -2,6 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Template, TemplateDocument } from './schemas/template.schema';
+import * as fsSync from 'fs';
+import { join } from 'path';
+import { templates as templatesMeta } from '@resumeforge/templates';
 
 const SAMPLE_DATA: Record<string, string> = {
   fullName: 'Alex Johnson',        jobTitle: 'Senior Software Engineer',
@@ -68,10 +71,14 @@ export class TemplatesService {
 
   async findAll() {
     const templates = await this.templateModel.find().lean();
-    return templates.map((t) => ({
-      ...t,
-      previewHtml: this.getSamplePreviewHtml(t.htmlContent, t.id),
-    }));
+    return templates.map((t) => {
+      const htmlContent = this.readHtmlFromDisk(t.id) ?? t.htmlContent;
+      return {
+        ...t,
+        htmlContent,
+        previewHtml: this.getSamplePreviewHtml(htmlContent, t.id),
+      };
+    });
   }
 
   async findOne(id: string) {
@@ -80,10 +87,29 @@ export class TemplatesService {
       .lean();
 
     if (!template) {
-      throw new NotFoundException('Template not found');
+      // Fall back to file-system template if not seeded in MongoDB
+      const meta = templatesMeta.find((t) => t.id === id || t.slug === id);
+      if (!meta) throw new NotFoundException('Template not found');
+      const htmlContent = this.readHtmlFromDisk(id);
+      if (!htmlContent) throw new NotFoundException('Template not found');
+      return { id: meta.id, slug: meta.slug, name: meta.name, style: meta.style, htmlContent };
     }
 
-    return template;
+    // Always serve htmlContent fresh from disk so template edits take effect immediately
+    const htmlContent = this.readHtmlFromDisk(template.id) ?? template.htmlContent;
+    return { ...template, htmlContent };
+  }
+
+  /** Read a template's HTML from the file system. Returns null if the file is missing. */
+  private readHtmlFromDisk(templateId: string): string | null {
+    const meta = templatesMeta.find((t) => t.id === templateId || t.slug === templateId);
+    if (!meta) return null;
+    const filePath = join(process.cwd(), '..', '..', 'packages', 'templates', meta.htmlPath);
+    try {
+      return fsSync.readFileSync(filePath, 'utf-8');
+    } catch {
+      return null;
+    }
   }
 
   /** Generate a thumbnail-ready HTML string with sample data and default accent color injected. */

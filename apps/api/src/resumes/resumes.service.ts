@@ -167,7 +167,7 @@ export class ResumesService {
     // Inject dynamic blocks before placeholder replacement
     html = html.replace('{{experienceBlocks}}',   this.buildExperienceBlocks(formData));
     html = html.replace('{{certificationBlocks}}', this.buildCertBlocks(formData));
-    html = html.replace('{{educationBlocks}}',     this.buildEducationBlocks(formData));
+    html = html.replace('{{educationBlocks}}',     this.buildEducationBlocks(formData, templateId));
     html = html.replace('{{projectBlocks}}',       this.buildProjectBlocks(formData));
     html = html.replace('{{languagesBlock}}',      this.buildLanguagesBlock(formData));
     html = html.replace('{{skillsBlock}}',         this.buildSkillsBlock(formData));
@@ -281,8 +281,10 @@ export class ResumesService {
     return items.join('');
   }
 
-  private buildEducationBlocks(d: Record<string, string>): string {
+  private buildEducationBlocks(d: Record<string, string>, templateId = ''): string {
     const items: string[] = [];
+    const isSlate = templateId === 'slate';
+
     for (let n = 1; n <= 5; n++) {
       const suffix     = n === 1 ? '' : String(n);
       const degree     = d[`degree${suffix}`]         ?? '';
@@ -290,15 +292,25 @@ export class ResumesService {
       const year       = d[`graduationYear${suffix}`] ?? '';
       if (!degree && !university) break;
 
-      items.push(
-        `<div style="margin-bottom:12px;">` +
-        `<div style="display:flex;justify-content:space-between;align-items:flex-start;">` +
-        `<strong style="font-size:0.95rem;">${this.esc(degree)}</strong>` +
-        `${year ? `<span style="font-size:0.85rem;color:#6b7280;white-space:nowrap;margin-left:8px;">${this.esc(year)}</span>` : ''}` +
-        `</div>` +
-        `${university ? `<div style="color:#6b7280;font-size:0.9rem;">${this.esc(university)}</div>` : ''}` +
-        `</div>`,
-      );
+      if (isSlate) {
+        items.push(
+          `<div style="margin-bottom:10px;">` +
+          `<div class="s-item" style="color:#cbd5e1;font-weight:500;">${this.esc(degree)}</div>` +
+          `${university ? `<div class="s-item">${this.esc(university)}</div>` : ''}` +
+          `${year ? `<div class="s-item" style="color:#38bdf8;">${this.esc(year)}</div>` : ''}` +
+          `</div>`,
+        );
+      } else {
+        items.push(
+          `<div style="margin-bottom:12px;">` +
+          `<div style="display:flex;justify-content:space-between;align-items:flex-start;">` +
+          `<strong style="font-size:0.95rem;">${this.esc(degree)}</strong>` +
+          `${year ? `<span style="font-size:0.85rem;color:#6b7280;white-space:nowrap;margin-left:8px;">${this.esc(year)}</span>` : ''}` +
+          `</div>` +
+          `${university ? `<div style="color:#6b7280;font-size:0.9rem;">${this.esc(university)}</div>` : ''}` +
+          `</div>`,
+        );
+      }
     }
     return items.join('');
   }
