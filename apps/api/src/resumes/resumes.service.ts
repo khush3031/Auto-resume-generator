@@ -187,7 +187,58 @@ export class ResumesService {
     const accentHex = formData['_accentColor'];
     if (accentHex) html = this.injectAccentColor(html, accentHex, templateId);
 
+    // Hide sections/asides that have no content
+    html = this.hideEmptySections(html);
+
     return html;
+  }
+
+  // ─── Hide empty sections ──────────────────────────────────────────────────────
+
+  private hideEmptySections(html: string): string {
+    // Pass 1: hide <section> elements whose content (after stripping heading + empty tags) is empty
+    let result = html.replace(
+      /(<section\b[^>]*?>)([\s\S]*?)(<\/section>)/g,
+      (match, openTag: string, inner: string, closeTag: string) => {
+        if (openTag.includes('display:none')) return match; // already hidden
+        const stripped = inner
+          .replace(/<h[1-6][^>]*?>[\s\S]*?<\/h[1-6]>/g, '') // strip headings
+          .replace(/<p[^>]*?>\s*<\/p>/g, '')                  // strip empty <p>
+          .replace(/<[^>]+>/g, '')                             // strip remaining tags
+          .trim();
+        if (!stripped) {
+          return this.addStyleDisplayNone(openTag, 'section') + inner + closeTag;
+        }
+        return match;
+      },
+    );
+
+    // Pass 2: hide <aside> elements where no visible <section> remains
+    result = result.replace(
+      /(<aside\b[^>]*?>)([\s\S]*?)(<\/aside>)/g,
+      (match, openTag: string, inner: string, closeTag: string) => {
+        if (openTag.includes('display:none')) return match;
+        const sections = inner.match(/<section\b[^>]*?>[\s\S]*?<\/section>/g) ?? [];
+        const hasVisibleSection = sections.some((s) => !s.includes('display:none'));
+        const textOutside = inner
+          .replace(/<section[\s\S]*?<\/section>/g, '')
+          .replace(/<[^>]+>/g, '')
+          .trim();
+        if (!hasVisibleSection && !textOutside) {
+          return this.addStyleDisplayNone(openTag, 'aside') + inner + closeTag;
+        }
+        return match;
+      },
+    );
+
+    return result;
+  }
+
+  private addStyleDisplayNone(openTag: string, tag: string): string {
+    if (openTag.includes('style=')) {
+      return openTag.replace(/style="([^"]*)"/, 'style="display:none;$1"');
+    }
+    return openTag.replace(`<${tag}`, `<${tag} style="display:none"`);
   }
 
   // ─── Block builders ───────────────────────────────────────────────────────────

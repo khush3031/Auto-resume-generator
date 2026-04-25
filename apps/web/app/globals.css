@@ -206,9 +206,20 @@ img, svg { display: block; }
 .navbar__hamburger:hover { background: var(--color-bg); }
 .navbar__hamburger:focus-visible { outline: 2px solid var(--color-brand); }
 @media (min-width: 1024px) { .navbar__hamburger { display: none; } }
-.navbar__mobile { overflow: hidden; transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; }
-.navbar__mobile--open  { max-height: 24rem; opacity: 1; }
-.navbar__mobile--closed { max-height: 0; opacity: 0; }
+.navbar__mobile {
+  position: fixed;
+  top: var(--navbar-height);
+  left: 0;
+  right: 0;
+  z-index: 51;
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+.navbar__mobile--open  { max-height: 24rem; opacity: 1; pointer-events: auto; }
+.navbar__mobile--closed { max-height: 0; opacity: 0; pointer-events: none; }
 @media (min-width: 1024px) { .navbar__mobile { display: none; } }
 .navbar__mobile-nav { border-top: 1px solid var(--color-border); background: var(--color-white); padding: 0.75rem 1rem 1.25rem; }
 @media (min-width: 640px) { .navbar__mobile-nav { padding-left: 1.5rem; padding-right: 1.5rem; } }
@@ -715,7 +726,7 @@ img, svg { display: block; }
 .builder-form-panel__status { margin-top: 0.125rem; font-size: 0.6875rem; color: var(--color-text-muted); }
 .builder-form-panel__error { margin: 0 1.25rem 0.75rem; }
 
-.builder-form-body { flex: 1; padding: 2rem 1.25rem 2.5rem; }
+.builder-form-body { flex: 1; padding: 2rem 1.25rem 7rem; }
 @media (min-width: 1024px) { .builder-form-body { padding: 1.45rem 2rem 2.5rem; } }
 
 /* PREVIEW PANEL */
@@ -788,10 +799,10 @@ img, svg { display: block; }
 /* Mobile download bar */
 .builder-download-bar {
   position: fixed;
-  bottom: 0;
+  bottom: 28px;
   left: 0;
   right: 0;
-  z-index: 50;
+  z-index: 105;
   background: var(--color-white);
   border-top: 1px solid var(--color-border);
   padding: 10px 16px;
@@ -912,7 +923,7 @@ img, svg { display: block; }
 @media (min-width: 640px) { .preview-topbar__download-sm { display: none; } }
 .preview-content { flex: 1; background: #e8eaed; padding-bottom: 6rem; }
 @media (min-width: 1024px) { .preview-content { padding-bottom: 2rem; } }
-.preview-floatbar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; border-top: 1px solid var(--color-border); background: var(--color-white); padding: 0.75rem 1rem; }
+.preview-floatbar { position: fixed; bottom: 28px; left: 0; right: 0; z-index: 105; border-top: 1px solid var(--color-border); background: var(--color-white); padding: 0.75rem 1rem; }
 @media (min-width: 640px) { .preview-floatbar { display: none; } }
 
 /* ============================================================
@@ -932,13 +943,13 @@ img, svg { display: block; }
 /* ============================================================
    AUTH MODAL
    ============================================================ */
-.modal-mobile { position: fixed; inset: 0; z-index: 50; }
+.modal-mobile { position: fixed; inset: 0; z-index: 110; }
 @media (min-width: 640px) { .modal-mobile { display: none; } }
 .modal-mobile__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
-.modal-mobile__sheet { position: absolute; inset-inline: 0; bottom: 0; max-height: 90vh; overflow-y: auto; border-radius: var(--radius-xl) var(--radius-xl) 0 0; background: var(--color-white); }
+.modal-mobile__sheet { position: absolute; inset-inline: 0; bottom: 0; max-height: 90vh; overflow-y: auto; border-radius: var(--radius-xl) var(--radius-xl) 0 0; background: var(--color-white); padding-bottom: env(safe-area-inset-bottom, 0px); }
 .modal-mobile__handle { width: 3rem; height: 0.25rem; margin: 0.75rem auto 0.25rem; border-radius: var(--radius-full); background: var(--color-border-dark); }
-.modal-mobile__body { padding: 1rem 1.5rem 2rem; }
-.modal-desktop { display: none; position: fixed; inset: 0; z-index: 50; align-items: center; justify-content: center; padding: 1rem; }
+.modal-mobile__body { padding: 1rem 1.5rem 2.5rem; }
+.modal-desktop { display: none; position: fixed; inset: 0; z-index: 110; align-items: center; justify-content: center; padding: 1rem; }
 @media (min-width: 640px) { .modal-desktop { display: flex; } }
 .modal-desktop__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
 .modal-desktop__card { position: relative; width: 100%; max-width: 28rem; border-radius: var(--radius-xl); background: var(--color-white); padding: 1.5rem; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
