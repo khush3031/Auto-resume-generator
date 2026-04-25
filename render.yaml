@@ -23,7 +23,8 @@ services:
     buildCommand: >-
       npm install -g pnpm@9 &&
       pnpm install --no-frozen-lockfile &&
-      pnpm --filter resumeforge-api build
+      pnpm --filter resumeforge-api build &&
+      PUPPETEER_CACHE_DIR=/opt/render/project/src/.cache/puppeteer pnpm --filter resumeforge-api exec puppeteer browsers install chrome
 
     startCommand: cd apps/api && node dist/main.js
 
@@ -39,7 +40,7 @@ services:
 
       # Puppeteer — persist Chromium download in Render's cache dir
       - key: PUPPETEER_CACHE_DIR
-        value: /opt/render/project/.cache/puppeteer
+        value: /opt/render/project/src/.cache/puppeteer
       - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
         value: "false"
 
