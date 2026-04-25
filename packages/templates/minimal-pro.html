@@ -54,38 +54,31 @@
   </section>
   <section>
     <h2>Experience</h2>
-    <div class="exp-item">
-      <div class="exp-meta"><div class="exp-date">{{job1Start}} – {{job1End}}</div><div class="exp-company">{{job1Location}}</div></div>
-      <div><div class="exp-title">{{job1Title}}</div><div class="exp-org">{{job1Company}}</div><ul class="exp-list"><li>{{job1Bullet1}}</li><li>{{job1Bullet2}}</li><li>{{job1Bullet3}}</li></ul></div>
-    </div>
-    <div class="exp-item">
-      <div class="exp-meta"><div class="exp-date">{{job2Start}} – {{job2End}}</div><div class="exp-company">{{job2Location}}</div></div>
-      <div><div class="exp-title">{{job2Title}}</div><div class="exp-org">{{job2Company}}</div><ul class="exp-list"><li>{{job2Bullet1}}</li><li>{{job2Bullet2}}</li></ul></div>
-    </div>
+    {{experienceBlocks}}
   </section>
   <section>
     <h2>Education</h2>
-    <div class="edu-row">
-      <div class="edu-year">{{graduationYear}}</div>
-      <div><div class="edu-degree">{{degree}}</div><div class="edu-school">{{university}}</div></div>
-    </div>
+    {{educationBlocks}}
   </section>
   <section>
     <h2>Skills</h2>
     <div class="skills-grid">
-      <span class="skill-tag">{{skill1}}</span><span class="skill-tag">{{skill2}}</span><span class="skill-tag">{{skill3}}</span><span class="skill-tag">{{skill4}}</span><span class="skill-tag">{{skill5}}</span>
+      {{skillsBlock}}
     </div>
   </section>
   <section>
     <h2>Languages</h2>
     <div class="skills-grid">
-      <span class="skill-tag">{{lang1}} · {{lang1Level}}</span><span class="skill-tag">{{lang2}} · {{lang2Level}}</span>
+      {{languagesBlock}}
     </div>
   </section>
   <section>
     <h2>Certifications</h2>
-    <div class="cert-row"><div class="edu-year">{{cert1Year}}</div><div><div class="exp-title">{{cert1}}</div><div class="exp-org">{{cert1Issuer}}</div></div></div>
-    <div class="cert-row"><div class="edu-year">{{cert2Year}}</div><div><div class="exp-title">{{cert2}}</div><div class="exp-org">{{cert2Issuer}}</div></div></div>
+    {{certificationBlocks}}
+  </section>
+  <section style="display:{{projectsSectionDisplay}}">
+    <h2>Projects</h2>
+    {{projectBlocks}}
   </section>
 </div>
 </body>
