@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -6,33 +6,51 @@
   <title>Executive Resume</title>
   <style>
     :root { --accent: var(--resume-accent-color, #1b1b1b); }
-    body { margin: 0; background: #111111; color: #f8f8f8; font-family: 'Cormorant Garamond', Georgia, serif; }
-    .page { width: 794px; max-width: 794px; margin: 0 auto; display: grid; grid-template-columns: 1fr 320px; min-height: 1123px; align-items: stretch; overflow: hidden; }
-    .sidebar { background: var(--accent); padding: 40px 32px; display: flex; flex-direction: column; gap: 30px; min-height: 100%; align-self: stretch; overflow: hidden; }
-    main { padding: 40px 50px; background: #f7f5f2; color: #111827; min-width: 0; overflow: hidden; max-width: 100%; }
-    .brand { color: #d4af37; text-transform: uppercase; letter-spacing: 0.35em; font-size: 0.8rem; }
-    h1 { margin: 0; font-size: 3rem; }
+    body { margin: 0; background: #111111; font-family: 'Cormorant Garamond', Georgia, serif; }
+    .page { width: 794px; max-width: 794px; margin: 0 auto; background: #f7f5f2; }
+    .page::after { content: ''; display: table; clear: both; }
+    /* Sidebar floats left — height = its content only.
+       Main sections flow beside it and expand to full width once sidebar ends. */
+    .sidebar {
+      float: left;
+      width: 260px;
+      background: var(--accent);
+      color: #fff;
+      padding: 40px 28px;
+      margin-right: 24px;
+    }
+    /* Sidebar block overrides — block builders emit inline styles unreadable on dark bg */
+    .sidebar span[style]  { color: rgba(255,255,255,0.85) !important; background: rgba(255,255,255,0.15) !important; }
+    .sidebar div[style]   { color: rgba(255,255,255,0.82) !important; }
+    .sidebar strong       { color: #fff !important; }
+    .brand { color: #d4af37; text-transform: uppercase; letter-spacing: 0.35em; font-size: 0.8rem; margin: 0 0 6px; }
+    .sidebar h2 { margin: 0 0 6px; font-size: 1.4rem; font-weight: 600; color: #fff; }
+    .sidebar-name { font-size: 1.6rem; font-weight: 700; margin: 0 0 4px; line-height: 1.2; }
+    .sidebar-title { font-size: 0.9rem; opacity: 0.75; margin: 0 0 28px; }
     p { margin: 0; line-height: 1.8; }
-    .label { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.2em; color: #9ca3af; margin-bottom: 6px; }
-    .skill { display: block; margin-bottom: 10px; }
-    .section { margin-bottom: 30px; }
-    .section h2 { margin-bottom: 16px; font-size: 1rem; letter-spacing: 0.18em; }
-    .contact span { display: block; margin-bottom: 10px; }
+    .label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.2em; color: #9ca3af; margin-bottom: 8px; }
+    .sidebar .label { color: #9ca3af; }
+    .sidebar-section { margin-bottom: 24px; }
+    .contact span { display: block; margin-bottom: 8px; font-size: 0.88rem; color: rgba(255,255,255,0.8); }
     .cert-entry { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .cert-name { font-size: 12px; font-weight: 600; color: inherit; }
     .cert-meta { font-size: 11px; opacity: 0.75; margin-top: 2px; }
-    @media print { .page { display: block; } .sidebar { padding: 20px; } main { padding: 20px; } }
+    /* Main sections — no BFC: lines individually avoid the sidebar float,
+       then naturally expand to full page width once the sidebar ends */
+    .main-section { color: #111827; padding: 0 50px 28px 40px; }
+    .main-section:first-of-type { padding-top: 40px; }
+    .main-section .label { color: #6b7280; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
   </style>
 </head>
 <body>
   <div class="page">
+    <!-- Sidebar must appear before main sections in DOM for float-left to work -->
     <aside class="sidebar">
-      <div>
-        <p class="brand">EXECUTIVE</p>
-        <h2>{{fullName}}</h2>
-        <p>{{jobTitle}}</p>
-      </div>
-      <div class="section">
+      <p class="brand">EXECUTIVE</p>
+      <p class="sidebar-name">{{fullName}}</p>
+      <p class="sidebar-title">{{jobTitle}}</p>
+      <div class="sidebar-section">
         <p class="label">Contact</p>
         <div class="contact">
           <span>{{email}}</span>
@@ -41,37 +59,37 @@
           <span>{{website}}</span>
         </div>
       </div>
-      <div id="skills-section" class="section">
+      <div class="sidebar-section">
         <p class="label">Skills</p>
         {{skillsBlock}}
       </div>
-      <div id="certs-section" class="section">
+      <div class="sidebar-section">
         <p class="label">Certifications</p>
         {{certificationBlocks}}
       </div>
     </aside>
-    <main>
-      <section class="section">
-        <p class="label">Summary</p>
-        <p>{{summary}}</p>
-      </section>
-       <section class="section">
-        <p class="label">Education</p>
-        {{educationBlocks}}
-      </section>
-      <section class="section">
-        <p class="label">Experience</p>
-        {{experienceBlocks}}
-      </section>
-      <section class="section" style="display:{{projectsSectionDisplay}}">
-        <p class="label">Projects</p>
-        {{projectBlocks}}
-      </section>     
-      <section class="section">
-        <p class="label">Languages</p>
-        {{languagesBlock}}
-      </section>
-    </main>
+    <!-- Main sections: no BFC — content lines avoid sidebar float and expand to
+         full page width once the sidebar ends -->
+    <section class="main-section">
+      <p class="label">Summary</p>
+      <p>{{summary}}</p>
+    </section>
+    <section class="main-section">
+      <p class="label">Education</p>
+      {{educationBlocks}}
+    </section>
+    <section class="main-section">
+      <p class="label">Experience</p>
+      {{experienceBlocks}}
+    </section>
+    <section class="main-section" style="display:{{projectsSectionDisplay}}">
+      <p class="label">Projects</p>
+      {{projectBlocks}}
+    </section>
+    <section class="main-section">
+      <p class="label">Languages</p>
+      {{languagesBlock}}
+    </section>
   </div>
 </body>
 </html>
