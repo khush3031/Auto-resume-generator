@@ -855,7 +855,6 @@ export function BuilderShell({
       // Cancel any pending debounce and pass formData directly in the export
       // request — the server uses it instead of reading (potentially stale) MongoDB.
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      console.log("formData -> ", JSON.stringify(formData, null, 2))
       const blob = await exportResumePdf(resumeId, formData);
       const url  = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       const a    = document.createElement('a');

@@ -182,7 +182,6 @@ export async function deleteResume(resumeId: string) {
 }
 
 export async function exportResumePdf(resumeId: string, formData?: Record<string, string>) {
-  console.log('Exporting PDF for resume ID:', resumeId, 'with formData:', formData);
   const response = await api.post(
     `/resumes/${resumeId}/export`,
     formData ? { formData } : {},
