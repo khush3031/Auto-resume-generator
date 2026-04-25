@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -6,18 +6,28 @@
   <title>Minimal Resume</title>
   <style>
     body { margin: 0; font-family: 'Libre Baskerville', Georgia, serif; color: #111827; background: #ffffff; }
-    .page { width: 794px; max-width: 794px; margin: 0 auto; padding: 44px; overflow: hidden; }
+    .page { width: 794px; max-width: 794px; margin: 0 auto; padding: 44px; }
+    .page::after { content: ''; display: table; clear: both; }
     .bordered { border-bottom: 1px solid #e5e7eb; padding-bottom: 24px; margin-bottom: 30px; }
     h1 { margin: 0; font-size: 2.8rem; font-weight: 700; }
     h2 { margin: 0 0 12px; font-size: 1rem; letter-spacing: 0.18em; text-transform: uppercase; color: #6b7280; }
     .meta { display: flex; flex-wrap: wrap; gap: 12px; color: #4b5563; margin-top: 12px; font-size: 0.95rem; }
-    .section { margin-bottom: 28px; }
+    /* Right column floats right — left sections stay beside it via BFC,
+       then expand to full width once the aside ends */
+    aside {
+      float: right;
+      width: 240px;
+      margin-left: 32px;
+    }
+    .section {
+      overflow: hidden; /* BFC: stays beside float, expands to full width after aside ends */
+      margin-bottom: 28px;
+    }
     .section p, .section li { line-height: 1.8; }
     ul { margin: 0; padding-left: 18px; }
-    .grid { display: grid; gap: 22px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .skill-list, .language-list { display: grid; gap: 10px; }
     .tag { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 999px; width: fit-content; }
-    @media print { .page { padding: 20px; } .grid { grid-template-columns: 1fr; } }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { padding: 20px; margin: 0; } }
   </style>
 </head>
 <body>
@@ -35,36 +45,34 @@
       <h2>Summary</h2>
       <p>{{summary}}</p>
     </section>
-    <div class="grid">
-      <div>
-        <section class="section">
-          <h2>Experience</h2>
-          {{experienceBlocks}}
-        </section>
-        <section class="section" style="display:{{projectsSectionDisplay}}">
-          <h2>Projects</h2>
-          {{projectBlocks}}
-        </section>
-        <section class="section">
-          <h2>Education</h2>
-          {{educationBlocks}}
-        </section>
-      </div>
-      <aside>
-        <section class="section">
-          <h2>Skills</h2>
-          <div class="skill-list">{{skillsBlock}}</div>
-        </section>
-        <section class="section">
-          <h2>Languages</h2>
-          <div class="language-list">{{languagesBlock}}</div>
-        </section>
-        <section class="section">
-          <h2>Certifications</h2>
-          {{certificationBlocks}}
-        </section>
-      </aside>
-    </div>
+    <!-- Aside floats right — must appear before left sections in DOM -->
+    <aside>
+      <section class="section">
+        <h2>Skills</h2>
+        <div class="skill-list">{{skillsBlock}}</div>
+      </section>
+      <section class="section">
+        <h2>Languages</h2>
+        <div class="language-list">{{languagesBlock}}</div>
+      </section>
+      <section class="section">
+        <h2>Certifications</h2>
+        {{certificationBlocks}}
+      </section>
+    </aside>
+    <!-- Left sections: BFC keeps them beside aside; expand full width after aside ends -->
+    <section class="section">
+      <h2>Experience</h2>
+      {{experienceBlocks}}
+    </section>
+    <section class="section" style="display:{{projectsSectionDisplay}}">
+      <h2>Projects</h2>
+      {{projectBlocks}}
+    </section>
+    <section class="section">
+      <h2>Education</h2>
+      {{educationBlocks}}
+    </section>
   </div>
 </body>
 </html>
