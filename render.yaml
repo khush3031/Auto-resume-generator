@@ -23,8 +23,7 @@ services:
     buildCommand: >-
       npm install -g pnpm@9 &&
       pnpm install --no-frozen-lockfile &&
-      pnpm --filter resumeforge-api build &&
-      PUPPETEER_CACHE_DIR=/opt/render/project/src/.cache/puppeteer pnpm --filter resumeforge-api exec puppeteer browsers install chrome
+      pnpm --filter resumeforge-api build
 
     startCommand: cd apps/api && node dist/main.js
 
@@ -37,12 +36,6 @@ services:
       # Render injects PORT automatically — NestJS reads it in main.ts
       - key: PORT
         value: 10000
-
-      # Puppeteer — persist Chromium download in Render's cache dir
-      - key: PUPPETEER_CACHE_DIR
-        value: /opt/render/project/src/.cache/puppeteer
-      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
-        value: "false"
 
       # ── Secrets — fill these in the Render dashboard ──
       - key: MONGODB_URI
