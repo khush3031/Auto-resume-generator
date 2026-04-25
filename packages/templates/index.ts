@@ -65,6 +65,14 @@ export const templates: TemplateMeta[] = [
     htmlPath: 'clean-grid.html'
   },
   {
+    id: 'ats',
+    name: 'ATS Resume',
+    slug: 'ats',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/ats.png',
+    htmlPath: 'ats.html'
+  },
+  {
     id: 'ats-friendly',
     name: 'ATS Friendly',
     slug: 'ats-friendly',

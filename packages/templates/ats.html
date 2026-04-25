@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{fullName}} - Resume</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,600;1,400&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans', sans-serif; background: #fff; color: #000; }
+  .page { width: 794px; min-height: 1123px; margin: 0 auto; padding: 56px 64px; }
+  .h-name { font-size: 24px; font-weight: 600; color: #000; margin-bottom: 4px; }
+  .h-title { font-size: 13px; color: #333; margin-bottom: 10px; }
+  .h-contact { font-size: 12px; color: #333; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 7px 0; margin-bottom: 24px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .section { margin-bottom: 20px; }
+  .sec-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #000; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 12px; }
+  .summary-p { font-size: 12px; line-height: 1.7; color: #222; }
+  .exp-item { margin-bottom: 14px; }
+  .ei-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .ei-title { font-size: 13px; font-weight: 600; color: #000; }
+  .ei-date { font-size: 12px; color: #333; }
+  .ei-co { font-size: 12px; color: #333; margin-bottom: 6px; font-style: italic; }
+  .ei-list { padding-left: 18px; }
+  .ei-list li { font-size: 12px; color: #222; line-height: 1.7; margin-bottom: 2px; }
+  .edu-item { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .edu-deg { font-size: 13px; font-weight: 600; }
+  .edu-uni { font-size: 12px; color: #333; font-style: italic; }
+  .edu-year { font-size: 12px; color: #333; }
+  .cert-row { display: flex; justify-content: space-between; font-size: 12px; color: #222; padding: 4px 0; border-bottom: 1px solid #eee; }
+  .cert-row:last-child { border-bottom: none; }
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { padding: 36px 48px; margin: 0; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="h-name">{{fullName}}</div>
+  <div class="h-title">{{jobTitle}}</div>
+  <div class="h-contact">
+    <span>{{email}}</span><span>{{phone}}</span><span>{{location}}</span><span>{{linkedin}}</span><span>{{website}}</span>
+  </div>
+  <div class="section">
+    <div class="sec-title">Professional Summary</div>
+    <p class="summary-p">{{summary}}</p>
+  </div>
+  <div class="section">
+    <div class="sec-title">Work Experience</div>
+    {{experienceBlocks}}
+  </div>
+  <div class="section">
+    <div class="sec-title">Education</div>
+    {{educationBlocks}}
+  </div>
+  <div class="section">
+    <div class="sec-title">Skills</div>
+    {{skillsBlock}}
+  </div>
+  <div class="section" style="display:{{projectsSectionDisplay}}">
+    <div class="sec-title">Projects</div>
+    {{projectBlocks}}
+  </div>
+  <div class="section">
+    <div class="sec-title">Certifications</div>
+    {{certificationBlocks}}
+  </div>
+  <div class="section">
+    <div class="sec-title">Languages</div>
+    {{languagesBlock}}
+  </div>
+</div>
+</body>
+</html>
