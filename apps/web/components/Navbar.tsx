@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '../src/store/auth.store';
 
+import { Logo } from './Logo';
+
 export function Navbar() {
   const { user, isAuthenticated, logout, loadFromStorage } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
@@ -25,7 +27,9 @@ export function Navbar() {
   return (
     <header className="navbar">
       <div className="navbar__inner">
-        <Link href="/" className="navbar__logo">ResumeForge</Link>
+        <Link href="/" className="navbar__logo">
+          <Logo size={34} />
+        </Link>
 
         {/* Desktop nav */}
         <nav className="navbar__desktop" aria-label="Main navigation">

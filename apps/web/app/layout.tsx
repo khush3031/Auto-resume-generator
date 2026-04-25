@@ -9,6 +9,9 @@ export const metadata: Metadata = {
     default: 'ResumeForge — Free Resume Builder Online',
   },
   description: 'Free online resume builder with 14+ professional templates.',
+  icons: {
+    icon: '/icon.svg',
+  },
 };
 
 export default function RootLayout({

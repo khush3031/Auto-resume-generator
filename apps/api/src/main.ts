@@ -17,8 +17,12 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(passport.initialize());
 
+  const allowedOrigins = process.env.CORS_ORIGINS?.split(',') ?? [
+    'http://localhost:3000',
+    'https://resumeforge-web.onrender.com',
+  ];
   app.enableCors({
-    origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
+    origin: allowedOrigins,
     credentials: true,
   });
 

@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '../../../src/store/auth.store';
+import { Logo } from '../../../components/Logo';
 
 const loginSchema = z.object({
   email:    z.string().email('Enter a valid email'),
@@ -127,9 +128,9 @@ export default function LoginPage() {
 
         {/* Left: Branding panel */}
         <div className="auth-brand">
-          <div>
-            <h2 className="auth-brand__title">ResumeForge</h2>
-            <p className="auth-brand__desc">
+          <div style={{ marginBottom: '2rem' }}>
+            <Logo size={40} textColor="#ffffff" />
+            <p className="auth-brand__desc" style={{ marginTop: '1.5rem' }}>
               Build professional resumes in minutes. Choose from 16+ templates
               and download a recruiter-ready PDF for free.
             </p>

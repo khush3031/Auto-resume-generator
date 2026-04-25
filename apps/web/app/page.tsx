@@ -34,6 +34,8 @@ const STEPS = [
   },
 ] as const;
 
+import { Logo } from '../components/Logo';
+
 export default function HomePage() {
   return (
     <div className="page-wrapper">
@@ -44,7 +46,9 @@ export default function HomePage() {
 
             {/* Left column */}
             <div>
-              <p className="landing-hero__eyebrow">ResumeForge</p>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <Logo size={48} showText={false} />
+              </div>
               <h1 className="landing-hero__title">
                 Your resume,<br />ready in minutes
               </h1>

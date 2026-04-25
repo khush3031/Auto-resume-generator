@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '../src/store/auth.store';
+import { Logo } from './Logo';
 
 const loginSchema = z.object({
   email:    z.string().email('Enter a valid email'),
@@ -83,7 +84,10 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
   const formBody = (
     <div>
       <div className="modal-header">
-        <div>
+        <div style={{ flex: 1 }}>
+          <div style={{ marginBottom: '1rem' }}>
+            <Logo size={28} />
+          </div>
           <h2 className="modal-title">
             {mode === 'login' ? 'Welcome back' : 'Create account'}
           </h2>
