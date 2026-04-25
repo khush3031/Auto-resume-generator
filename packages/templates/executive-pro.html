@@ -16,11 +16,10 @@
   .s-section { margin-bottom: 24px; }
   .s-section h3 { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: #c9a84c; margin-bottom: 10px; }
   .s-item { font-size: 11px; color: #bbb; margin-bottom: 6px; line-height: 1.5; }
-  .s-skill { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .s-skill span { font-size: 11px; color: #bbb; }
-  .dots { display: flex; gap: 4px; }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: #444; }
-  .dot.on { background: #c9a84c; }
+  /* Sidebar block overrides — block builders emit inline styles unreadable on dark bg */
+  .sidebar span[style]  { color: #c9a84c !important; }
+  .sidebar div[style]   { color: #bbb !important; }
+  .sidebar strong       { color: #fff !important; }
   .main { padding: 44px 38px; }
   .main-header { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 2px solid #c9a84c; }
   .main-header .summary-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #c9a84c; margin-bottom: 8px; }
@@ -58,24 +57,17 @@
     <div class="gold-line"></div>
     <div class="s-section">
       <h3>Core Skills</h3>
-      <div class="s-skill"><span>{{skill1}}</span><div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div></div></div>
-      <div class="s-skill"><span>{{skill2}}</span><div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot"></div></div></div>
-      <div class="s-skill"><span>{{skill3}}</span><div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot"></div></div></div>
-      <div class="s-skill"><span>{{skill4}}</span><div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div></div>
-      <div class="s-skill"><span>{{skill5}}</span><div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div></div>
+      {{skillsBlock}}
     </div>
     <div class="gold-line"></div>
     <div class="s-section">
       <h3>Education</h3>
-      <div class="s-item" style="color:#c9a84c;font-weight:500">{{degree}}</div>
-      <div class="s-item">{{university}}</div>
-      <div class="s-item">{{graduationYear}}</div>
+      {{educationBlocks}}
     </div>
     <div class="gold-line"></div>
     <div class="s-section">
       <h3>Languages</h3>
-      <div class="s-item">{{lang1}} — {{lang1Level}}</div>
-      <div class="s-item">{{lang2}} — {{lang2Level}}</div>
+      {{languagesBlock}}
     </div>
   </div>
   <div class="main">
@@ -85,27 +77,15 @@
     </div>
     <div class="m-section">
       <h2><span class="gold-dash"></span>Career History</h2>
-      <div class="entry">
-        <div class="e-top"><span class="e-title">{{job1Title}}</span><span class="e-date">{{job1Start}} – {{job1End}}</span></div>
-        <div class="e-company">{{job1Company}} · {{job1Location}}</div>
-        <ul class="e-bullets"><li>{{job1Bullet1}}</li><li>{{job1Bullet2}}</li><li>{{job1Bullet3}}</li></ul>
-      </div>
-      <div class="entry">
-        <div class="e-top"><span class="e-title">{{job2Title}}</span><span class="e-date">{{job2Start}} – {{job2End}}</span></div>
-        <div class="e-company">{{job2Company}} · {{job2Location}}</div>
-        <ul class="e-bullets"><li>{{job2Bullet1}}</li><li>{{job2Bullet2}}</li></ul>
-      </div>
+      {{experienceBlocks}}
     </div>
     <div class="m-section">
       <h2><span class="gold-dash"></span>Certifications</h2>
-      <div class="entry">
-        <div class="e-top"><span class="e-title">{{cert1}}</span><span class="e-date">{{cert1Year}}</span></div>
-        <div class="e-company">{{cert1Issuer}}</div>
-      </div>
-      <div class="entry">
-        <div class="e-top"><span class="e-title">{{cert2}}</span><span class="e-date">{{cert2Year}}</span></div>
-        <div class="e-company">{{cert2Issuer}}</div>
-      </div>
+      {{certificationBlocks}}
+    </div>
+    <div class="m-section" style="display:{{projectsSectionDisplay}}">
+      <h2><span class="gold-dash"></span>Projects</h2>
+      {{projectBlocks}}
     </div>
   </div>
 </div>
