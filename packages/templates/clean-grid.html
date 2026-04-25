@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -6,14 +6,34 @@
   <title>Clean Grid Resume</title>
   <style>
     body { margin: 0; font-family: 'IBM Plex Sans', Arial, sans-serif; background: #f4f6f8; color: #0f172a; }
-    .page { width: 794px; max-width: 794px; margin: 0 auto; padding: 42px; display: grid; grid-template-columns: 260px 1fr; gap: 32px; align-items: stretch; grid-auto-rows: auto; overflow: visible; }
-    .sidebar { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 28px; display: grid; gap: 20px; align-content: start; overflow: visible; }
-    .main { display: grid; gap: 28px; align-content: start; overflow: visible; }
+    .page { width: 794px; max-width: 794px; margin: 0 auto; padding: 42px; }
+    .page::after { content: ''; display: table; clear: both; }
+    .sidebar {
+      float: left;
+      width: 260px;
+      margin-right: 32px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 28px;
+      display: grid;
+      gap: 20px;
+      align-content: start;
+    }
     .header { background: #0f172a; color: #f8fafc; border-radius: 24px; padding: 28px; }
     .header h1 { margin: 0; font-size: 2.6rem; }
     .header p { margin: 8px 0 0; font-size: 1rem; color: #cbd5e1; }
     h2 { margin: 0 0 16px; font-size: 0.95rem; letter-spacing: 0.18em; text-transform: uppercase; color: #334155; }
-    .block { background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 24px; height: auto; overflow: visible; }
+    /* Each main block creates a BFC — stays beside the float while sidebar exists,
+       then expands to full page width once the sidebar height is exhausted */
+    .block {
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 28px;
+    }
     .meta { display: grid; gap: 10px; color: #64748b; font-size: 0.95rem; }
     .tag { display: inline-flex; padding: 8px 12px; border-radius: 999px; background: #f1f5f9; margin: 4px 4px 4px 0; font-size: 0.9rem; }
     .cert-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
@@ -23,7 +43,7 @@
     .cert-year { font-size: 11px; opacity: 0.7; white-space: nowrap; }
     .cert-entry { margin-bottom: 0 !important; padding-bottom: 8px !important; border-bottom: 1px solid #f1f5f9 !important; }
     .cert-entry:last-child { border-bottom: none !important; }
-    @media print { .page { display: block; } .sidebar, .block, .header { border: none; box-shadow: none; } }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
   </style>
 </head>
 <body>
@@ -33,7 +53,7 @@
         <h1>{{fullName}}</h1>
         <p>{{jobTitle}}</p>
       </div>
-      <div class="block">
+      <div>
         <h2>Contact</h2>
         <div class="meta">
           <span>{{email}}</span>
@@ -42,38 +62,35 @@
           <span>{{website}}</span>
         </div>
       </div>
-      <div class="block">
+      <div>
         <h2>Skills</h2>
-        <div>
-         {{skillsBlock}}
-        </div>
+        <div>{{skillsBlock}}</div>
       </div>
-      <div class="block">
+      <div>
         <h2>Languages</h2>
         {{languagesBlock}}
       </div>
     </div>
-    <div class="main">
-      <div class="block">
-        <h2>Summary</h2>
-        <p>{{summary}}</p>
-      </div>
-      <div class="block">
-        <h2>Education</h2>
-        {{educationBlocks}}
-      </div>
-      <div class="block">
-        <h2>Experience</h2>
-        {{experienceBlocks}}
-      </div>
-       <div class="block" style="display:{{projectsSectionDisplay}}">
-        <h2>Projects</h2>
-        {{projectBlocks}}
-      </div>
-      <div class="block">
-        <h2>Certifications</h2>
-        {{certificationBlocks}}
-      </div>
+    <!-- Main blocks: BFC via overflow:hidden — beside sidebar until sidebar ends, then full width -->
+    <div class="block">
+      <h2>Summary</h2>
+      <p>{{summary}}</p>
+    </div>
+    <div class="block">
+      <h2>Education</h2>
+      {{educationBlocks}}
+    </div>
+    <div class="block">
+      <h2>Experience</h2>
+      {{experienceBlocks}}
+    </div>
+    <div class="block" style="display:{{projectsSectionDisplay}}">
+      <h2>Projects</h2>
+      {{projectBlocks}}
+    </div>
+    <div class="block">
+      <h2>Certifications</h2>
+      {{certificationBlocks}}
     </div>
   </div>
 </body>
