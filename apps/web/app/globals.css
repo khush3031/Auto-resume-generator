@@ -429,6 +429,8 @@ img, svg { display: block; }
 .empty-state__icon-wrap { margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; height: 3.5rem; width: 3.5rem; border-radius: var(--radius-lg); background: var(--color-bg-muted); }
 .empty-state__title { font-size: 1.125rem; font-weight: 600; color: var(--color-text-primary); }
 .empty-state__desc { margin-top: 0.5rem; font-size: 0.875rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.templates-wakeup-spinner { animation: spin 1.4s linear infinite; }
 
 /* ============================================================
    TEMPLATE GRID

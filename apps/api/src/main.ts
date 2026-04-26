@@ -27,12 +27,18 @@ async function bootstrap() {
   });
 
   
-  // ── Mount request-tracker dashboard on the underlying Express instance ──────
-  // Must be called AFTER app.listen() so the Express app is fully initialised.
-  // Dashboard UI  → http://localhost:<port>/request-tracker
-  // JSON API      → http://localhost:<port>/admin/request-tracker/*
+  // ── Trust the reverse-proxy headers forwarded by Render.com (and similar) ───
+  // Render terminates TLS at its load-balancer and forwards the real protocol in
+  // X-Forwarded-Proto.  Without this, Express sees req.protocol === 'http' even
+  // on an HTTPS deployment, which makes the dashboard serve a DATA_URL that
+  // starts with "http://" — blocked by the browser as Mixed Content.
   const { httpAdapter } = app.get(HttpAdapterHost);
   const expressApp = httpAdapter.getInstance();
+  expressApp.set('trust proxy', 1);   // <── fixes req.protocol on Render / Railway / Fly / Heroku
+
+  // ── Mount request-tracker dashboard on the underlying Express instance ──────
+  // Dashboard UI  → /request-tracker
+  // JSON API      → /admin/request-tracker/*
   expressApp.get('/__ping', (_req: any, res: { send: (arg0: string) => any; }) => res.send('ok'));
   const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/resumeforge';
   mountRequestTrackerDashboard(expressApp, mongoUri);

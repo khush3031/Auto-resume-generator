@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { NavLink } from '../../../components/NavLink';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -61,7 +62,8 @@ export default function RegisterPage() {
     setFormError(null);
     try {
       await registerAction(values.fullName, values.email, values.password, true);
-      router.push('/templates');
+      // Use replace so /register is removed from history — back button skips it.
+      router.replace('/templates');
     } catch (err) {
       setFormError((err as Error).message || 'Registration failed');
     }
@@ -192,7 +194,7 @@ export default function RegisterPage() {
 
           <p className="auth-form__footer">
             Already have an account?{' '}
-            <Link href="/login" className="auth-form__link">Log in</Link>
+            <NavLink href="/login" className="auth-form__link">Log in</NavLink>
           </p>
         </div>
       </div>

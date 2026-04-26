@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { NavLink } from './NavLink';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createResume, exportResumePdf, fetchResume, updateResume } from '../src/lib/api';
 import { useAuthStore } from '../src/store/auth.store';
@@ -1101,12 +1101,12 @@ export function BuilderShell({
       {/* ── Top bar (all breakpoints) ── */}
       <div className="builder-topbar">
         <div className="builder-topbar__left">
-          <Link href="/templates" className="builder-topbar__back">
+          <NavLink href="/templates" className="builder-topbar__back">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
               <path d="M19 12H5M12 5l-7 7 7 7" />
             </svg>
             Templates
-          </Link>
+          </NavLink>
           <span className="builder-topbar__divider" aria-hidden="true" />
           <div className="builder-topbar__info">
             <span className="builder-topbar__title">{template.name}</span>

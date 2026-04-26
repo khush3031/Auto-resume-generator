@@ -3,6 +3,7 @@
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { NavLink } from '../../../components/NavLink';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -54,7 +55,8 @@ function LoginForm() {
     setFormError(null);
     try {
       await login(values.email, values.password);
-      router.push(returnUrl);
+      // Use replace so /login is removed from history — back button skips it.
+      router.replace(returnUrl);
     } catch (err) {
       setFormError((err as Error).message || 'Login failed');
     }
@@ -109,7 +111,7 @@ function LoginForm() {
 
       <p className="auth-form__footer">
         New to ResumeForge?{' '}
-        <Link href="/register" className="auth-form__link">Create an account</Link>
+        <NavLink href="/register" className="auth-form__link">Create an account</NavLink>
       </p>
       <p className="auth-form__footer" style={{ marginTop: '8px', fontSize: '12px', color: 'var(--color-text-muted)' }}>
         By signing in you agree to our{' '}

@@ -1,11 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '../src/store/auth.store';
-
 import { Logo } from './Logo';
+import { NavLink } from './NavLink';
 
 export function Navbar() {
   const { user, isAuthenticated, logout, loadFromStorage } = useAuthStore();
@@ -27,24 +26,26 @@ export function Navbar() {
   return (
     <header className="navbar">
       <div className="navbar__inner">
-        <Link href="/" className="navbar__logo">
+        {/* NavLink: clicking the logo while on home is a no-op; otherwise
+            goes back to home if it exists in the stack, or pushes it. */}
+        <NavLink href="/" className="navbar__logo">
           <Logo size={34} />
-        </Link>
+        </NavLink>
 
         {/* Desktop nav */}
         <nav className="navbar__desktop" aria-label="Main navigation">
-          <Link href="/templates" className="navbar__link">Templates</Link>
-          {/* <Link href="/upload" className="navbar__link">Upload Resume</Link> */}
+          <NavLink href="/templates" className="navbar__link">Templates</NavLink>
+          {/* <NavLink href="/upload" className="navbar__link">Upload Resume</NavLink> */}
           {isAuthenticated ? (
             <>
-              <Link href="/dashboard" className="navbar__link">My Resumes</Link>
+              <NavLink href="/dashboard" className="navbar__link">My Resumes</NavLink>
               <span className="navbar__user-badge">{user?.fullName}</span>
               <button onClick={logout} className="navbar__btn">Logout</button>
             </>
           ) : (
             <>
-              <Link href="/login" className="navbar__btn">Login</Link>
-              <Link href="/register" className="navbar__btn navbar__btn--primary">Register</Link>
+              <NavLink href="/login" className="navbar__btn">Login</NavLink>
+              <NavLink href="/register" className="navbar__btn navbar__btn--primary">Register</NavLink>
             </>
           )}
         </nav>
@@ -77,11 +78,11 @@ export function Navbar() {
       >
         <nav className="navbar__mobile-nav" aria-label="Mobile navigation">
           <div className="navbar__mobile-links">
-            <Link href="/templates" className="navbar__mobile-link">Templates</Link>
-            {/* <Link href="/upload" className="navbar__mobile-link">Upload Resume</Link> */}
+            <NavLink href="/templates" className="navbar__mobile-link">Templates</NavLink>
+            {/* <NavLink href="/upload" className="navbar__mobile-link">Upload Resume</NavLink> */}
             {isAuthenticated ? (
               <>
-                <Link href="/dashboard" className="navbar__mobile-link">My Resumes</Link>
+                <NavLink href="/dashboard" className="navbar__mobile-link">My Resumes</NavLink>
                 <div className="navbar__divider" />
                 <span className="navbar__mobile-user">{user?.fullName}</span>
                 <button
@@ -94,8 +95,8 @@ export function Navbar() {
             ) : (
               <>
                 <div className="navbar__divider" />
-                <Link href="/login" className="navbar__mobile-link">Login</Link>
-                <Link href="/register" className="navbar__mobile-link navbar__mobile-link--primary">Register</Link>
+                <NavLink href="/login" className="navbar__mobile-link">Login</NavLink>
+                <NavLink href="/register" className="navbar__mobile-link navbar__mobile-link--primary">Register</NavLink>
               </>
             )}
           </div>

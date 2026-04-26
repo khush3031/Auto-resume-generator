@@ -61,7 +61,7 @@ export default function UploadPage() {
         `parsed_resume_${selectedTemplate}`,
         JSON.stringify(data.data),
       );
-      setTimeout(() => router.push(`/builder/${selectedTemplate}?source=upload`), 800);
+      setTimeout(() => router.replace(`/builder/${selectedTemplate}?source=upload`), 800);
     } catch (err: any) {
       setState('error');
       setError(err?.response?.data?.message || 'Failed to parse resume. Please try a different file.');
