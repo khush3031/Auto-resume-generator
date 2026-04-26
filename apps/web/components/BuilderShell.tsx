@@ -468,6 +468,7 @@ const TEMPLATE_ACCENT_COLORS: Record<string, string> = {
   'sage':         '#3a5e3b',
   'infographic':  '#7c3aed',   // left panel bg (var(--accent))
   'academic':     '#374151',
+  'harbor':       '#0f5c7a',
 };
 
 /** Convert any hex color to its lowercase 6-char form (#abc → #aabbcc) */

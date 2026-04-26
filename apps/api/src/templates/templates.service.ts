@@ -68,6 +68,7 @@ const DEFAULT_ACCENT_COLORS: Record<string, string> = {
   'sage':         '#3a5e3b',
   'infographic':  '#7c3aed',
   'academic':     '#374151',
+  'harbor':       '#0f5c7a',
 };
 
 @Injectable()

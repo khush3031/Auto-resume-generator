@@ -24,7 +24,7 @@ const ACCENT_MAP: Record<string, string> = {
   'compact': '#e53935', 'timeline': '#7c3aed',
   'mono': '#333333',
   'slate': '#38bdf8', 'indigo': '#4338ca', 'cobalt': '#0077cc', 'sage': '#3a5e3b',
-  'infographic': '#7c3aed', 'academic': '#374151',
+  'infographic': '#7c3aed', 'academic': '#374151', 'harbor': '#0f5c7a',
 };
 
 const DESIGN_FONT_STACKS: Record<string, string> = {

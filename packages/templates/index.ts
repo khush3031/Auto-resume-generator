@@ -232,6 +232,14 @@ export const templates: TemplateMeta[] = [
     thumbnail: '/templates/thumbnails/academic.png',
     htmlPath: 'academic.html'
   },
+  {
+    id: 'harbor',
+    name: 'Harbor',
+    slug: 'harbor',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/harbor.png',
+    htmlPath: 'harbor.html'
+  },
 ];
 
 export const templateStyles = ['Professional', 'Minimal', 'Creative', 'Modern'];

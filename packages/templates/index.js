@@ -214,6 +214,14 @@ const templates = [
     style: 'Professional',
     thumbnail: '/templates/thumbnails/corporate.png',
     htmlPath: 'corporate.html'
+  },
+  {
+    id: 'harbor',
+    name: 'Harbor',
+    slug: 'harbor',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/harbor.png',
+    htmlPath: 'harbor.html'
   }
 ];
 

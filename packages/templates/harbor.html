@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Harbor Resume</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap');
+    :root {
+      --accent: var(--resume-accent-color, #0f5c7a);
+      --text: #16202a;
+      --muted: #5f6b76;
+      --line: #d7e1e8;
+      --rail: #eff5f8;
+      --paper: #ffffff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Manrope', sans-serif; background: var(--paper); color: var(--text); }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: var(--paper); }
+
+    .topbar {
+      height: 14px;
+      background: linear-gradient(90deg, var(--accent) 0%, #123a4d 100%);
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 228px 1fr;
+      min-height: 1109px;
+    }
+
+    .rail {
+      background: var(--rail);
+      padding: 42px 24px 44px;
+      border-right: 1px solid var(--line);
+    }
+
+    .monogram {
+      width: 74px;
+      height: 74px;
+      border-radius: 22px;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-bottom: 18px;
+    }
+
+    .rail-name {
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .rail-title {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 26px;
+    }
+
+    .rail-section {
+      margin-bottom: 24px;
+    }
+
+    .rail-section h2 {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .rail-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .rail-item {
+      font-size: 11px;
+      line-height: 1.55;
+      color: var(--muted);
+      word-break: break-word;
+    }
+
+    .main {
+      padding: 40px 42px 46px;
+    }
+
+    .hero {
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 26px;
+    }
+
+    .hero-name {
+      font-family: 'Source Serif 4', serif;
+      font-size: 34px;
+      line-height: 1.08;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .hero-role {
+      font-size: 14px;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      color: var(--muted);
+      font-size: 11.5px;
+    }
+
+    .hero-meta span {
+      position: relative;
+    }
+
+    .hero-meta span::after {
+      content: '';
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      width: 3px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 999px;
+      transform: translateY(-50%);
+    }
+
+    .hero-meta span:last-child::after {
+      display: none;
+    }
+
+    section {
+      margin-bottom: 24px;
+    }
+
+    section h2 {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .summary {
+      font-size: 13px;
+      line-height: 1.8;
+      color: #33404c;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: 26px;
+    }
+
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar"></div>
+    <div class="shell">
+      <aside class="rail">
+        <div class="monogram">{{initials}}</div>
+        <div class="rail-name">{{fullName}}</div>
+        <div class="rail-title">{{jobTitle}}</div>
+
+        <section class="rail-section">
+          <h2>Contact</h2>
+          <div class="rail-stack">
+            <div class="rail-item">{{email}}</div>
+            <div class="rail-item">{{phone}}</div>
+            <div class="rail-item">{{location}}</div>
+            <div class="rail-item">{{linkedin}}</div>
+            <div class="rail-item">{{website}}</div>
+          </div>
+        </section>
+
+        <section class="rail-section">
+          <h2>Skills</h2>
+          {{skillsBlock}}
+        </section>
+
+        <section class="rail-section">
+          <h2>Languages</h2>
+          {{languagesBlock}}
+        </section>
+
+        <section class="rail-section">
+          <h2>Certifications</h2>
+          {{certificationBlocks}}
+        </section>
+      </aside>
+
+      <main class="main">
+        <div class="hero">
+          <div class="hero-name">{{fullName}}</div>
+          <div class="hero-role">{{jobTitle}}</div>
+          <div class="hero-meta">
+            <span>{{email}}</span>
+            <span>{{phone}}</span>
+            <span>{{location}}</span>
+            <span>{{linkedin}}</span>
+          </div>
+        </div>
+
+        <section>
+          <h2>Professional Summary</h2>
+          <p class="summary">{{summary}}</p>
+        </section>
+
+        <section>
+          <h2>Experience</h2>
+          {{experienceBlocks}}
+        </section>
+
+        <div class="two-col">
+          <section>
+            <h2>Education</h2>
+            {{educationBlocks}}
+          </section>
+
+          <section style="display:{{projectsSectionDisplay}}">
+            <h2>Projects</h2>
+            {{projectBlocks}}
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
