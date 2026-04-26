@@ -181,6 +181,24 @@ export async function deleteResume(resumeId: string) {
   await api.delete(`/resumes/${resumeId}`);
 }
 
+/**
+ * Fetch the saved form-data profile for the logged-in user.
+ * Returns an empty object if the user has no saved profile yet.
+ */
+export async function fetchUserResumeDetails(): Promise<Record<string, string>> {
+  const response = await api.get<ApiResponse<Record<string, string>>>('/resumes/my-details');
+  return response.data.data ?? {};
+}
+
+/**
+ * Save (upsert) the form-data profile for the logged-in user.
+ * Called debounced from BuilderShell whenever the user edits any field.
+ */
+export async function saveUserResumeDetails(formData: Record<string, string>): Promise<Record<string, string>> {
+  const response = await api.patch<ApiResponse<Record<string, string>>>('/resumes/my-details', { formData });
+  return response.data.data ?? {};
+}
+
 export async function exportResumePdf(resumeId: string, formData?: Record<string, string>) {
   const response = await api.post(
     `/resumes/${resumeId}/export`,
@@ -205,5 +223,7 @@ export default {
   fetchResume,
   fetchMyResumes,
   deleteResume,
-  exportResumePdf
+  exportResumePdf,
+  fetchUserResumeDetails,
+  saveUserResumeDetails,
 };

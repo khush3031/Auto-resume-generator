@@ -20,3 +20,34 @@ export const RESUME_COLORS: ResumeColor[] = [
 ];
 
 export const DEFAULT_COLOR = RESUME_COLORS[0]; // navy
+
+const HEX_COLOR_RX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+export function normalizeResumeColorHex(hex: string): string | null {
+  const trimmed = hex.trim();
+  if (!HEX_COLOR_RX.test(trimmed)) return null;
+
+  const value = trimmed.slice(1).toLowerCase();
+  if (value.length === 3) {
+    return `#${value.split('').map((char) => char + char).join('')}`;
+  }
+
+  return `#${value}`;
+}
+
+export function resolveResumeColor(hex: string): ResumeColor | null {
+  const normalized = normalizeResumeColorHex(hex);
+  if (!normalized) return null;
+
+  return RESUME_COLORS.find((color) => color.hex === normalized) ?? {
+    id: `custom-${normalized.slice(1)}`,
+    label: 'Custom',
+    hex: normalized,
+  };
+}
+
+export function isPresetResumeColor(hex: string): boolean {
+  const normalized = normalizeResumeColorHex(hex);
+  if (!normalized) return false;
+  return RESUME_COLORS.some((color) => color.hex === normalized);
+}

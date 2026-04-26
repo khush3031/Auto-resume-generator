@@ -20,13 +20,13 @@ export default function TemplatesPage() {
             <div>
               <p className="templates-header__eyebrow">Resume Templates</p>
               <h1 className="templates-header__title">
-                Choose the right resume design
-                <br /> for your next role.
+                Browse a deeper template library
+                <br /> built for different hiring moments.
               </h1>
             </div>
             <div>
               <p className="templates-header__desc">
-                Filter by style, preview strong layouts, and start building with live editing.
+                Compare ATS-safe, premium, compact, executive, and creative layouts, then tune typography and spacing live in the builder.
               </p>
             </div>
           </div>

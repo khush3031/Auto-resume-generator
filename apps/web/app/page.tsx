@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 };
 
 const STATS = [
-  { v: '16+',       l: 'Resume templates'   },
+  { v: '28+',       l: 'Resume templates'   },
   { v: '< 5 min',   l: 'Average build time' },
-  { v: '100%',      l: 'Free to use'        },
+  { v: 'Live',      l: 'Design controls'    },
   { v: 'ATS-ready', l: 'Recruiter-friendly' },
 ] as const;
 
@@ -20,7 +20,7 @@ const STEPS = [
   {
     n: '01',
     t: 'Pick a template',
-    d: 'Browse 16+ professionally designed layouts — minimal, modern, executive, ATS-optimised and more.',
+    d: 'Browse 28+ professionally designed layouts — from ATS-safe basics to richer premium-style editorial formats.',
   },
   {
     n: '02',

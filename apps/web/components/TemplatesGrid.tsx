@@ -18,6 +18,7 @@ export function TemplatesGrid() {
   const [templates, setTemplates] = useState<TemplateMeta[]>([]);
   const [status, setStatus] = useState<'loading' | 'waking' | 'error' | 'done'>('loading');
   const [attempt, setAttempt] = useState(0);
+  const [activeStyle, setActiveStyle] = useState<'All' | string>('All');
 
   useEffect(() => {
     let cancelled = false;
@@ -52,13 +53,38 @@ export function TemplatesGrid() {
     return () => { cancelled = true; };
   }, []);
 
+  const styleOptions = ['All', ...Array.from(new Set(templates.map((template) => template.style)))];
+  const filteredTemplates = activeStyle === 'All'
+    ? templates
+    : templates.filter((template) => template.style === activeStyle);
+
   if (status === 'done' && templates.length > 0) {
     return (
-      <div className="template-grid">
-        {templates.map((t) => (
-          <TemplateCard key={t.id} template={t} />
-        ))}
-      </div>
+      <>
+        <div className="template-toolbar">
+          <div className="template-toolbar__chips">
+            {styleOptions.map((style) => (
+              <button
+                key={style}
+                type="button"
+                onClick={() => setActiveStyle(style)}
+                className={`template-toolbar__chip${activeStyle === style ? ' template-toolbar__chip--active' : ''}`}
+              >
+                {style}
+              </button>
+            ))}
+          </div>
+          <p className="template-toolbar__count">
+            {filteredTemplates.length} template{filteredTemplates.length === 1 ? '' : 's'} ready
+          </p>
+        </div>
+
+        <div className="template-grid">
+          {filteredTemplates.map((t) => (
+            <TemplateCard key={t.id} template={t} />
+          ))}
+        </div>
+      </>
     );
   }
 

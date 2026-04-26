@@ -7,7 +7,7 @@ interface LogoProps {
   textColor?: string;
 }
 
-export function Logo({ size = 32, className = '', showText = true, textColor = 'var(--color-text-primary)' }: LogoProps) {
+export function Logo({ size = 32, className = '', showText = true, textColor }: LogoProps) {
   return (
     <div className={`flex items-center gap-2 ${className}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.625rem' }}>
       <svg
@@ -56,12 +56,13 @@ export function Logo({ size = 32, className = '', showText = true, textColor = '
         <span className="font-bold tracking-tight" style={{ 
           fontSize: size > 30 ? '1.35rem' : '1.1rem',
           fontWeight: 700,
-          color: textColor,
+          color: textColor || 'inherit',
           letterSpacing: '-0.02em'
         }}>
-          Resume<span style={{ color: textColor === '#ffffff' ? '#ffffff' : '#ef4444', opacity: textColor === '#ffffff' ? 0.9 : 1 }}>Forge</span>
+          Resume<span style={{ color: (textColor === '#ffffff' || textColor === 'white') ? '#ffffff' : '#ef4444', opacity: (textColor === '#ffffff' || textColor === 'white') ? 0.9 : 1 }}>Forge</span>
         </span>
       )}
     </div>
   );
 }
+

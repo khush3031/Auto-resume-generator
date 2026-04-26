@@ -8,15 +8,15 @@ import { useAuthStore } from '../src/store/auth.store';
 import { Logo } from './Logo';
 
 const loginSchema = z.object({
-  email:    z.string().email('Enter a valid email'),
+  email: z.string().email('Enter a valid email'),
   password: z.string().min(6, 'At least 6 characters')
 });
 
 const registerSchema = z
   .object({
-    fullName:        z.string().min(2, 'Full name is required'),
-    email:           z.string().email('Enter a valid email'),
-    password:        z.string().min(6, 'At least 6 characters'),
+    fullName: z.string().min(2, 'Full name is required'),
+    email: z.string().email('Enter a valid email'),
+    password: z.string().min(6, 'At least 6 characters'),
     confirmPassword: z.string().min(1, 'Please confirm your password')
   })
   .refine((d) => d.password === d.confirmPassword, {
@@ -24,18 +24,18 @@ const registerSchema = z
     message: 'Passwords do not match'
   });
 
-type LoginValues    = z.infer<typeof loginSchema>;
+type LoginValues = z.infer<typeof loginSchema>;
 type RegisterValues = z.infer<typeof registerSchema>;
 
 export function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [mode,        setMode]        = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [serverError, setServerError] = useState<string | null>(null);
-  const [success,     setSuccess]     = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  const loginAction    = useAuthStore((s) => s.login);
+  const loginAction = useAuthStore((s) => s.login);
   const registerAction = useAuthStore((s) => s.register);
 
-  const loginForm    = useForm<LoginValues>({    resolver: zodResolver(loginSchema) });
+  const loginForm = useForm<LoginValues>({ resolver: zodResolver(loginSchema) });
   const registerForm = useForm<RegisterValues>({ resolver: zodResolver(registerSchema) });
 
   useEffect(() => {
@@ -130,7 +130,7 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
             </p>
           </div>
         ) : mode === 'login' ? (
-          <form onSubmit={loginForm.handleSubmit(onLogin)} className="modal-form" noValidate>
+            <form onSubmit={loginForm.handleSubmit(onLogin)} className="modal-form" noValidate>
             <ModalField label="Email address" error={loginForm.formState.errors.email?.message}>
               <input type="email" placeholder="you@example.com" {...loginForm.register('email')} className="modal-input" />
             </ModalField>
@@ -143,7 +143,7 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
             </button>
           </form>
         ) : (
-          <form onSubmit={registerForm.handleSubmit(onRegister)} className="modal-form" noValidate>
+            <form onSubmit={registerForm.handleSubmit(onRegister)} className="modal-form" noValidate>
             <ModalField label="Full name" error={registerForm.formState.errors.fullName?.message}>
               <input placeholder="Jane Smith" {...registerForm.register('fullName')} className="modal-input" />
             </ModalField>

@@ -11,13 +11,22 @@ import { ResumePreviewer } from './ResumePreviewer';
 // import { AiSummarySuggestions } from './builder/AiSummarySuggestions';
 import { ColorPicker }   from './builder/ColorPicker';
 import { ZoomControls }  from './builder/ZoomControls';
-import { DEFAULT_COLOR, RESUME_COLORS, ResumeColor } from '../src/lib/resume-colors';
+import { DEFAULT_COLOR, ResumeColor, resolveResumeColor } from '../src/lib/resume-colors';
 
 
 const baseFormData: Record<string, string> = {
   fullName: '', jobTitle: '', email: '', phone: '',
   location: '', linkedin: '', website: '', initials: '', summary: '',
   _accentColor: '',
+  _designPreset: 'balanced',
+  _fontFamily: 'modern-sans',
+  _fontScale: '1',
+  _lineHeight: '1.5',
+  _sectionGap: '1',
+  _entryGap: '1',
+  _headingCaps: '0',
+  _sectionDividers: '1',
+  _paperTone: 'white',
   // Job 1 fields — always present (user starts with one job entry)
   job1Title: '', job1Company: '', job1Location: '', job1Start: '', job1End: '',
   job1Bullet1: '', job1Bullet2: '', job1Bullet3: '',
@@ -53,6 +62,25 @@ const sampleData: Record<string, string> = {
   cert1: 'AWS Certified Developer',   cert1Issuer: 'Amazon Web Services', cert1Year: '2022',
   cert2: 'Google Cloud Professional', cert2Issuer: 'Google',              cert2Year: '2023',
 };
+
+const FONT_FAMILY_OPTIONS = [
+  { id: 'modern-sans', label: 'Modern Sans' },
+  { id: 'executive-serif', label: 'Executive Serif' },
+  { id: 'technical-sans', label: 'Technical Sans' },
+  { id: 'editorial-serif', label: 'Editorial Serif' },
+] as const;
+
+const DESIGN_PRESETS = [
+  { id: 'compact', label: 'Compact', values: { _fontScale: '0.96', _lineHeight: '1.35', _sectionGap: '0.8', _entryGap: '0.78' } },
+  { id: 'balanced', label: 'Balanced', values: { _fontScale: '1', _lineHeight: '1.5', _sectionGap: '1', _entryGap: '1' } },
+  { id: 'airy', label: 'Airy', values: { _fontScale: '1.04', _lineHeight: '1.68', _sectionGap: '1.24', _entryGap: '1.18' } },
+] as const;
+
+const PAPER_TONE_OPTIONS = [
+  { id: 'white', label: 'White', hex: '#ffffff' },
+  { id: 'warm', label: 'Warm', hex: '#fffaf5' },
+  { id: 'cool', label: 'Cool', hex: '#f8fbff' },
+] as const;
 
 
 function jobFields(n: number): Record<string, string> {
@@ -417,6 +445,14 @@ const TEMPLATE_ACCENT_COLORS: Record<string, string> = {
   'clean-grid':   '#334155',
   'ats-friendly': '#374151',
   'ats':          '#374151',
+  'classic-pro':  '#0f3d5c',
+  'minimal-pro':  '#111827',
+  'executive-pro':'#1b1b1b',
+  'bold-pro':     '#ef4444',
+  'modern-pro':   '#114b5f',
+  'elegant-pro':  '#9d8189',
+  'clean-grid-pro': '#334155',
+  'ats-pro':      '#374151',
   'corporate':    '#1a1a2e',   // header bg (now var(--accent))
   'creative':     '#1a1a2e',   // sidebar bg (now var(--accent))
   'compact':      '#e53935',
@@ -467,6 +503,105 @@ function injectAccentColor(html: string, hex: string, templateId: string): strin
   result = result.includes('</head>') ? result.replace('</head>', cssVar + '\n</head>') : cssVar + result;
 
   return result;
+}
+
+const DESIGN_FONT_STACKS: Record<string, string> = {
+  'modern-sans': '"Aptos", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
+  'executive-serif': '"Iowan Old Style", Georgia, "Times New Roman", serif',
+  'technical-sans': '"IBM Plex Sans", "Segoe UI", Arial, sans-serif',
+  'editorial-serif': '"Palatino Linotype", "Book Antiqua", Palatino, serif',
+};
+
+function parseNumberSetting(value: string | undefined, fallback: number, min: number, max: number): number {
+  const parsed = Number.parseFloat(value ?? '');
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+}
+
+function injectDesignSystem(html: string, formData: Record<string, string>): string {
+  const fontFamilyId = formData['_fontFamily'] || 'modern-sans';
+  const fontFamily = DESIGN_FONT_STACKS[fontFamilyId] ?? DESIGN_FONT_STACKS['modern-sans'];
+  const fontScale = parseNumberSetting(formData['_fontScale'], 1, 0.9, 1.15);
+  const lineHeight = parseNumberSetting(formData['_lineHeight'], 1.5, 1.25, 1.85);
+  const sectionGap = parseNumberSetting(formData['_sectionGap'], 1, 0.7, 1.45);
+  const entryGap = parseNumberSetting(formData['_entryGap'], 1, 0.7, 1.45);
+  const headingCaps = formData['_headingCaps'] === '1';
+  const sectionDividers = formData['_sectionDividers'] !== '0';
+  const paperTone = formData['_paperTone'] === 'warm'
+    ? '#fffaf5'
+    : formData['_paperTone'] === 'cool'
+      ? '#f8fbff'
+      : '#ffffff';
+
+  const css = `
+<style id="resume-forge-design-system">
+  :root {
+    --rf-font-family: ${fontFamily};
+    --rf-font-scale: ${fontScale};
+    --rf-line-height: ${lineHeight};
+    --rf-section-gap: ${sectionGap};
+    --rf-entry-gap: ${entryGap};
+    --rf-heading-transform: ${headingCaps ? 'uppercase' : 'none'};
+    --rf-heading-spacing: ${headingCaps ? '0.12em' : '0'};
+    --rf-divider-width: ${sectionDividers ? '1px' : '0'};
+    --rf-paper-tone: ${paperTone};
+  }
+
+  html, body, .page {
+    font-family: var(--rf-font-family) !important;
+    font-size: calc(16px * var(--rf-font-scale));
+    line-height: var(--rf-line-height) !important;
+    background: var(--rf-paper-tone);
+  }
+
+  .page {
+    background: var(--rf-paper-tone) !important;
+  }
+
+  .page p,
+  .page li,
+  .page span,
+  .page a,
+  .page strong,
+  .page em {
+    line-height: inherit !important;
+  }
+
+  .page h1,
+  .page h2,
+  .page h3,
+  .page h4,
+  .page h5,
+  .page h6,
+  .page section > h2,
+  .page section > h3,
+  .page aside h2,
+  .page aside h3 {
+    text-transform: var(--rf-heading-transform) !important;
+    letter-spacing: var(--rf-heading-spacing) !important;
+  }
+
+  .page section {
+    margin-bottom: calc(18px * var(--rf-section-gap)) !important;
+  }
+
+  .page section:not(:last-of-type) {
+    border-bottom: var(--rf-divider-width) solid rgba(15, 23, 42, 0.1);
+    padding-bottom: calc(10px * var(--rf-section-gap));
+  }
+
+  .page ul li,
+  .page ol li {
+    margin-bottom: calc(4px * var(--rf-entry-gap));
+  }
+
+  .page section > div,
+  .page article > div {
+    margin-bottom: calc(10px * var(--rf-entry-gap));
+  }
+</style>`;
+
+  return html.includes('</head>') ? html.replace('</head>', `${css}\n</head>`) : css + html;
 }
 
 
@@ -540,6 +675,38 @@ export function BuilderShell({
 
   useEffect(() => { loadFromStorage(); }, [loadFromStorage]);
 
+  const applyAccentColor = useCallback((hex: string) => {
+    const resolved = resolveResumeColor(hex);
+    if (!resolved) return;
+
+    setAccentColor(resolved);
+    setFormData((prev) => (
+      prev._accentColor === resolved.hex ? prev : { ...prev, _accentColor: resolved.hex }
+    ));
+  }, []);
+
+  const applyDesignPreset = useCallback((presetId: string) => {
+    const preset = DESIGN_PRESETS.find((item) => item.id === presetId);
+    if (!preset) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      _designPreset: preset.id,
+      ...preset.values,
+    }));
+  }, []);
+
+  useEffect(() => {
+    if (formData._accentColor?.trim()) return;
+    const fallbackAccent = resolveResumeColor(TEMPLATE_ACCENT_COLORS[template.id] ?? DEFAULT_COLOR.hex);
+    if (!fallbackAccent) return;
+
+    setAccentColor(fallbackAccent);
+    setFormData((prev) => (
+      prev._accentColor?.trim() ? prev : { ...prev, _accentColor: fallbackAccent.hex }
+    ));
+  }, [formData._accentColor, template.id]);
+
   // ── Auto-fill from saved profile when opening a NEW template (no existing resume) ──
   // Only runs once per builder session; skipped when editing an existing resume.
   useEffect(() => {
@@ -588,6 +755,9 @@ export function BuilderShell({
       let pc = 0;
       for (let i = 1; i <= 10; i++) { if (saved[`project${i}Name`]?.trim()) pc = i; else break; }
       if (pc > 0) { setProjects(Array.from({ length: pc }, (_, i) => i + 1)); projCounter.current = pc; }
+
+      const savedAccent = resolveResumeColor(saved['_accentColor'] ?? '');
+      if (savedAccent) setAccentColor(savedAccent);
     }).catch(() => {}); // silently ignore — non-critical
   }, [isAuthenticated, initialResumeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -738,7 +908,12 @@ export function BuilderShell({
   }, [template.id]);
 
   useEffect(() => {
-    setHtml(injectAccentColor(populateTemplate(template.htmlContent, formData), accentColor.hex, template.id));
+    const themedHtml = injectAccentColor(
+      populateTemplate(template.htmlContent, formData),
+      accentColor.hex,
+      template.id,
+    );
+    setHtml(injectDesignSystem(themedHtml, formData));
   }, [formData, template.htmlContent, accentColor.hex, template.id]);
 
   // Load existing resume when editing from dashboard
@@ -778,10 +953,8 @@ export function BuilderShell({
       for (let i = 1; i <= 10; i++) { if (d[`project${i}Name`]?.trim()) pc = i; else break; }
       if (pc > 0) { setProjects(Array.from({ length: pc }, (_, i) => i + 1)); projCounter.current = pc; }
 
-      if (d['_accentColor']) {
-        const found = RESUME_COLORS.find((c) => c.hex === d['_accentColor']);
-        if (found) setAccentColor(found);
-      }
+      const savedAccent = resolveResumeColor(d['_accentColor'] ?? '');
+      if (savedAccent) setAccentColor(savedAccent);
     }).catch(() => {});
   }, [initialResumeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -823,6 +996,14 @@ export function BuilderShell({
       if (Object.keys(next).length === 0) setShowErrorBanner(false);
       return next;
     });
+  }, []);
+
+  const updateDesignField = useCallback((field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      _designPreset: DESIGN_PRESETS.some((preset) => preset.id === prev._designPreset) ? 'custom' : prev._designPreset,
+      [field]: value,
+    }));
   }, []);
 
   // Re-indexing remove handlers for langs and skills so gaps never form
@@ -965,6 +1146,103 @@ export function BuilderShell({
 
   const formSections = (
     <div className="form-sections">
+      <FormSection title="Design Studio" initialOpen={false}>
+        <div className="builder-design-panel">
+          <div className="builder-design-row">
+            <span className="builder-field__label">Density Presets</span>
+            <div className="builder-chip-row">
+              {DESIGN_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => applyDesignPreset(preset.id)}
+                  className={`builder-chip${formData._designPreset === preset.id ? ' builder-chip--active' : ''}`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <SelectInput
+            label="Font Voice"
+            value={formData._fontFamily}
+            onChange={(value) => updateDesignField('_fontFamily', value)}
+            options={FONT_FAMILY_OPTIONS.map((option) => ({ value: option.id, label: option.label }))}
+          />
+
+          <RangeInput
+            label="Type Scale"
+            value={formData._fontScale}
+            min={0.9}
+            max={1.15}
+            step={0.01}
+            display={`${Math.round(parseNumberSetting(formData._fontScale, 1, 0.9, 1.15) * 100)}%`}
+            onChange={(value) => updateDesignField('_fontScale', value)}
+          />
+
+          <RangeInput
+            label="Line Height"
+            value={formData._lineHeight}
+            min={1.25}
+            max={1.85}
+            step={0.01}
+            display={parseNumberSetting(formData._lineHeight, 1.5, 1.25, 1.85).toFixed(2)}
+            onChange={(value) => updateDesignField('_lineHeight', value)}
+          />
+
+          <RangeInput
+            label="Section Rhythm"
+            value={formData._sectionGap}
+            min={0.7}
+            max={1.45}
+            step={0.01}
+            display={parseNumberSetting(formData._sectionGap, 1, 0.7, 1.45).toFixed(2)}
+            onChange={(value) => updateDesignField('_sectionGap', value)}
+          />
+
+          <RangeInput
+            label="Entry Spacing"
+            value={formData._entryGap}
+            min={0.7}
+            max={1.45}
+            step={0.01}
+            display={parseNumberSetting(formData._entryGap, 1, 0.7, 1.45).toFixed(2)}
+            onChange={(value) => updateDesignField('_entryGap', value)}
+          />
+
+          <div className="builder-design-row">
+            <span className="builder-field__label">Paper Tone</span>
+            <div className="builder-tone-row">
+              {PAPER_TONE_OPTIONS.map((tone) => (
+                <button
+                  key={tone.id}
+                  type="button"
+                  onClick={() => updateDesignField('_paperTone', tone.id)}
+                  className={`builder-tone${formData._paperTone === tone.id ? ' builder-tone--active' : ''}`}
+                >
+                  <span className="builder-tone__swatch" style={{ background: tone.hex }} aria-hidden="true" />
+                  <span>{tone.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="builder-toggle-grid">
+            <ToggleInput
+              label="Uppercase section headings"
+              checked={formData._headingCaps === '1'}
+              onChange={(checked) => updateDesignField('_headingCaps', checked ? '1' : '0')}
+            />
+            <ToggleInput
+              label="Section dividers"
+              checked={formData._sectionDividers !== '0'}
+              onChange={(checked) => updateDesignField('_sectionDividers', checked ? '1' : '0')}
+            />
+          </div>
+        </div>
+      </FormSection>
+
       <FormSection title="Personal Info">
         <Input id="field-fullName" label="Full Name *"  field="fullName"  value={formData.fullName}  onChange={updateField} error={errors.fullName} />
         <Input label="Job Title"                        field="jobTitle"  value={formData.jobTitle}  onChange={updateField} />
@@ -1270,11 +1548,7 @@ export function BuilderShell({
           {/* Color theme picker */}
           <ColorPicker
             selected={accentColor.hex}
-            onChange={(color) => {
-              setAccentColor(color);
-              // persist color into formData so it's auto-saved and used for PDF export
-              setFormData((prev) => ({ ...prev, _accentColor: color.hex }));
-            }}
+            onChange={(color) => applyAccentColor(color.hex)}
           />
 
           <div className="builder-preview-body">
@@ -1302,12 +1576,29 @@ export function BuilderShell({
 
 // ─── Primitive components ─────────────────────────────────────────────────────
 
-function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
+function FormSection({ title, children, initialOpen = true }: { title: string; children: React.ReactNode; initialOpen?: boolean }) {
+  const [isOpen, setIsOpen] = useState(initialOpen);
   return (
     <div className="form-section">
-      <h3 className="form-section__title">{title}</h3>
-      <div className="form-section__fields">{children}</div>
+      <button
+        type="button"
+        className="form-section__header"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+      >
+        <h3 className="form-section__title">{title}</h3>
+        <ChevronDownIcon className={`form-section__chevron${isOpen ? ' form-section__chevron--open' : ''}`} />
+      </button>
+      {isOpen && <div className="form-section__fields">{children}</div>}
     </div>
+  );
+}
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="m6 9 6 6 6-6" />
+    </svg>
   );
 }
 
@@ -1345,6 +1636,96 @@ function XIcon() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
       <path d="M18 6 6 18M6 6l12 12" />
     </svg>
+  );
+}
+
+function SelectInput({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <label className="builder-field">
+      <span className="builder-field__label">{label}</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="builder-select"
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function RangeInput({
+  label,
+  value,
+  min,
+  max,
+  step,
+  display,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  min: number;
+  max: number;
+  step: number;
+  display: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="builder-field builder-field--range">
+      <span className="builder-field__label">
+        <span>{label}</span>
+        <span className="builder-range-value">{display}</span>
+      </span>
+      <input
+        type="range"
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        onChange={(event) => onChange(event.target.value)}
+        className="builder-range"
+      />
+    </label>
+  );
+}
+
+function ToggleInput({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="builder-toggle">
+      <span className="builder-toggle__label">{label}</span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="builder-toggle__input"
+      />
+      <span className="builder-toggle__track" aria-hidden="true">
+        <span className="builder-toggle__thumb" />
+      </span>
+    </label>
   );
 }
 

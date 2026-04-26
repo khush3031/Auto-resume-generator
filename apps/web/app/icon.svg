@@ -1,8 +1,8 @@
 <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#15639e" />
-      <stop offset="100%" stopColor="#0f3d5c" />
+      <stop offset="0%" stop-color="#15639e" />
+      <stop offset="100%" stop-color="#0f3d5c" />
     </linearGradient>
   </defs>
   
@@ -15,9 +15,9 @@
   
   <path d="M58 25V39H72L58 25Z" fill="#e2e8f0" />
   
-  <rect x="40" y="46" width="22" height="3" rx="1.5" fill="#0f3d5c" fillOpacity="0.2" />
-  <rect x="40" y="54" width="22" height="3" rx="1.5" fill="#0f3d5c" fillOpacity="0.2" />
-  <rect x="40" y="62" width="14" height="3" rx="1.5" fill="#0f3d5c" fillOpacity="0.2" />
+  <rect x="40" y="46" width="22" height="3" rx="1.5" fill="#0f3d5c" fill-opacity="0.2" />
+  <rect x="40" y="54" width="22" height="3" rx="1.5" fill="#0f3d5c" fill-opacity="0.2" />
+  <rect x="40" y="62" width="14" height="3" rx="1.5" fill="#0f3d5c" fill-opacity="0.2" />
   
   <circle cx="70" cy="70" r="14" fill="#ef4444" />
   

@@ -81,6 +81,70 @@ export const templates: TemplateMeta[] = [
     htmlPath: 'ats-friendly.html'
   },
   {
+    id: 'classic-pro',
+    name: 'Classic Pro',
+    slug: 'classic-pro',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/classic-pro.png',
+    htmlPath: 'classic-pro.html'
+  },
+  {
+    id: 'minimal-pro',
+    name: 'Minimal Pro',
+    slug: 'minimal-pro',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/minimal-pro.png',
+    htmlPath: 'minimal-pro.html'
+  },
+  {
+    id: 'executive-pro',
+    name: 'Executive Pro',
+    slug: 'executive-pro',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/executive-pro.png',
+    htmlPath: 'executive-pro.html'
+  },
+  {
+    id: 'modern-pro',
+    name: 'Modern Pro',
+    slug: 'modern-pro',
+    style: 'Creative',
+    thumbnail: '/templates/thumbnails/modern-pro.png',
+    htmlPath: 'modern-pro.html'
+  },
+  {
+    id: 'elegant-pro',
+    name: 'Elegant Pro',
+    slug: 'elegant-pro',
+    style: 'Creative',
+    thumbnail: '/templates/thumbnails/elegant-pro.png',
+    htmlPath: 'elegant-pro.html'
+  },
+  {
+    id: 'bold-pro',
+    name: 'Bold Pro',
+    slug: 'bold-pro',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/bold-pro.png',
+    htmlPath: 'bold-pro.html'
+  },
+  {
+    id: 'clean-grid-pro',
+    name: 'Clean Grid Pro',
+    slug: 'clean-grid-pro',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/clean-grid-pro.png',
+    htmlPath: 'clean-grid-pro.html'
+  },
+  {
+    id: 'ats-pro',
+    name: 'ATS Pro',
+    slug: 'ats-pro',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/ats-pro.png',
+    htmlPath: 'ats-pro.html'
+  },
+  {
     id: 'slate',
     name: 'Slate',
     slug: 'slate',
