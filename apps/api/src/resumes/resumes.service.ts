@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, InternalServerErro
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Resume, ResumeDocument } from './schemas/resume.schema';
+import { UserResumeDetails, UserResumeDetailsDocument } from './schemas/userResumeDetails.schema';
 import { templates } from '@resumeforge/templates';
 import { promises as fs } from 'fs';
 import { join } from 'path';
@@ -11,7 +12,10 @@ import { UpdateResumeDto } from './dto/update-resume.dto';
 
 @Injectable()
 export class ResumesService {
-  constructor(@InjectModel(Resume.name) private readonly resumeModel: Model<ResumeDocument>) {}
+  constructor(
+    @InjectModel(Resume.name) private readonly resumeModel: Model<ResumeDocument>,
+    @InjectModel(UserResumeDetails.name) private readonly userResumeDetailsModel: Model<UserResumeDetailsDocument>,
+  ) {}
 
   // ─── CRUD ─────────────────────────────────────────────────────────────────────
 
@@ -117,6 +121,50 @@ export class ResumesService {
     resume.userId = new Types.ObjectId(userId);
     await resume.save();
     return resume.toObject();
+  }
+
+  // ─── User Resume Details (cross-template profile) ─────────────────────────────
+
+  /**
+   * Return the saved form-data profile for a user, or null if none exists yet.
+   */
+  async getUserResumeDetails(userId: string): Promise<Record<string, string> | null> {
+    if (!Types.ObjectId.isValid(userId)) return null;
+    const doc = await this.userResumeDetailsModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .lean()
+      .exec();
+    return doc ? (doc.formData as Record<string, string>) : null;
+  }
+
+  /**
+   * Upsert (create or overwrite) the form-data profile for a user.
+   * We only persist non-empty values so blank new templates don't wipe saved data.
+   */
+  async upsertUserResumeDetails(
+    userId: string,
+    formData: Record<string, string>,
+  ): Promise<Record<string, string>> {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid user ID');
+    }
+
+    // Strip empty strings — keep only fields that have actual content
+    const cleaned: Record<string, string> = {};
+    for (const [k, v] of Object.entries(formData)) {
+      if (typeof v === 'string' && v.trim()) cleaned[k] = v;
+    }
+
+    const doc = await this.userResumeDetailsModel
+      .findOneAndUpdate(
+        { userId: new Types.ObjectId(userId) },
+        { $set: { formData: cleaned } },
+        { upsert: true, new: true },
+      )
+      .lean()
+      .exec();
+
+    return doc!.formData as Record<string, string>;
   }
 
   // ─── Sanitization ─────────────────────────────────────────────────────────────

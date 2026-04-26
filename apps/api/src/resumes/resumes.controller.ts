@@ -47,6 +47,27 @@ export class ResumesController {
     return { success: true, data: resumes, message: 'User resumes loaded.' };
   }
 
+  // ------------------------------------------------- USER RESUME DETAILS (profile)
+  // IMPORTANT: declared before :id routes so "my-details" isn't treated as an id.
+
+  /** GET /resumes/my-details — return the saved form-data profile for the logged-in user */
+  @UseGuards(JwtAuthGuard)
+  @Get('my-details')
+  async getMyDetails(@Req() req: Request) {
+    const user = req.user as any;
+    const formData = await this.resumesService.getUserResumeDetails(user.sub);
+    return { success: true, data: formData ?? {}, message: 'User resume details loaded.' };
+  }
+
+  /** PATCH /resumes/my-details — upsert the form-data profile for the logged-in user */
+  @UseGuards(JwtAuthGuard)
+  @Patch('my-details')
+  async upsertMyDetails(@Req() req: Request, @Body() body: { formData: Record<string, string> }) {
+    const user = req.user as any;
+    const saved = await this.resumesService.upsertUserResumeDetails(user.sub, body.formData ?? {});
+    return { success: true, data: saved, message: 'User resume details saved.' };
+  }
+
   // ------------------------------------------------------- SINGLE RESUME (public)
   @Get(':id')
   async findOne(@Param('id') id: string) {

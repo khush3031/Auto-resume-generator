@@ -2,7 +2,7 @@
 
 import { NavLink } from './NavLink';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createResume, exportResumePdf, fetchResume, updateResume } from '../src/lib/api';
+import { createResume, exportResumePdf, fetchResume, fetchUserResumeDetails, saveUserResumeDetails, updateResume } from '../src/lib/api';
 import { useAuthStore } from '../src/store/auth.store';
 import { AuthModal } from './AuthModal';
 import { ResumePreviewer } from './ResumePreviewer';
@@ -533,10 +533,77 @@ export function BuilderShell({
   const [isDragging,      setIsDragging]      = useState(false);
   const [previewZoom,     setPreviewZoom]     = useState<number>(0.75);
 
-  const debounceRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const panelWidthRef  = useRef<number | null>(null);
+  const debounceRef       = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const profileSaveRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const profileLoadedRef  = useRef(false);  // prevent multiple fetches per mount
+  const panelWidthRef     = useRef<number | null>(null);
 
   useEffect(() => { loadFromStorage(); }, [loadFromStorage]);
+
+  // ── Auto-fill from saved profile when opening a NEW template (no existing resume) ──
+  // Only runs once per builder session; skipped when editing an existing resume.
+  useEffect(() => {
+    if (initialResumeId) return;           // editing an existing resume — don't overwrite
+    if (profileLoadedRef.current) return;  // already fetched this session
+    if (!isAuthenticated) return;          // guest users have no profile
+    profileLoadedRef.current = true;
+
+    fetchUserResumeDetails().then((saved) => {
+      if (!saved || !Object.keys(saved).length) return;
+      setFormData((prev) => {
+        // Merge: saved values fill in empty fields; user-entered values are preserved
+        const next = { ...prev };
+        for (const [k, v] of Object.entries(saved)) {
+          if (typeof v === 'string' && v.trim() && !next[k]?.trim()) {
+            next[k] = v;
+          }
+        }
+        return next;
+      });
+
+      // Restore section counters from saved profile data
+      let jc = 0;
+      for (let i = 1; i <= 10; i++) { if (saved[`job${i}Title`]?.trim()) jc = i; else break; }
+      if (jc > 0) { setJobs(Array.from({ length: jc }, (_, i) => i + 1)); jobCounter.current = jc; }
+
+      let cc = 0;
+      for (let i = 1; i <= 10; i++) { if (saved[`cert${i}`]?.trim()) cc = i; else break; }
+      if (cc > 0) { setCerts(Array.from({ length: cc }, (_, i) => i + 1)); certCounter.current = cc; }
+
+      let skc = 0;
+      for (let i = 1; i <= 30; i++) { if (saved[`skill${i}`]?.trim()) skc = i; else if (i > 5) break; }
+      if (skc > 0) { setSkills(Array.from({ length: skc }, (_, i) => i + 1)); skillCounter.current = skc; }
+
+      let lc = 0;
+      for (let i = 1; i <= 10; i++) { if (saved[`lang${i}`]?.trim()) lc = i; else break; }
+      if (lc > 0) { setLangs(Array.from({ length: lc }, (_, i) => i + 1)); langCounter.current = lc; }
+
+      let ec = 0;
+      for (let i = 1; i <= 5; i++) {
+        const key = i === 1 ? 'degree' : `degree${i}`;
+        if (saved[key]?.trim()) ec = i; else break;
+      }
+      if (ec > 0) { setEducations(Array.from({ length: ec }, (_, i) => i + 1)); eduCounter.current = ec; }
+
+      let pc = 0;
+      for (let i = 1; i <= 10; i++) { if (saved[`project${i}Name`]?.trim()) pc = i; else break; }
+      if (pc > 0) { setProjects(Array.from({ length: pc }, (_, i) => i + 1)); projCounter.current = pc; }
+    }).catch(() => {}); // silently ignore — non-critical
+  }, [isAuthenticated, initialResumeId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Auto-save profile: persist form data to /resumes/my-details on every change ──
+  // Debounced 3s so we don't hammer the API on every keystroke.
+  // Only runs for authenticated users; skipped for guests.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    if (profileSaveRef.current) clearTimeout(profileSaveRef.current);
+    profileSaveRef.current = setTimeout(() => {
+      const hasContent = !!(formData['fullName']?.trim() || formData['email']?.trim());
+      if (!hasContent) return; // don't save a completely empty form
+      saveUserResumeDetails(formData).catch(() => {}); // fire-and-forget
+    }, 1000);
+    return () => { if (profileSaveRef.current) clearTimeout(profileSaveRef.current); };
+  }, [formData, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Restore saved panel width from localStorage
   useEffect(() => {
@@ -852,6 +919,10 @@ export function BuilderShell({
     if (!resumeId) return;
     try {
       setIsDownloading(true);
+      // Persist the user's profile immediately so it's available on other templates
+      // even if the user navigates away right after downloading.
+      if (profileSaveRef.current) clearTimeout(profileSaveRef.current);
+      saveUserResumeDetails(formData).catch(() => {});
       // Cancel any pending debounce and pass formData directly in the export
       // request — the server uses it instead of reading (potentially stale) MongoDB.
       if (debounceRef.current) clearTimeout(debounceRef.current);
