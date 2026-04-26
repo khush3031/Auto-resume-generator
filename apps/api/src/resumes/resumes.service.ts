@@ -34,6 +34,27 @@ const DESIGN_FONT_STACKS: Record<string, string> = {
   'editorial-serif': '"Palatino Linotype", "Book Antiqua", Palatino, serif',
 };
 
+const LOCAL_BROWSER_CANDIDATES: Partial<Record<NodeJS.Platform, string[]>> = {
+  win32: [
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+  ],
+  linux: [
+    '/opt/render/project/src/.cache/puppeteer/chrome/linux-121.0.6167.85/chrome-linux64/chrome',
+    '/usr/bin/google-chrome',
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/chromium',
+    '/usr/bin/microsoft-edge',
+  ],
+  darwin: [
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+  ],
+};
+
 @Injectable()
 export class ResumesService {
   constructor(
@@ -777,11 +798,50 @@ export class ResumesService {
     });
   }
 
+  private async fileExists(path: string): Promise<boolean> {
+    try {
+      await fs.access(path);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private async resolveBrowserExecutablePath(): Promise<string | undefined> {
+    const explicitPath = process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_BIN;
+    const candidates = [
+      explicitPath,
+      ...(
+        LOCAL_BROWSER_CANDIDATES[process.platform]
+        ?? []
+      ),
+    ].filter((value): value is string => Boolean(value));
+
+    for (const candidate of candidates) {
+      if (await this.fileExists(candidate)) {
+        return candidate;
+      }
+    }
+
+    try {
+      const bundledPath = puppeteer.executablePath();
+      if (bundledPath && await this.fileExists(bundledPath)) {
+        return bundledPath;
+      }
+    } catch {
+      // Ignore and fall through to the launch error below.
+    }
+
+    return undefined;
+  }
+
   private async createPdfBuffer(html: string, candidateName = 'Resume'): Promise<Buffer> {
     let browser: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
     const A4_H = 1122;
     try {
+      const executablePath = await this.resolveBrowserExecutablePath();
       browser = await puppeteer.launch({
+        executablePath,
         headless: 'new' as any,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--font-render-hinting=none'],
       });

@@ -216,6 +216,22 @@ const templates = [
     htmlPath: 'corporate.html'
   },
   {
+    id: 'infographic',
+    name: 'Infographic',
+    slug: 'infographic',
+    style: 'Creative',
+    thumbnail: '/templates/thumbnails/infographic.png',
+    htmlPath: 'infographic.html'
+  },
+  {
+    id: 'academic',
+    name: 'Academic',
+    slug: 'academic',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/academic.png',
+    htmlPath: 'academic.html'
+  },
+  {
     id: 'harbor',
     name: 'Harbor',
     slug: 'harbor',
