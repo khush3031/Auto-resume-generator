@@ -1,4 +1,5 @@
 const nextConfig = {
+  distDir: '.next-runtime',
   images: {
     remotePatterns: [
       {
@@ -14,8 +15,11 @@ const nextConfig = {
       {
         source: '/(.*)',
         headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-UA-Compatible',        value: 'IE=edge' },
+          { key: 'X-Content-Type-Options',    value: 'nosniff' },
+          { key: 'X-UA-Compatible',           value: 'IE=edge' },
+          // Tells ngrok to skip its browser warning page for all requests
+          // (needed so crawlers like opengraph.xyz reach the actual app)
+          { key: 'ngrok-skip-browser-warning', value: 'true' },
         ],
       },
     ];

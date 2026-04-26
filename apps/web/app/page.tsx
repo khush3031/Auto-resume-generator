@@ -2,11 +2,44 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { HeroCtas } from '../components/HeroCtas';
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
+  'https://resumeforge-web.onrender.com';
+
+const PAGE_TITLE = 'ResumeForge — Free Resume Builder Online | 28+ Templates';
+const PAGE_DESC  = 'Build a professional resume in minutes. Choose from 28+ ATS-friendly templates, edit live, and download a polished PDF — completely free. No sign-up needed to start.';
+
 export const metadata: Metadata = {
-  title: 'ResumeForge — Build Your Professional Resume in Minutes',
-  description:
-    'Create a professional resume in minutes with ResumeForge. ' +
-    'Browse templates, edit live, preview, and export a polished PDF.',
+  title: PAGE_TITLE,
+  description: PAGE_DESC,
+  alternates: { canonical: SITE_URL },
+  keywords: ['resume builder', 'free resume maker', 'ATS resume', 'CV builder', 'resume templates', 'professional resume', 'PDF resume'],
+  openGraph: {
+    type: 'website',
+    url: SITE_URL,
+    siteName: 'ResumeForge',
+    title: PAGE_TITLE,
+    description: PAGE_DESC,
+    images: [{ url: `${SITE_URL}/opengraph-image`, width: 1200, height: 630, alt: PAGE_TITLE }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: PAGE_TITLE,
+    description: PAGE_DESC,
+    images: [`${SITE_URL}/opengraph-image`],
+  },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'ResumeForge',
+  url: SITE_URL,
+  description: PAGE_DESC,
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  featureList: ['28+ Resume Templates', 'Live Preview', 'PDF Export', 'ATS-Friendly Layouts', 'AI-Powered Suggestions'],
 };
 
 const STATS = [
@@ -39,6 +72,10 @@ import { Logo } from '../components/Logo';
 export default function HomePage() {
   return (
     <div className="page-wrapper">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       {/* ── HERO ── */}
       <section className="landing-hero">

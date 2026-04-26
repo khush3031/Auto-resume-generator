@@ -1,4 +1,6 @@
 User-agent: *
-Disallow:
+Disallow: /dashboard
+Disallow: /builder/
+Disallow: /preview/
 
-Sitemap: /sitemap.xml
+Sitemap: https://resumeforge-web.onrender.com/sitemap.xml

@@ -12,6 +12,7 @@ import { ResumePreviewer } from './ResumePreviewer';
 import { ColorPicker }   from './builder/ColorPicker';
 import { ZoomControls }  from './builder/ZoomControls';
 import { DEFAULT_COLOR, ResumeColor, resolveResumeColor } from '../src/lib/resume-colors';
+import { HIDDEN_SENTINEL, hideEmptyResumeSections } from '@resumeforge/shared';
 
 
 const baseFormData: Record<string, string> = {
@@ -409,24 +410,27 @@ function populateTemplate(html: string, data: Record<string, string>): string {
   const prepped  = injectWrapFix(sanitizeEncoding(html));
   const expanded = expandAllDynamicSlots(prepped, data);
 
-  // Replace block placeholders BEFORE the general {{key}} sweep so they
-  // don't get wiped to empty strings (data has no "experienceBlocks" key).
+  const hide = (key: string) => data[key] === '1';
+
   const hasProjects = Array.from({ length: 10 }, (_, i) => i + 1)
     .some((i) => (data[`project${i}Name`] ?? '').trim());
 
   const withBlocks = expanded
-    .replace(/\{\{experienceBlocks\}\}/g,      buildExpBlocksFront(data))
-    .replace(/\{\{certificationBlocks\}\}/g,   buildCertBlocksFront(data))
-    .replace(/\{\{projectBlocks\}\}/g,         buildProjBlocksFront(data))
-    .replace(/\{\{projectsSectionDisplay\}\}/g, hasProjects ? 'block' : 'none')
-    .replace(/\{\{educationBlocks\}\}/g,       buildEducationBlocksFront(data))
-    .replace(/\{\{languagesBlock\}\}/g,        buildLanguagesBlockFront(data))
-    .replace(/\{\{skillsBlock\}\}/g,           buildSkillsBlockFront(data));
+    .replace(/\{\{experienceBlocks\}\}/g,      hide('_hideExperience')    ? HIDDEN_SENTINEL : buildExpBlocksFront(data))
+    .replace(/\{\{certificationBlocks\}\}/g,   hide('_hideCerts')         ? HIDDEN_SENTINEL : buildCertBlocksFront(data))
+    .replace(/\{\{projectBlocks\}\}/g,         hide('_hideProjects')      ? HIDDEN_SENTINEL : buildProjBlocksFront(data))
+    .replace(/\{\{projectsSectionDisplay\}\}/g, (hide('_hideProjects') || !hasProjects) ? 'none' : 'block')
+    .replace(/\{\{educationBlocks\}\}/g,       hide('_hideEducation')     ? HIDDEN_SENTINEL : buildEducationBlocksFront(data))
+    .replace(/\{\{languagesBlock\}\}/g,        hide('_hideLanguages')     ? HIDDEN_SENTINEL : buildLanguagesBlockFront(data))
+    .replace(/\{\{skillsBlock\}\}/g,           hide('_hideSkills')        ? HIDDEN_SENTINEL : buildSkillsBlockFront(data));
 
-  return withBlocks.replace(/{{\s*([^}\s]+)\s*}}/g, (_, key: string) => {
+  const populated = withBlocks.replace(/{{\s*([^}\s]+)\s*}}/g, (_, key: string) => {
+    if (key === 'summary' && hide('_hideSummary')) return HIDDEN_SENTINEL;
     const v = data[key];
     return v !== undefined && v.trim() !== '' ? v : (sampleData[key] ?? '');
   });
+
+  return hideEmptyResumeSections(populated);
 }
 
 
@@ -525,6 +529,7 @@ function injectDesignSystem(html: string, formData: Record<string, string>): str
   const lineHeight = parseNumberSetting(formData['_lineHeight'], 1.5, 1.25, 1.85);
   const sectionGap = parseNumberSetting(formData['_sectionGap'], 1, 0.7, 1.45);
   const entryGap = parseNumberSetting(formData['_entryGap'], 1, 0.7, 1.45);
+  const letterSpacing = parseNumberSetting(formData['_letterSpacing'], 0, 0, 0.15);
   const headingCaps = formData['_headingCaps'] === '1';
   const sectionDividers = formData['_sectionDividers'] !== '0';
   const paperTone = formData['_paperTone'] === 'warm'
@@ -541,16 +546,26 @@ function injectDesignSystem(html: string, formData: Record<string, string>): str
     --rf-line-height: ${lineHeight};
     --rf-section-gap: ${sectionGap};
     --rf-entry-gap: ${entryGap};
+    --rf-letter-spacing: ${letterSpacing.toFixed(4)}em;
     --rf-heading-transform: ${headingCaps ? 'uppercase' : 'none'};
     --rf-heading-spacing: ${headingCaps ? '0.12em' : '0'};
     --rf-divider-width: ${sectionDividers ? '1px' : '0'};
     --rf-paper-tone: ${paperTone};
   }
 
+  /* Section visibility sentinels */
+  .rf-hidden { display: none !important; }
+  .page section:has(> .rf-hidden),
+  .page section:has(> p > .rf-hidden) { display: none !important; }
+  .page .m-section:has(> .rf-hidden),
+  .page .m-section:has(> p > .rf-hidden) { display: none !important; }
+  .page aside:not(:has(> section:not(:has(.rf-hidden)))) { display: none !important; }
+
   html, body, .page {
     font-family: var(--rf-font-family) !important;
     font-size: calc(16px * var(--rf-font-scale));
     line-height: var(--rf-line-height) !important;
+    letter-spacing: var(--rf-letter-spacing);
     background: var(--rf-paper-tone);
   }
 
@@ -1211,6 +1226,16 @@ export function BuilderShell({
             onChange={(value) => updateDesignField('_entryGap', value)}
           />
 
+          <RangeInput
+            label="Letter Spacing"
+            value={formData._letterSpacing}
+            min={0}
+            max={0.15}
+            step={0.005}
+            display={`${parseNumberSetting(formData._letterSpacing, 0, 0, 0.15).toFixed(3)}em`}
+            onChange={(value) => updateDesignField('_letterSpacing', value)}
+          />
+
           <div className="builder-design-row">
             <span className="builder-field__label">Paper Tone</span>
             <div className="builder-tone-row">
@@ -1239,6 +1264,44 @@ export function BuilderShell({
               checked={formData._sectionDividers !== '0'}
               onChange={(checked) => updateDesignField('_sectionDividers', checked ? '1' : '0')}
             />
+          </div>
+
+          <div className="builder-design-row">
+            <span className="builder-field__label">Section Visibility</span>
+            <div className="builder-visibility-grid">
+              {([
+                ['Summary',        '_hideSummary'],
+                ['Experience',     '_hideExperience'],
+                ['Education',      '_hideEducation'],
+                ['Skills',         '_hideSkills'],
+                ['Languages',      '_hideLanguages'],
+                ['Certifications', '_hideCerts'],
+                ['Projects',       '_hideProjects'],
+              ] as const).map(([label, key]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => updateDesignField(key, formData[key] === '1' ? '0' : '1')}
+                  className={`builder-visibility-btn${formData[key] === '1' ? ' builder-visibility-btn--hidden' : ''}`}
+                  title={formData[key] === '1' ? `Show ${label}` : `Hide ${label}`}
+                >
+                  <span className="builder-visibility-btn__icon" aria-hidden="true">
+                    {formData[key] === '1' ? (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      </svg>
+                    ) : (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    )}
+                  </span>
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </FormSection>

@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Terms and Conditions',
-  description: 'Read the ResumeForge Terms and Conditions of use.',
+  title: 'Terms and Conditions | ResumeForge',
+  description: 'Read the ResumeForge Terms and Conditions. Understand your rights and responsibilities when using our free resume builder and PDF export service.',
+  alternates: { canonical: 'https://resumeforge-web.onrender.com/terms' },
 };
 
 export default function TermsPage() {

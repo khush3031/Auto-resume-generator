@@ -35,6 +35,7 @@ export function Navbar() {
         {/* Desktop nav */}
         <nav className="navbar__desktop" aria-label="Main navigation">
           <NavLink href="/templates" className="navbar__link">Templates</NavLink>
+          <NavLink href="/support" className="navbar__link">Support</NavLink>
           {/* <NavLink href="/upload" className="navbar__link">Upload Resume</NavLink> */}
           {isAuthenticated ? (
             <>
@@ -79,6 +80,7 @@ export function Navbar() {
         <nav className="navbar__mobile-nav" aria-label="Mobile navigation">
           <div className="navbar__mobile-links">
             <NavLink href="/templates" className="navbar__mobile-link">Templates</NavLink>
+            <NavLink href="/support" className="navbar__mobile-link">Support</NavLink>
             {/* <NavLink href="/upload" className="navbar__mobile-link">Upload Resume</NavLink> */}
             {isAuthenticated ? (
               <>

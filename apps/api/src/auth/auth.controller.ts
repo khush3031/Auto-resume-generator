@@ -10,7 +10,7 @@ import { LoginDto } from './dto/login.dto';
 @Controller('auth')
 @UseFilters(HttpExceptionFilter)
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('register')
   async register(@Body() payload: RegisterDto) {

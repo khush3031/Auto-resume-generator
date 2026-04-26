@@ -4,11 +4,35 @@ import { Model, Types } from 'mongoose';
 import { Resume, ResumeDocument } from './schemas/resume.schema';
 import { UserResumeDetails, UserResumeDetailsDocument } from './schemas/userResumeDetails.schema';
 import { templates } from '@resumeforge/templates';
+import { hideEmptyResumeSections } from '@resumeforge/shared';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import puppeteer from 'puppeteer';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { UpdateResumeDto } from './dto/update-resume.dto';
+
+const ACCENT_MAP: Record<string, string> = {
+  'classic': '#0f3d5c', 'minimal': '#111827',
+  'executive': '#1b1b1b', 'bold': '#ef4444',
+  'modern': '#114b5f', 'elegant': '#9d8189',
+  'clean-grid': '#334155', 'ats-friendly': '#374151', 'ats': '#374151',
+  'classic-pro': '#0f3d5c', 'minimal-pro': '#111827',
+  'executive-pro': '#1b1b1b', 'bold-pro': '#ef4444',
+  'modern-pro': '#114b5f', 'elegant-pro': '#9d8189',
+  'clean-grid-pro': '#334155', 'ats-pro': '#374151',
+  'corporate': '#1a1a2e', 'creative': '#1a1a2e',
+  'compact': '#e53935', 'timeline': '#7c3aed',
+  'mono': '#333333',
+  'slate': '#38bdf8', 'indigo': '#4338ca', 'cobalt': '#0077cc', 'sage': '#3a5e3b',
+  'infographic': '#7c3aed', 'academic': '#374151',
+};
+
+const DESIGN_FONT_STACKS: Record<string, string> = {
+  'modern-sans': '"Aptos", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
+  'executive-serif': '"Iowan Old Style", Georgia, "Times New Roman", serif',
+  'technical-sans': '"IBM Plex Sans", "Segoe UI", Arial, sans-serif',
+  'editorial-serif': '"Palatino Linotype", "Book Antiqua", Palatino, serif',
+};
 
 @Injectable()
 export class ResumesService {
@@ -204,7 +228,7 @@ export class ResumesService {
     templateId: string,
     rawFormData: Record<string, string>,
   ): Promise<string> {
-    const formData = this.sanitizeBeforeRender(rawFormData);
+    let formData = this.sanitizeBeforeRender(rawFormData);
 
     const template = templates.find((t) => t.id === templateId);
     if (!template) throw new BadRequestException('Template not found');
@@ -212,16 +236,24 @@ export class ResumesService {
     const templatePath = join(process.cwd(), '..', '..', 'packages', 'templates', template.htmlPath);
     let html = await fs.readFile(templatePath, 'utf-8');
 
+    const hide = (key: string) => formData[key] === '1';
+
     // Inject dynamic blocks before placeholder replacement
-    html = html.replace('{{experienceBlocks}}',   this.buildExperienceBlocks(formData));
-    html = html.replace('{{certificationBlocks}}', this.buildCertBlocks(formData));
-    html = html.replace('{{educationBlocks}}',     this.buildEducationBlocks(formData, templateId));
-    html = html.replace('{{projectBlocks}}',       this.buildProjectBlocks(formData));
-    html = html.replace('{{languagesBlock}}',      this.buildLanguagesBlock(formData));
-    html = html.replace('{{skillsBlock}}',         this.buildSkillsBlock(formData));
+    html = html.replace('{{experienceBlocks}}',   hide('_hideExperience') ? '' : this.buildExperienceBlocks(formData));
+    html = html.replace('{{certificationBlocks}}', hide('_hideCerts')      ? '' : this.buildCertBlocks(formData));
+    html = html.replace('{{educationBlocks}}',     hide('_hideEducation')  ? '' : this.buildEducationBlocks(formData, templateId));
+    html = html.replace('{{projectBlocks}}',       hide('_hideProjects')   ? '' : this.buildProjectBlocks(formData));
+    html = html.replace('{{languagesBlock}}',      hide('_hideLanguages')  ? '' : this.buildLanguagesBlock(formData, templateId));
+    html = html.replace('{{skillsBlock}}',         hide('_hideSkills')     ? '' : this.buildSkillsBlock(formData, templateId));
+
+    // Summary visibility — blank the content so hideEmptySections (Pass 5) can
+    // detect and hide the entire wrapper block including its heading.
+    if (hide('_hideSummary')) {
+      formData = { ...formData, summary: '' };
+    }
 
     // Projects section visibility
-    const hasProjects = Array.from({ length: 10 }, (_, i) => formData[`project${i + 1}Name`])
+    const hasProjects = !hide('_hideProjects') && Array.from({ length: 10 }, (_, i) => formData[`project${i + 1}Name`])
       .some(Boolean);
     html = html.replace(/\{\{projectsSectionDisplay\}\}/g, hasProjects ? 'block' : 'none');
 
@@ -235,8 +267,10 @@ export class ResumesService {
     const accentHex = formData['_accentColor'];
     if (accentHex) html = this.injectAccentColor(html, accentHex, templateId);
 
+    html = this.injectDesignSystem(html, formData);
+
     // Hide sections/asides that have no content
-    html = this.hideEmptySections(html);
+    html = hideEmptyResumeSections(html);
 
     return html;
   }
@@ -278,6 +312,120 @@ export class ResumesService {
         return match;
       },
     );
+
+    // Pass 3: hide slate-style <div class="m-section"> blocks with no content
+    result = result.replace(
+      /(<div\b[^>]*?\bm-section\b[^>]*?>)([\s\S]*?)(<\/div>)/g,
+      (match, openTag: string, inner: string, closeTag: string) => {
+        if (openTag.includes('display:none')) return match;
+        const stripped = inner
+          .replace(/<div[^>]*?\bm-label\b[^>]*?>[\s\S]*?<\/div>/g, '') // strip section labels
+          .replace(/<p[^>]*?>\s*<\/p>/g, '')
+          .replace(/<[^>]+>/g, '')
+          .trim();
+        if (!stripped) {
+          return this.addStyleDisplayNone(openTag, 'div') + inner + closeTag;
+        }
+        return match;
+      },
+    );
+
+    // Pass 4: hide slate sidebar label+content pairs (s-section-label followed by empty block)
+    // Replace consecutive label + empty-content pairs with display:none on the label
+    result = result.replace(
+      /(<div\b[^>]*?\bs-section-label\b[^>]*?>)([\s\S]*?)(<\/div>)([\s\S]*?)(?=<div\b[^>]*?\bs-section-label\b|<\/div>\s*<\/div>)/g,
+      (match, labelOpen: string, labelInner: string, labelClose: string, content: string) => {
+        if (labelOpen.includes('display:none')) return match;
+        const contentText = content.replace(/<[^>]+>/g, '').trim();
+        if (!contentText) {
+          return this.addStyleDisplayNone(labelOpen, 'div') + labelInner + labelClose + content;
+        }
+        return match;
+      },
+    );
+
+    // Pass 5: hide <div class="section"> blocks with no meaningful content.
+    // ATS-style templates (ats, ats-pro, academic, compact, elegant-pro, mono)
+    // use <div class="section"> + <div class="sec-title"> instead of <section> + <h1-6>,
+    // so Passes 1–4 above miss them. We use iterative depth-tracking here (not regex)
+    // to correctly find the matching </div> for each section div, avoiding the
+    // classic nested-element regex problem.
+    result = this.hideEmptyDivSections(result);
+
+    return result;
+  }
+
+  private hideEmptyDivSections(html: string): string {
+    let result = '';
+    let remaining = html;
+
+    while (true) {
+      // Find the next <div ...section...> that isn't already hidden
+      const m = remaining.match(/<div[^>]*\bsection\b[^>]*>/);
+      if (!m || m.index === undefined) {
+        result += remaining;
+        break;
+      }
+
+      const openTag  = m[0];
+      const openStart = m.index;
+      const openEnd   = openStart + openTag.length;
+
+      // Skip already-hidden divs
+      if (openTag.includes('display:none')) {
+        result   += remaining.slice(0, openEnd);
+        remaining = remaining.slice(openEnd);
+        continue;
+      }
+
+      // Walk forward counting <div> / </div> to find the matching closing tag
+      let depth     = 1;
+      let pos       = openEnd;
+      let closeStart = -1;
+
+      while (depth > 0 && pos < remaining.length) {
+        const nextOpen  = remaining.indexOf('<div', pos);
+        const nextClose = remaining.indexOf('</div>', pos);
+
+        if (nextClose === -1) break; // malformed HTML – bail
+
+        if (nextOpen !== -1 && nextOpen < nextClose) {
+          depth++;
+          pos = nextOpen + 4; // advance past '<div'
+        } else {
+          depth--;
+          if (depth === 0) closeStart = nextClose;
+          pos = nextClose + 6; // advance past '</div>'
+        }
+      }
+
+      if (closeStart === -1) {
+        // Could not find matching tag – emit everything up to and including the opening tag
+        result   += remaining.slice(0, openEnd);
+        remaining = remaining.slice(openEnd);
+        continue;
+      }
+
+      const inner = remaining.slice(openEnd, closeStart);
+
+      // Strip <div class="sec-title"> headings + empty <p> tags, then check for real content
+      const stripped = inner
+        .replace(/<div[^>]*?\bsec-title\b[^>]*>[\s\S]*?<\/div>/g, '')
+        .replace(/<p[^>]*?>\s*<\/p>/g, '')
+        .replace(/<[^>]+>/g, '')
+        .trim();
+
+      // Emit everything before this section div
+      result += remaining.slice(0, openStart);
+
+      if (!stripped) {
+        result += this.addStyleDisplayNone(openTag, 'div') + inner + '</div>';
+      } else {
+        result += openTag + inner + '</div>';
+      }
+
+      remaining = remaining.slice(closeStart + 6); // advance past '</div>'
+    }
 
     return result;
   }
@@ -414,7 +562,8 @@ export class ResumesService {
     return items.join('');
   }
 
-  private buildLanguagesBlock(d: Record<string, string>): string {
+  private buildLanguagesBlock(d: Record<string, string>, templateId = ''): string {
+    const isSlate = templateId === 'slate';
     const items: string[] = [];
     let emptyStreak = 0;
     for (let n = 1; n <= 20; n++) {
@@ -422,21 +571,31 @@ export class ResumesService {
       const level = (d[`lang${n}Level`] ?? '').trim();
       if (!lang) {
         emptyStreak++;
-        if (emptyStreak >= 3) break; // stop after 3 consecutive empty slots
+        if (emptyStreak >= 3) break;
         continue;
       }
       emptyStreak = 0;
-      items.push(
-        `<div style="display:flex;justify-content:space-between;font-size:0.9rem;padding:3px 0;">` +
-        `<span>${this.esc(lang)}</span>` +
-        `${level ? `<span style="color:#9ca3af;font-size:0.85rem;">${this.esc(level)}</span>` : ''}` +
-        `</div>`,
-      );
+      if (isSlate) {
+        items.push(
+          `<div class="s-lang">` +
+          `<span>${this.esc(lang)}</span>` +
+          `${level ? `<span>${this.esc(level)}</span>` : ''}` +
+          `</div>`,
+        );
+      } else {
+        items.push(
+          `<div style="display:flex;justify-content:space-between;font-size:0.9rem;padding:3px 0;">` +
+          `<span>${this.esc(lang)}</span>` +
+          `${level ? `<span style="color:#9ca3af;font-size:0.85rem;">${this.esc(level)}</span>` : ''}` +
+          `</div>`,
+        );
+      }
     }
     return items.join('');
   }
 
-  private buildSkillsBlock(d: Record<string, string>): string {
+  private buildSkillsBlock(d: Record<string, string>, templateId = ''): string {
+    const isSlate = templateId === 'slate';
     const skills: string[] = [];
     let emptyStreak = 0;
     for (let n = 1; n <= 30; n++) {
@@ -448,6 +607,9 @@ export class ResumesService {
       }
       emptyStreak = 0;
       skills.push(s);
+    }
+    if (isSlate) {
+      return skills.map((s) => `<span class="s-skill">${this.esc(s)}</span>`).join('');
     }
     return skills
       .map(
@@ -476,21 +638,104 @@ export class ResumesService {
       .replace(/"/g, '&quot;');
   }
 
+  private parseNumberSetting(value: string | undefined, fallback: number, min: number, max: number): number {
+    const parsed = Number.parseFloat(value ?? '');
+    if (!Number.isFinite(parsed)) return fallback;
+    return Math.min(max, Math.max(min, parsed));
+  }
+
+  private injectDesignSystem(html: string, formData: Record<string, string>): string {
+    const fontFamilyId = formData['_fontFamily'] || 'modern-sans';
+    const fontFamily = DESIGN_FONT_STACKS[fontFamilyId] ?? DESIGN_FONT_STACKS['modern-sans'];
+    const fontScale = this.parseNumberSetting(formData['_fontScale'], 1, 0.9, 1.15);
+    const lineHeight = this.parseNumberSetting(formData['_lineHeight'], 1.5, 1.25, 1.85);
+    const sectionGap = this.parseNumberSetting(formData['_sectionGap'], 1, 0.7, 1.45);
+    const entryGap = this.parseNumberSetting(formData['_entryGap'], 1, 0.7, 1.45);
+    const letterSpacing = this.parseNumberSetting(formData['_letterSpacing'], 0, 0, 0.15);
+    const headingCaps = formData['_headingCaps'] === '1';
+    const sectionDividers = formData['_sectionDividers'] !== '0';
+    const paperTone = formData['_paperTone'] === 'warm'
+      ? '#fffaf5'
+      : formData['_paperTone'] === 'cool'
+        ? '#f8fbff'
+        : '#ffffff';
+
+    const css = `
+<style id="resume-forge-design-system">
+  :root {
+    --rf-font-family: ${fontFamily};
+    --rf-font-scale: ${fontScale};
+    --rf-line-height: ${lineHeight};
+    --rf-section-gap: ${sectionGap};
+    --rf-entry-gap: ${entryGap};
+    --rf-letter-spacing: ${letterSpacing.toFixed(4)}em;
+    --rf-heading-transform: ${headingCaps ? 'uppercase' : 'none'};
+    --rf-heading-spacing: ${headingCaps ? '0.12em' : '0'};
+    --rf-divider-width: ${sectionDividers ? '1px' : '0'};
+    --rf-paper-tone: ${paperTone};
+  }
+
+  html, body, .page {
+    font-family: var(--rf-font-family) !important;
+    font-size: calc(16px * var(--rf-font-scale));
+    line-height: var(--rf-line-height) !important;
+    letter-spacing: var(--rf-letter-spacing);
+    background: var(--rf-paper-tone);
+  }
+
+  .page {
+    background: var(--rf-paper-tone) !important;
+  }
+
+  .page p,
+  .page li,
+  .page span,
+  .page a,
+  .page strong,
+  .page em {
+    line-height: inherit !important;
+  }
+
+  .page h1,
+  .page h2,
+  .page h3,
+  .page h4,
+  .page h5,
+  .page h6,
+  .page section > h2,
+  .page section > h3,
+  .page aside h2,
+  .page aside h3 {
+    text-transform: var(--rf-heading-transform) !important;
+    letter-spacing: var(--rf-heading-spacing) !important;
+  }
+
+  .page section {
+    margin-bottom: calc(18px * var(--rf-section-gap)) !important;
+  }
+
+  .page section:not(:last-of-type) {
+    border-bottom: var(--rf-divider-width) solid rgba(15, 23, 42, 0.1);
+    padding-bottom: calc(10px * var(--rf-section-gap));
+  }
+
+  .page ul li,
+  .page ol li {
+    margin-bottom: calc(4px * var(--rf-entry-gap));
+  }
+
+  .page section > div,
+  .page article > div {
+    margin-bottom: calc(10px * var(--rf-entry-gap));
+  }
+</style>`;
+
+    return html.includes('</head>') ? html.replace('</head>', `${css}\n</head>`) : css + html;
+  }
+
   // ─── Accent color injection ───────────────────────────────────────────────────
 
   private injectAccentColor(html: string, hex: string, templateId: string): string {
-    const ACCENT_MAP: Record<string, string> = {
-      'classic': '#0f3d5c', 'minimal': '#111827',
-      'executive': '#1b1b1b', 'bold': '#ef4444',
-      'modern': '#114b5f', 'elegant': '#9d8189',
-      'clean-grid': '#334155', 'ats-friendly': '#374151', 'ats': '#374151',
-      'corporate': '#1a1a2e', 'creative': '#1a1a2e',
-      'compact': '#e53935', 'timeline': '#7c3aed',
-      'mono': '#333',
-      'slate': '#38bdf8', 'indigo': '#4338ca', 'cobalt': '#0077cc', 'sage': '#3a5e3b',
-      'infographic': '#7c3aed', 'academic': '#374151',
-    };
-
     const knownAccent = ACCENT_MAP[templateId];
     if (knownAccent) {
       const norm = knownAccent.replace('#', '').length === 3

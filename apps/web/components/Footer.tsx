@@ -13,6 +13,8 @@ export function Footer() {
         <span className="site-footer__sep">·</span>
         <Link href="/privacy" className="site-footer__link">Privacy Policy</Link>
         <span className="site-footer__sep">·</span>
+        <Link href="/support" className="site-footer__link">Support</Link>
+        <span className="site-footer__sep">·</span>
         <span className="site-footer__copy">&copy; {new Date().getFullYear()} ResumeForge. All rights reserved.</span>
       </div>
     </footer>

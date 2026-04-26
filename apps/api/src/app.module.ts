@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { SeederModule } from './seeder/seeder.module';
 import { AiModule } from './ai/ai.module';
 import { UploadModule } from './upload/upload.module';
+import { SupportModule } from './support/support.module';
 import { RequestTrackerNestMiddleware } from './common/request-tracker';
 
 @Module({
@@ -29,6 +30,7 @@ import { RequestTrackerNestMiddleware } from './common/request-tracker';
     SeederModule,
     AiModule,
     UploadModule,
+    SupportModule,
   ],
 })
 export class AppModule {

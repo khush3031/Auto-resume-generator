@@ -19,10 +19,24 @@ async function bootstrap() {
 
   const allowedOrigins = process.env.CORS_ORIGINS?.split(',') ?? [
     'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3005',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+    'http://127.0.0.1:3005',
     'https://resumeforge-web.onrender.com',
   ];
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      const isLoopbackOrigin = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+      if (isLoopbackOrigin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Origin ${origin} not allowed by CORS`), false);
+    },
     credentials: true,
   });
 

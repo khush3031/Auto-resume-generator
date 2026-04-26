@@ -7,6 +7,8 @@ export const contentType = 'image/png';
 
 export default function OGImage() {
   return new ImageResponse(
+    // fonts option intentionally omitted — avoids Windows local-font path bug in @vercel/og
+    // All text uses system sans-serif which ImageResponse renders without local font files
     (
       <div
         style={{
@@ -71,9 +73,9 @@ export default function OGImage() {
               <line x1="8" y1="14" x2="26" y2="14" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
               <line x1="8" y1="20" x2="26" y2="20" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
               <line x1="8" y1="26" x2="20" y2="26" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-              {/* Red star */}
+              {/* Red star — path used instead of <text> because @vercel/og does not support SVG <text> nodes */}
               <circle cx="32" cy="38" r="8" fill="#ef4444"/>
-              <text x="32" y="42" textAnchor="middle" fontSize="10" fill="white">★</text>
+              <path d="M32,33.5 L33.06,36.54 L36.28,36.61 L33.71,38.56 L34.65,41.64 L32,39.8 L29.35,41.64 L30.29,38.56 L27.72,36.61 L30.94,36.54 Z" fill="white"/>
             </svg>
           </div>
 
@@ -102,7 +104,7 @@ export default function OGImage() {
 
         {/* Feature pills */}
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          {['14+ Templates', 'AI-Powered', 'PDF Export', '100% Free'].map((label) => (
+          {['28+ Templates', 'AI-Powered', 'PDF Export', '100% Free'].map((label) => (
             <div
               key={label}
               style={{

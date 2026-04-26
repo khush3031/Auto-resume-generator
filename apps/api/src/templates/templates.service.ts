@@ -49,6 +49,14 @@ const DEFAULT_ACCENT_COLORS: Record<string, string> = {
   'clean-grid':   '#334155',
   'ats-friendly': '#374151',
   'ats':          '#374151',
+  'classic-pro':  '#0f3d5c',
+  'minimal-pro':  '#111827',
+  'executive-pro':'#1b1b1b',
+  'bold-pro':     '#ef4444',
+  'modern-pro':   '#114b5f',
+  'elegant-pro':  '#9d8189',
+  'clean-grid-pro': '#334155',
+  'ats-pro':      '#374151',
   'corporate':    '#1a1a2e',
   'creative':     '#1a1a2e',
   'compact':      '#e53935',
@@ -70,15 +78,38 @@ export class TemplatesService {
   ) {}
 
   async findAll() {
-    const templates = await this.templateModel.find().lean();
-    return templates.map((t) => {
-      const htmlContent = this.readHtmlFromDisk(t.id) ?? t.htmlContent;
+    const dbTemplates = await this.templateModel.find().lean();
+    const dbById = new Map(dbTemplates.map((template) => [template.id, template]));
+
+    const resolvedTemplates = templatesMeta.map((meta) => {
+      const dbTemplate = dbById.get(meta.id);
+      const htmlContent = this.readHtmlFromDisk(meta.id) ?? dbTemplate?.htmlContent ?? '';
+
       return {
-        ...t,
+        id: meta.id,
+        slug: meta.slug,
+        name: meta.name,
+        style: meta.style,
+        thumbnailUrl: dbTemplate?.thumbnailUrl ?? meta.thumbnail,
         htmlContent,
-        previewHtml: this.getSamplePreviewHtml(htmlContent, t.id),
+        variables: dbTemplate?.variables ?? [],
       };
     });
+
+    const extras = dbTemplates
+      .filter((template) => !templatesMeta.some((meta) => meta.id === template.id))
+      .map((template) => {
+        const htmlContent = this.readHtmlFromDisk(template.id) ?? template.htmlContent;
+        return {
+          ...template,
+          htmlContent,
+        };
+      });
+
+    return [...resolvedTemplates, ...extras].map((template) => ({
+      ...template,
+      previewHtml: this.getSamplePreviewHtml(template.htmlContent, template.id),
+    }));
   }
 
   async findOne(id: string) {

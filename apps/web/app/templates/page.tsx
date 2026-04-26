@@ -1,16 +1,45 @@
 import { TemplatesGrid } from '../../components/TemplatesGrid';
+import type { Metadata } from 'next';
 
-export const metadata = {
-  title: 'Free Resume Templates | ResumeForge',
-  description: 'Browse free resume templates online with ResumeForge. Choose a professional layout and start building your resume instantly.',
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://resumeforge-web.onrender.com';
+const PAGE_URL  = `${SITE_URL}/templates`;
+const PAGE_TITLE = 'Free Resume Templates — 28+ Professional Designs | ResumeForge';
+const PAGE_DESC  = 'Browse 28+ free resume templates: ATS-friendly, modern, executive, creative, and more. Preview live and start building your resume instantly — no account needed.';
+
+export const metadata: Metadata = {
+  title: PAGE_TITLE,
+  description: PAGE_DESC,
+  alternates: { canonical: PAGE_URL },
+  keywords: ['resume templates', 'free resume templates', 'ATS resume template', 'professional resume design', 'CV templates'],
   openGraph: {
-    title: 'Free Resume Templates | ResumeForge',
-    description: 'Browse free resume templates online with ResumeForge. Choose a professional layout and start building your resume instantly.'
-  }
+    type: 'website',
+    url: PAGE_URL,
+    siteName: 'ResumeForge',
+    title: PAGE_TITLE,
+    description: PAGE_DESC,
+    images: [{ url: `${SITE_URL}/opengraph-image`, width: 1200, height: 630, alt: PAGE_TITLE }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: PAGE_TITLE,
+    description: PAGE_DESC,
+    images: [`${SITE_URL}/opengraph-image`],
+  },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: PAGE_TITLE,
+  description: PAGE_DESC,
+  url: PAGE_URL,
+  isPartOf: { '@type': 'WebSite', name: 'ResumeForge', url: SITE_URL },
 };
 
 export default function TemplatesPage() {
   return (
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <div className="templates-page">
 
       {/* Page header */}
@@ -42,5 +71,6 @@ export default function TemplatesPage() {
       </div>
 
     </div>
+    </>
   );
 }
