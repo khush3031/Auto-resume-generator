@@ -9,6 +9,7 @@ package-lock.json
 npm-debug.log*
 **/package-lock.json
 **/.next
+**/.next-runtime*
 **/out
 **/.turbo
 **/.parcel-cache

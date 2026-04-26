@@ -1,5 +1,8 @@
+const distDir =
+  process.env.NODE_ENV === 'development' ? '.next-runtime-dev' : '.next-runtime';
+
 const nextConfig = {
-  distDir: '.next-runtime',
+  distDir,
   images: {
     remotePatterns: [
       {
