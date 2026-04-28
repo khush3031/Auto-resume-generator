@@ -2,9 +2,9 @@ import { TemplatesGrid } from '../../components/TemplatesGrid';
 import type { Metadata } from 'next';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://resumeforge-web.onrender.com';
-const PAGE_URL  = `${SITE_URL}/templates`;
-const PAGE_TITLE = 'Free Resume Templates — 34+ Professional Designs | ResumeForge';
-const PAGE_DESC  = 'Browse 34+ free resume templates: ATS-friendly, modern, executive, creative, and more. Preview live and start building your resume instantly — no account needed.';
+const PAGE_URL = `${SITE_URL}/templates`;
+const PAGE_TITLE = 'Free Resume Templates - 38+ Professional Designs | ResumeForge';
+const PAGE_DESC = 'Browse 38+ free resume templates: ATS-friendly, modern, executive, creative, and more. Preview live and start building your resume instantly - no account needed.';
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -39,38 +39,34 @@ const jsonLd = {
 export default function TemplatesPage() {
   return (
     <>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-    <div className="templates-page">
-
-      {/* Page header */}
-      <div className="templates-header">
-        <div className="templates-header__inner">
-          <div className="templates-header__grid">
-            <div>
-              <p className="templates-header__eyebrow">Resume Templates</p>
-              <h1 className="templates-header__title">
-                Browse a deeper template library
-                <br /> built for different hiring moments.
-              </h1>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <div className="templates-page">
+        <div className="templates-header">
+          <div className="templates-header__inner">
+            <div className="templates-header__grid">
+              <div>
+                <p className="templates-header__eyebrow">Resume Templates</p>
+                <h1 className="templates-header__title">
+                  Browse a deeper template library
+                  <br /> built for different hiring moments.
+                </h1>
+              </div>
+              <div>
+                <p className="templates-header__desc">
+                  Compare ATS-safe, premium, compact, executive, and creative layouts, then tune typography and spacing live in the builder.
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="templates-header__desc">
-                Compare ATS-safe, premium, compact, executive, and creative layouts, then tune typography and spacing live in the builder.
-              </p>
-            </div>
+            <div className="templates-accent" />
           </div>
-          <div className="templates-accent" />
+        </div>
+
+        <div className="templates-body">
+          <div className="templates-body__inner">
+            <TemplatesGrid />
+          </div>
         </div>
       </div>
-
-      {/* Template grid — client-side with retry for Render cold starts */}
-      <div className="templates-body">
-        <div className="templates-body__inner">
-          <TemplatesGrid />
-        </div>
-      </div>
-
-    </div>
     </>
   );
 }

@@ -1202,6 +1202,18 @@ svg {
   border-color: var(--color-brand);
 }
 
+.template-card__badge--ats {
+  background: #ecfdf5;
+  color: #166534;
+  border-color: rgba(22, 101, 52, 0.16);
+}
+
+.template-card__badge--new {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: rgba(29, 78, 216, 0.14);
+}
+
 .template-card__body {
   padding: 10px 12px 14px;
   display: flex;

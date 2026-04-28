@@ -4,14 +4,12 @@ import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { NavigationTracker } from '../components/NavigationTracker';
 
-// Dynamically pick the base URL so ngrok / localhost / Render all work correctly.
-// Set NEXT_PUBLIC_SITE_URL in .env.local while testing (e.g. your ngrok URL).
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
   'https://resumeforge-web.onrender.com';
 
-const OG_TITLE       = 'ResumeForge — Free Resume Builder Online';
-const OG_DESCRIPTION = 'Build a professional resume in minutes. Choose from 28+ ATS-friendly templates, edit in real time, and download a polished PDF — completely free.';
+const OG_TITLE = 'ResumeForge - Free Resume Builder Online';
+const OG_DESCRIPTION = 'Build a professional resume in minutes. Choose from 38+ ATS-friendly templates, edit in real time, and download a polished PDF - completely free.';
 
 export const metadata: Metadata = {
   title: {
@@ -47,19 +45,18 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {/* Hard-coded OG tags — guaranteed to appear even if metadata API has edge-runtime conflicts */}
-        <meta property="og:type"        content="website" />
-        <meta property="og:site_name"   content="ResumeForge" />
-        <meta property="og:title"       content={OG_TITLE} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="ResumeForge" />
+        <meta property="og:title" content={OG_TITLE} />
         <meta property="og:description" content={OG_DESCRIPTION} />
-        <meta property="og:image"       content={ogImage} />
+        <meta property="og:image" content={ogImage} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:url"         content={siteUrl} />
-        <meta name="twitter:card"       content="summary_large_image" />
-        <meta name="twitter:title"      content={OG_TITLE} />
+        <meta property="og:url" content={siteUrl} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={OG_TITLE} />
         <meta name="twitter:description" content={OG_DESCRIPTION} />
-        <meta name="twitter:image"      content={ogImage} />
+        <meta name="twitter:image" content={ogImage} />
       </head>
       <body>
         <NavigationTracker />

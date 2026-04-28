@@ -36,6 +36,10 @@ const SAMPLE_DATA: Record<string, string> = {
 
   cert1: 'AWS Certified Developer',   cert1Issuer: 'Amazon Web Services', cert1Year: '2022',
   cert2: 'Google Cloud Professional', cert2Issuer: 'Google',              cert2Year: '2023',
+  project1Name: 'Resume Analytics Dashboard', project1Role: 'Lead Engineer',
+  project1Tech: 'React, Node.js, PostgreSQL', project1Start: '2023', project1End: '2024',
+  project1Description: 'Built a resume review workflow with live scoring, version history, and recruiter notes.',
+  project1Url: 'https://alexjohnson.dev/projects/resume-analytics',
 };
 
 /** Default accent/sidebar background per template — matches what's now in the HTML CSS */
@@ -74,6 +78,10 @@ const DEFAULT_ACCENT_COLORS: Record<string, string> = {
   'forest':       '#166534',
   'sunset':       '#c2410c',
   'blueprint':    '#1e40af',
+  'ats-focus':    '#1f2937',
+  'ats-prime':    '#0f172a',
+  'sterling':     '#0f5d73',
+  'aurora':       '#0f766e',
 };
 
 @Injectable()
@@ -151,13 +159,82 @@ export class TemplatesService {
 
   /** Generate a thumbnail-ready HTML string with sample data and default accent color injected. */
   private getSamplePreviewHtml(htmlContent: string, templateId: string): string {
+    const color = DEFAULT_ACCENT_COLORS[templateId] || '#1a3a4a';
+    const previewBlocks: Record<string, string> = {
+      experienceBlocks: [
+        `<div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;">`,
+        `<div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline;">`,
+        `<strong style="font-size:13px;color:#111827;">${SAMPLE_DATA.job1Title}</strong>`,
+        `<span style="font-size:11px;color:${color};">${SAMPLE_DATA.job1Start} - ${SAMPLE_DATA.job1End}</span>`,
+        `</div>`,
+        `<div style="font-size:12px;color:#475569;margin:4px 0 6px;">${SAMPLE_DATA.job1Company} - ${SAMPLE_DATA.job1Location}</div>`,
+        `<ul style="margin:0;padding-left:18px;font-size:12px;line-height:1.6;color:#334155;">`,
+        `<li>${SAMPLE_DATA.job1Bullet1}</li>`,
+        `<li>${SAMPLE_DATA.job1Bullet2}</li>`,
+        `</ul>`,
+        `</div>`,
+        `<div style="margin-bottom:4px;">`,
+        `<div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline;">`,
+        `<strong style="font-size:13px;color:#111827;">${SAMPLE_DATA.job2Title}</strong>`,
+        `<span style="font-size:11px;color:${color};">${SAMPLE_DATA.job2Start} - ${SAMPLE_DATA.job2End}</span>`,
+        `</div>`,
+        `<div style="font-size:12px;color:#475569;margin:4px 0 6px;">${SAMPLE_DATA.job2Company} - ${SAMPLE_DATA.job2Location}</div>`,
+        `<ul style="margin:0;padding-left:18px;font-size:12px;line-height:1.6;color:#334155;">`,
+        `<li>${SAMPLE_DATA.job2Bullet1}</li>`,
+        `<li>${SAMPLE_DATA.job2Bullet2}</li>`,
+        `</ul>`,
+        `</div>`,
+      ].join(''),
+      educationBlocks: [
+        `<div style="margin-bottom:10px;">`,
+        `<div style="font-size:13px;font-weight:700;color:#111827;">${SAMPLE_DATA.degree}</div>`,
+        `<div style="font-size:12px;color:#475569;">${SAMPLE_DATA.university}</div>`,
+        `<div style="font-size:11px;color:${color};margin-top:2px;">${SAMPLE_DATA.graduationYear}</div>`,
+        `</div>`,
+      ].join(''),
+      skillsBlock: [
+        SAMPLE_DATA.skill1,
+        SAMPLE_DATA.skill2,
+        SAMPLE_DATA.skill3,
+        SAMPLE_DATA.skill4,
+        SAMPLE_DATA.skill5,
+      ].map((skill) => `<span style="display:inline-block;padding:5px 10px;margin:3px 4px 3px 0;border-radius:999px;font-size:11px;background:rgba(15,23,42,0.06);color:#1f2937;">${skill}</span>`).join(''),
+      projectBlocks: [
+        `<div style="margin-bottom:8px;">`,
+        `<div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline;">`,
+        `<strong style="font-size:13px;color:#111827;">${SAMPLE_DATA.project1Name}</strong>`,
+        `<span style="font-size:11px;color:${color};">${SAMPLE_DATA.project1Start} - ${SAMPLE_DATA.project1End}</span>`,
+        `</div>`,
+        `<div style="font-size:12px;color:${color};margin:4px 0 6px;">${SAMPLE_DATA.project1Role}</div>`,
+        `<div style="font-size:11px;color:#475569;margin-bottom:5px;">${SAMPLE_DATA.project1Tech}</div>`,
+        `<div style="font-size:12px;line-height:1.6;color:#334155;">${SAMPLE_DATA.project1Description}</div>`,
+        `</div>`,
+      ].join(''),
+      certificationBlocks: [
+        `<div style="margin-bottom:8px;">`,
+        `<div style="font-size:12px;font-weight:700;color:#111827;">${SAMPLE_DATA.cert1}</div>`,
+        `<div style="font-size:11px;color:#475569;">${SAMPLE_DATA.cert1Issuer} - ${SAMPLE_DATA.cert1Year}</div>`,
+        `</div>`,
+        `<div>`,
+        `<div style="font-size:12px;font-weight:700;color:#111827;">${SAMPLE_DATA.cert2}</div>`,
+        `<div style="font-size:11px;color:#475569;">${SAMPLE_DATA.cert2Issuer} - ${SAMPLE_DATA.cert2Year}</div>`,
+        `</div>`,
+      ].join(''),
+      languagesBlock: [
+        `<div style="font-size:12px;color:#334155;margin-bottom:5px;"><strong>${SAMPLE_DATA.lang1}</strong> - ${SAMPLE_DATA.lang1Level}</div>`,
+        `<div style="font-size:12px;color:#334155;"><strong>${SAMPLE_DATA.lang2}</strong> - ${SAMPLE_DATA.lang2Level}</div>`,
+      ].join(''),
+      projectsSectionDisplay: 'block',
+    };
+
+    const previewValues = { ...SAMPLE_DATA, ...previewBlocks };
+
     // Replace all {{placeholders}} with sample data (empty string for unknowns)
     let html = htmlContent.replace(/{{\s*([^}\s]+)\s*}}/g, (_, key: string) => {
-      return key === '_accentColor' ? '' : (SAMPLE_DATA[key] ?? '');
+      return key === '_accentColor' ? '' : (previewValues[key] ?? '');
     });
 
     // Inject the default accent color before </head> so it wins the CSS cascade
-    const color = DEFAULT_ACCENT_COLORS[templateId] || '#1a3a4a';
     const styleBlock = `\n<style id="resume-forge-theme">:root { --resume-accent-color: ${color} !important; --accent: ${color} !important; }</style>`;
 
     html = html.includes('</head>')

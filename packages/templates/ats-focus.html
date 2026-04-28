@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATS Focus Resume</title>
+  <style>
+    :root {
+      --accent: var(--resume-accent-color, #1f2937);
+      --ink: #111827;
+      --muted: #4b5563;
+      --line: #d1d5db;
+      --soft: #f3f4f6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #ffffff; color: var(--ink); font-family: 'Arial', 'Helvetica Neue', sans-serif; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; padding: 52px 54px 48px; }
+    .header { border-bottom: 2px solid var(--accent); padding-bottom: 16px; margin-bottom: 22px; }
+    .name { font-size: 28px; line-height: 1.1; font-weight: 700; letter-spacing: 0.01em; margin-bottom: 4px; }
+    .role { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+    .contact { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 11px; color: var(--muted); }
+    .contact span { position: relative; }
+    .contact span::after {
+      content: '';
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      width: 3px;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--accent);
+      transform: translateY(-50%);
+    }
+    .contact span:last-child::after { display: none; }
+    .section { margin-bottom: 18px; }
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 5px;
+      margin-bottom: 10px;
+    }
+    .summary { font-size: 12px; line-height: 1.7; color: #1f2937; }
+    .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+    .skills-grid > * { font-size: 12px; line-height: 1.55; color: #1f2937; }
+    .support-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 22px; }
+    .support-panel { background: var(--soft); border: 1px solid #e5e7eb; padding: 12px 14px; }
+
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="name">{{fullName}}</div>
+      <div class="role">{{jobTitle}}</div>
+      <div class="contact">
+        <span>{{email}}</span>
+        <span>{{phone}}</span>
+        <span>{{location}}</span>
+        <span>{{linkedin}}</span>
+        <span>{{website}}</span>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-title">Professional Summary</div>
+      <p class="summary">{{summary}}</p>
+    </section>
+
+    <section class="section">
+      <div class="section-title">Experience</div>
+      {{experienceBlocks}}
+    </section>
+
+    <section class="section">
+      <div class="section-title">Education</div>
+      {{educationBlocks}}
+    </section>
+
+    <section class="section">
+      <div class="section-title">Skills</div>
+      <div class="skills-grid">
+        {{skillsBlock}}
+      </div>
+    </section>
+
+    <div class="support-grid">
+      <section class="section support-panel" style="display:{{projectsSectionDisplay}}">
+        <div class="section-title">Projects</div>
+        {{projectBlocks}}
+      </section>
+
+      <div>
+        <section class="section support-panel">
+          <div class="section-title">Certifications</div>
+          {{certificationBlocks}}
+        </section>
+
+        <section class="section support-panel">
+          <div class="section-title">Languages</div>
+          {{languagesBlock}}
+        </section>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
