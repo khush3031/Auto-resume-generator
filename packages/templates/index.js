@@ -280,6 +280,38 @@ const templates = [
     style: 'Modern',
     thumbnail: '/templates/thumbnails/blueprint.png',
     htmlPath: 'blueprint.html'
+  },
+  {
+    id: 'ats-focus',
+    name: 'ATS Focus',
+    slug: 'ats-focus',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/ats-focus.png',
+    htmlPath: 'ats-focus.html'
+  },
+  {
+    id: 'ats-prime',
+    name: 'ATS Prime',
+    slug: 'ats-prime',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/ats-prime.png',
+    htmlPath: 'ats-prime.html'
+  },
+  {
+    id: 'sterling',
+    name: 'Sterling',
+    slug: 'sterling',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/sterling.png',
+    htmlPath: 'sterling.html'
+  },
+  {
+    id: 'aurora',
+    name: 'Aurora',
+    slug: 'aurora',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/aurora.png',
+    htmlPath: 'aurora.html'
   }
 ];
 

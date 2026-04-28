@@ -15,6 +15,8 @@ export function TemplateCard({ template }: { template: Template }) {
   const thumbRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.22);
   const isPremium = /-pro$/.test(template.id) || /\bpro\b/i.test(template.name);
+  const isAts = /\bats\b/i.test(template.name) || template.id.startsWith('ats');
+  const isNew = ['ats-focus', 'ats-prime', 'sterling', 'aurora'].includes(template.id);
 
   useEffect(() => {
     const el = thumbRef.current;
@@ -55,6 +57,8 @@ export function TemplateCard({ template }: { template: Template }) {
           </div>
         )}
         <div className="template-card__badge-wrap">
+          {isNew && <div className="template-card__badge template-card__badge--new">New</div>}
+          {isAts && <div className="template-card__badge template-card__badge--ats">ATS</div>}
           {isPremium && <div className="template-card__badge template-card__badge--premium">Premium</div>}
           <div className="template-card__badge">{template.style}</div>
         </div>
@@ -64,7 +68,13 @@ export function TemplateCard({ template }: { template: Template }) {
       <div className="template-card__body">
         <p className="template-card__eyebrow">{template.style}</p>
         <h3 className="template-card__name">{template.name}</h3>
-        <p className="template-card__meta">{isPremium ? 'Advanced layout and richer visual hierarchy.' : 'Clean, recruiter-friendly structure.'}</p>
+        <p className="template-card__meta">
+          {isAts
+            ? 'ATS-friendly structure with clean parsing and strong scanning flow.'
+            : isPremium
+              ? 'Advanced layout and richer visual hierarchy.'
+              : 'Clean, recruiter-friendly structure.'}
+        </p>
         <Link
           href={`/builder/${template.id}`}
           className="btn btn--primary btn--full btn--square"

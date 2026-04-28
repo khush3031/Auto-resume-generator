@@ -2,20 +2,28 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { templates as templateRegistry } from '@resumeforge/templates';
 import { api } from '../../src/lib/api';
 
 type UploadState = 'idle' | 'uploading' | 'parsing' | 'success' | 'error';
 
-const TEMPLATES = [
-  { id: 'classic',    name: 'Classic'    },
-  { id: 'minimal',    name: 'Minimal'    },
-  { id: 'executive',  name: 'Executive'  },
-  { id: 'modern',     name: 'Modern'     },
-  { id: 'elegant',    name: 'Elegant'    },
-  { id: 'bold',       name: 'Bold'       },
-  { id: 'clean-grid', name: 'Clean Grid' },
-  { id: 'ats',        name: 'ATS'        },
-];
+const UPLOAD_TEMPLATE_IDS = [
+  'classic',
+  'modern',
+  'executive',
+  'sterling',
+  'aurora',
+  'ats',
+  'ats-focus',
+  'ats-prime',
+] as const;
+
+const TEMPLATES = UPLOAD_TEMPLATE_IDS
+  .map((id) => {
+    const template = templateRegistry.find((item) => item.id === id);
+    return template ? { id: template.id, name: template.name } : null;
+  })
+  .filter((template): template is { id: string; name: string } => Boolean(template));
 
 const HOW_STEPS = [
   { icon: '📄', t: 'Upload',    d: 'Drop your PDF or image resume'      },

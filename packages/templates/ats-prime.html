@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATS Prime Resume</title>
+  <style>
+    :root {
+      --accent: var(--resume-accent-color, #0f172a);
+      --ink: #0f172a;
+      --muted: #475569;
+      --line: #cbd5e1;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #ffffff; color: var(--ink); font-family: 'Segoe UI', 'Arial', sans-serif; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; padding: 48px 54px; }
+    .top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: end;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .name { font-size: 29px; font-weight: 700; line-height: 1.05; letter-spacing: 0.01em; margin-bottom: 6px; }
+    .title { font-size: 13px; color: var(--muted); }
+    .contact { text-align: right; font-size: 11px; line-height: 1.65; color: var(--muted); }
+    .section { margin-bottom: 18px; }
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid var(--line);
+    }
+    .summary { font-size: 12px; line-height: 1.75; color: #1e293b; }
+    .three-up { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+    .panel { border: 1px solid #e2e8f0; padding: 12px; }
+    .skills-list { display: grid; gap: 5px; }
+    .skills-list > * { font-size: 12px; line-height: 1.5; color: #1f2937; }
+
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="top">
+      <div>
+        <div class="name">{{fullName}}</div>
+        <div class="title">{{jobTitle}}</div>
+      </div>
+      <div class="contact">
+        <div>{{email}}</div>
+        <div>{{phone}}</div>
+        <div>{{location}}</div>
+        <div>{{linkedin}}</div>
+        <div>{{website}}</div>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-title">Summary</div>
+      <p class="summary">{{summary}}</p>
+    </section>
+
+    <section class="section">
+      <div class="section-title">Experience</div>
+      {{experienceBlocks}}
+    </section>
+
+    <section class="section" style="display:{{projectsSectionDisplay}}">
+      <div class="section-title">Projects</div>
+      {{projectBlocks}}
+    </section>
+
+    <section class="section">
+      <div class="section-title">Education</div>
+      {{educationBlocks}}
+    </section>
+
+    <div class="three-up">
+      <section class="section panel">
+        <div class="section-title">Skills</div>
+        <div class="skills-list">
+          {{skillsBlock}}
+        </div>
+      </section>
+
+      <section class="section panel">
+        <div class="section-title">Certifications</div>
+        {{certificationBlocks}}
+      </section>
+
+      <section class="section panel">
+        <div class="section-title">Languages</div>
+        {{languagesBlock}}
+      </section>
+    </div>
+  </div>
+</body>
+</html>

@@ -104,7 +104,7 @@ export default function OGImage() {
 
         {/* Feature pills */}
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          {['28+ Templates', 'AI-Powered', 'PDF Export', '100% Free'].map((label) => (
+          {['38+ Templates', 'AI-Powered', 'PDF Export', '100% Free'].map((label) => (
             <div
               key={label}
               style={{

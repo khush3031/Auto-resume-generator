@@ -469,6 +469,15 @@ const TEMPLATE_ACCENT_COLORS: Record<string, string> = {
   'infographic':  '#7c3aed',   // left panel bg (var(--accent))
   'academic':     '#374151',
   'harbor':       '#0f5c7a',
+  'nova':         '#0d1b2a',
+  'crimson':      '#b91c1c',
+  'forest':       '#166534',
+  'sunset':       '#c2410c',
+  'blueprint':    '#1e40af',
+  'ats-focus':    '#1f2937',
+  'ats-prime':    '#0f172a',
+  'sterling':     '#0f5d73',
+  'aurora':       '#0f766e',
 };
 
 /** Convert any hex color to its lowercase 6-char form (#abc → #aabbcc) */
