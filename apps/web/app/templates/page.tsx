@@ -1,10 +1,12 @@
 import { TemplatesGrid } from '../../components/TemplatesGrid';
 import type { Metadata } from 'next';
+import { templateCount } from '@resumeforge/templates';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://resumeforge-web.onrender.com';
 const PAGE_URL = `${SITE_URL}/templates`;
-const PAGE_TITLE = 'Free Resume Templates - 38+ Professional Designs | ResumeForge';
-const PAGE_DESC = 'Browse 38+ free resume templates: ATS-friendly, modern, executive, creative, and more. Preview live and start building your resume instantly - no account needed.';
+const TEMPLATE_COUNT_LABEL = `${templateCount}+`;
+const PAGE_TITLE = `Free Resume Templates - ${TEMPLATE_COUNT_LABEL} Professional Designs | ResumeForge`;
+const PAGE_DESC = `Browse ${TEMPLATE_COUNT_LABEL} free resume templates: ATS-friendly, modern, executive, creative, and more. Preview live and start building your resume instantly - no account needed.`;
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,

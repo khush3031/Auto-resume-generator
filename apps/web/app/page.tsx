@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { templateCount } from '@resumeforge/templates';
 import { HeroCtas } from '../components/HeroCtas';
 import { Logo } from '../components/Logo';
 
@@ -6,8 +7,9 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
   'https://resumeforge-web.onrender.com';
 
-const PAGE_TITLE = 'ResumeForge - Free Resume Builder Online | 38+ Templates';
-const PAGE_DESC = 'Build a professional resume in minutes. Choose from 38+ ATS-friendly templates, edit live, and download a polished PDF - completely free. No sign-up needed to start.';
+const TEMPLATE_COUNT_LABEL = `${templateCount}+`;
+const PAGE_TITLE = `ResumeForge - Free Resume Builder Online | ${TEMPLATE_COUNT_LABEL} Templates`;
+const PAGE_DESC = `Build a professional resume in minutes. Choose from ${TEMPLATE_COUNT_LABEL} ATS-friendly templates, edit live, and download a polished PDF - completely free. No sign-up needed to start.`;
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -39,11 +41,11 @@ const jsonLd = {
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-  featureList: ['38+ Resume Templates', 'Live Preview', 'PDF Export', 'ATS-Friendly Layouts', 'AI-Powered Suggestions'],
+  featureList: [`${TEMPLATE_COUNT_LABEL} Resume Templates`, 'Live Preview', 'PDF Export', 'ATS-Friendly Layouts', 'AI-Powered Suggestions'],
 };
 
 const STATS = [
-  { v: '38+', l: 'Resume templates' },
+  { v: TEMPLATE_COUNT_LABEL, l: 'Resume templates' },
   { v: '< 5 min', l: 'Average build time' },
   { v: 'Live', l: 'Design controls' },
   { v: 'ATS-ready', l: 'Recruiter-friendly' },
@@ -53,7 +55,7 @@ const STEPS = [
   {
     n: '01',
     t: 'Pick a template',
-    d: 'Browse 38+ professionally designed layouts - from ATS-safe basics to richer premium-style editorial formats.',
+    d: `Browse ${TEMPLATE_COUNT_LABEL} professionally designed layouts - from ATS-safe basics to richer premium-style editorial formats.`,
   },
   {
     n: '02',

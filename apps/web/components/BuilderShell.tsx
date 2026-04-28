@@ -478,6 +478,10 @@ const TEMPLATE_ACCENT_COLORS: Record<string, string> = {
   'ats-prime':    '#0f172a',
   'sterling':     '#0f5d73',
   'aurora':       '#0f766e',
+  'atlas':        '#1d4f91',
+  'beacon':       '#394867',
+  'mosaic':       '#b45309',
+  'horizon':      '#0f6d8c',
 };
 
 /** Convert any hex color to its lowercase 6-char form (#abc → #aabbcc) */

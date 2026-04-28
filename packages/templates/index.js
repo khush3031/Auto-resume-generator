@@ -312,9 +312,42 @@ const templates = [
     style: 'Modern',
     thumbnail: '/templates/thumbnails/aurora.png',
     htmlPath: 'aurora.html'
+  },
+  {
+    id: 'atlas',
+    name: 'Atlas',
+    slug: 'atlas',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/atlas.png',
+    htmlPath: 'atlas.html'
+  },
+  {
+    id: 'beacon',
+    name: 'Beacon',
+    slug: 'beacon',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/beacon.png',
+    htmlPath: 'beacon.html'
+  },
+  {
+    id: 'mosaic',
+    name: 'Mosaic',
+    slug: 'mosaic',
+    style: 'Creative',
+    thumbnail: '/templates/thumbnails/mosaic.png',
+    htmlPath: 'mosaic.html'
+  },
+  {
+    id: 'horizon',
+    name: 'Horizon',
+    slug: 'horizon',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/horizon.png',
+    htmlPath: 'horizon.html'
   }
 ];
 
 const templateStyles = ['Professional', 'Minimal', 'Creative', 'Modern'];
+const templateCount = templates.length;
 
-module.exports = { templates, templateStyles };
+module.exports = { templates, templateStyles, templateCount };

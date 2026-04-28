@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { templateCount } from '@resumeforge/templates';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { NavigationTracker } from '../components/NavigationTracker';
@@ -9,7 +10,8 @@ const siteUrl =
   'https://resumeforge-web.onrender.com';
 
 const OG_TITLE = 'ResumeForge - Free Resume Builder Online';
-const OG_DESCRIPTION = 'Build a professional resume in minutes. Choose from 38+ ATS-friendly templates, edit in real time, and download a polished PDF - completely free.';
+const TEMPLATE_COUNT_LABEL = `${templateCount}+`;
+const OG_DESCRIPTION = `Build a professional resume in minutes. Choose from ${TEMPLATE_COUNT_LABEL} ATS-friendly templates, edit in real time, and download a polished PDF - completely free.`;
 
 export const metadata: Metadata = {
   title: {

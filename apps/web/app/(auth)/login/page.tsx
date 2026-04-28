@@ -3,12 +3,15 @@
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { templateCount } from '@resumeforge/templates';
 import { NavLink } from '../../../components/NavLink';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '../../../src/store/auth.store';
 import { Logo } from '../../../components/Logo';
+
+const TEMPLATE_COUNT_LABEL = `${templateCount}+`;
 
 const loginSchema = z.object({
   email:    z.string().email('Enter a valid email'),
@@ -18,7 +21,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const brandFeatures = [
-  '16+ Professional templates',
+  `${TEMPLATE_COUNT_LABEL} Professional templates`,
   '100% Free to use',
   'ATS-ready formats',
   'No design skills needed',
@@ -133,7 +136,7 @@ export default function LoginPage() {
           <div style={{ marginBottom: '2rem' }}>
             <Logo size={40} textColor="#ffffff" />
             <p className="auth-brand__desc" style={{ marginTop: '1.5rem' }}>
-              Build professional resumes in minutes. Choose from 16+ templates
+              Build professional resumes in minutes. Choose from {TEMPLATE_COUNT_LABEL} templates
               and download a recruiter-ready PDF for free.
             </p>
           </div>
