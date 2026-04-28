@@ -240,6 +240,46 @@ export const templates: TemplateMeta[] = [
     thumbnail: '/templates/thumbnails/harbor.png',
     htmlPath: 'harbor.html'
   },
+  {
+    id: 'nova',
+    name: 'Nova',
+    slug: 'nova',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/nova.png',
+    htmlPath: 'nova.html'
+  },
+  {
+    id: 'crimson',
+    name: 'Crimson',
+    slug: 'crimson',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/crimson.png',
+    htmlPath: 'crimson.html'
+  },
+  {
+    id: 'forest',
+    name: 'Forest',
+    slug: 'forest',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/forest.png',
+    htmlPath: 'forest.html'
+  },
+  {
+    id: 'sunset',
+    name: 'Sunset',
+    slug: 'sunset',
+    style: 'Creative',
+    thumbnail: '/templates/thumbnails/sunset.png',
+    htmlPath: 'sunset.html'
+  },
+  {
+    id: 'blueprint',
+    name: 'Blueprint',
+    slug: 'blueprint',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/blueprint.png',
+    htmlPath: 'blueprint.html'
+  },
 ];
 
 export const templateStyles = ['Professional', 'Minimal', 'Creative', 'Modern'];

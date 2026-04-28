@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sunset Resume</title>
+  <style>
+    :root { --accent: var(--resume-accent-color, #c2410c); --accent-soft: #fff7ed; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Nunito', 'Segoe UI', Arial, sans-serif; color: #1c1917; background: #fff; }
+    .page { width: 794px; max-width: 794px; margin: 0 auto; background: #fff; }
+    /* Top gradient header */
+    .header {
+      background: linear-gradient(135deg, var(--accent) 0%, #f59e0b 100%);
+      padding: 40px 44px 32px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::after {
+      content: '';
+      position: absolute; bottom: -1px; left: 0; right: 0;
+      height: 28px;
+      background: #fff;
+      clip-path: ellipse(55% 100% at 50% 100%);
+    }
+    .header-name { margin: 0; font-size: 2.5rem; font-weight: 800; }
+    .header-role { margin: 6px 0 0; font-size: 1rem; color: rgba(255,255,255,0.82); letter-spacing: 0.05em; }
+    .header-contact {
+      display: flex; flex-wrap: wrap; gap: 18px;
+      margin-top: 16px; font-size: 0.85rem; color: rgba(255,255,255,0.9);
+    }
+    /* Body */
+    .body { padding: 16px 44px 44px; display: flex; gap: 32px; }
+    .sidebar { width: 210px; min-width: 210px; }
+    .main { flex: 1; }
+    /* Sidebar styling */
+    .sidebar-card {
+      background: var(--accent-soft);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .sidebar-title {
+      font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent); font-weight: 800; margin: 0 0 10px;
+    }
+    .sidebar p, .sidebar li { font-size: 0.87rem; line-height: 1.8; margin: 0 0 5px; color: #44403c; }
+    /* Override builder inline styles */
+    .sidebar span[style] { color: #44403c !important; background: rgba(194,65,12,0.1) !important; }
+    .sidebar strong { color: #1c1917 !important; }
+    /* Main sections */
+    .section-title {
+      font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+      font-weight: 800; color: var(--accent); margin: 0 0 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: #fed7aa; }
+    .section { margin-bottom: 26px; }
+    .section p, .section li { font-size: 0.92rem; line-height: 1.78; color: #44403c; }
+    ul { margin: 4px 0; padding-left: 18px; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { margin: 0; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <h1 class="header-name">{{fullName}}</h1>
+      <p class="header-role">{{jobTitle}}</p>
+      <div class="header-contact">
+        <span>{{email}}</span>
+        <span>{{phone}}</span>
+        <span>{{location}}</span>
+        <span>{{linkedin}}</span>
+        <span>{{website}}</span>
+      </div>
+    </header>
+
+    <div class="body">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-card">
+          <p class="sidebar-title">Skills</p>
+          {{skillsBlock}}
+        </div>
+        <div class="sidebar-card">
+          <p class="sidebar-title">Languages</p>
+          {{languagesBlock}}
+        </div>
+        <div class="sidebar-card">
+          <p class="sidebar-title">Certifications</p>
+          {{certificationBlocks}}
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <main class="main">
+        <section class="section">
+          <h2 class="section-title">Summary</h2>
+          <p>{{summary}}</p>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Experience</h2>
+          {{experienceBlocks}}
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Education</h2>
+          {{educationBlocks}}
+        </section>
+
+        <section class="section" style="display:{{projectsSectionDisplay}}">
+          <h2 class="section-title">Projects</h2>
+          {{projectBlocks}}
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

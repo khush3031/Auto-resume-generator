@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://resumeforge-web.onrender.com';
 const PAGE_URL  = `${SITE_URL}/templates`;
-const PAGE_TITLE = 'Free Resume Templates — 28+ Professional Designs | ResumeForge';
-const PAGE_DESC  = 'Browse 28+ free resume templates: ATS-friendly, modern, executive, creative, and more. Preview live and start building your resume instantly — no account needed.';
+const PAGE_TITLE = 'Free Resume Templates — 34+ Professional Designs | ResumeForge';
+const PAGE_DESC  = 'Browse 34+ free resume templates: ATS-friendly, modern, executive, creative, and more. Preview live and start building your resume instantly — no account needed.';
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,

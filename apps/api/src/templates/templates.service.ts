@@ -69,6 +69,11 @@ const DEFAULT_ACCENT_COLORS: Record<string, string> = {
   'infographic':  '#7c3aed',
   'academic':     '#374151',
   'harbor':       '#0f5c7a',
+  'nova':         '#0d1b2a',
+  'crimson':      '#b91c1c',
+  'forest':       '#166534',
+  'sunset':       '#c2410c',
+  'blueprint':    '#1e40af',
 };
 
 @Injectable()

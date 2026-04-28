@@ -5,8 +5,8 @@
  *
  * Behaviour:
  *  • href === current page  →  no-op (clicking the page you're already on does nothing)
- *  • href exists earlier in the tracked stack  →  window.history.go(-n)
- *    (goes back to the real existing browser entry instead of pushing a copy)
+ *  • href exists exactly one step earlier in the tracked stack  →  router.back()
+ *    (goes back in history without pushing a duplicate, only when it's safe to do so)
  *  • href is a new destination  →  router.push(href)  (normal forward navigation)
  *
  * Use this anywhere you want React-Native-style "navigate() won't stack duplicates"
@@ -44,20 +44,22 @@ export function NavLink({ href, className, children, style }: NavLinkProps) {
     // ── Same page: do nothing ──────────────────────────────────────────
     if (targetBase === currentBase) return;
 
-    const stack       = readStack();
-    const currentPos  = stack.length - 1;
+    const stack      = readStack();
+    const currentPos = stack.length - 1;
 
-    // ── Target exists earlier in the stack: go back to it ─────────────
-    // Search backwards from one before the current position.
-    for (let i = currentPos - 1; i >= 0; i--) {
-      if (stack[i].split('?')[0] === targetBase) {
-        const stepsBack = currentPos - i;
-        window.history.go(-stepsBack);
-        return;
-      }
+    // ── Target is exactly one step back: safe to go back ──────────────
+    // Only use router.back() when the immediately previous entry matches.
+    // This avoids the risk of window.history.go(-n) overshooting into
+    // external browser history entries when n > 1.
+    if (
+      currentPos >= 1 &&
+      stack[currentPos - 1]?.split('?')[0] === targetBase
+    ) {
+      router.back();
+      return;
     }
 
-    // ── New destination: push normally ────────────────────────────────
+    // ── New destination (or target is further back): push normally ─────
     router.push(href);
   };
 

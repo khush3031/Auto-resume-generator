@@ -207,10 +207,14 @@ svg {
 }
 
 .navbar__logo {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
   font-size: 1.35rem;
   font-weight: 700;
   color: var(--color-text-primary);
   text-decoration: none;
+  gap: 0.625rem;
 }
 
 .navbar__logo:focus-visible {
@@ -1659,6 +1663,9 @@ svg {
 
 /* Top action bar */
 .builder-topbar {
+  /* position: sticky; */
+  /* top: var(--navbar-height); pin just below the sticky main navbar */
+  z-index: 30;
   width: 100%;
   display: flex;
   align-items: center;

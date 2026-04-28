@@ -9,7 +9,7 @@ interface LogoProps {
 
 export function Logo({ size = 32, className = '', showText = true, textColor }: LogoProps) {
   return (
-    <div className={`flex items-center gap-2 ${className}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.625rem' }}>
+    <span className={className} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.625rem', pointerEvents: 'none' }}>
       <svg
         width={size}
         height={size}
@@ -62,7 +62,7 @@ export function Logo({ size = 32, className = '', showText = true, textColor }: 
           Resume<span style={{ color: (textColor === '#ffffff' || textColor === 'white') ? '#ffffff' : '#ef4444', opacity: (textColor === '#ffffff' || textColor === 'white') ? 0.9 : 1 }}>Forge</span>
         </span>
       )}
-    </div>
+    </span>
   );
 }
 
