@@ -345,6 +345,86 @@ export const templates: TemplateMeta[] = [
     htmlPath: 'horizon.html'
   },
   {
+    id: 'ledger',
+    name: 'Ledger',
+    slug: 'ledger',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/ledger.png',
+    htmlPath: 'ledger.html'
+  },
+  {
+    id: 'axis',
+    name: 'Axis',
+    slug: 'axis',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/axis.png',
+    htmlPath: 'axis.html'
+  },
+  {
+    id: 'signal',
+    name: 'Signal',
+    slug: 'signal',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/signal.png',
+    htmlPath: 'signal.html'
+  },
+  {
+    id: 'clearpath',
+    name: 'Clearpath',
+    slug: 'clearpath',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/clearpath.png',
+    htmlPath: 'clearpath.html'
+  },
+  {
+    id: 'pinstripe',
+    name: 'Pinstripe',
+    slug: 'pinstripe',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/pinstripe.png',
+    htmlPath: 'pinstripe.html'
+  },
+  {
+    id: 'quill',
+    name: 'Quill',
+    slug: 'quill',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/quill.png',
+    htmlPath: 'quill.html'
+  },
+  {
+    id: 'stride',
+    name: 'Stride',
+    slug: 'stride',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/stride.png',
+    htmlPath: 'stride.html'
+  },
+  {
+    id: 'summit',
+    name: 'Summit',
+    slug: 'summit',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/summit.png',
+    htmlPath: 'summit.html'
+  },
+  {
+    id: 'vector',
+    name: 'Vector',
+    slug: 'vector',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/vector.png',
+    htmlPath: 'vector.html'
+  },
+  {
+    id: 'columnist',
+    name: 'Columnist',
+    slug: 'columnist',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/columnist.png',
+    htmlPath: 'columnist.html'
+  },
+  {
     id: 'tech-pro',
     name: 'Tech Pro',
     slug: 'tech-pro',
