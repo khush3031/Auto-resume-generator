@@ -295,8 +295,11 @@ function buildExpBlocksFront(d: Record<string, string>): string {
     ${dateStr ? `<span style="font-size:11px;color:var(--accent,#1a3a4a);white-space:nowrap;margin-left:8px;">${dateStr}</span>` : ''}
   </div>
   ${companyStr ? `<div style="font-size:12px;color:#666;margin-bottom:6px;">${companyStr}</div>` : ''}
-  ${bullets.length ? `<ul style="list-style:none;padding:0;margin:0;">${
-    bullets.map((b) => `<li style="font-size:12px;color:#444;line-height:1.65;padding-left:14px;position:relative;margin-bottom:2px;word-break:break-word;"><span style="position:absolute;left:0;color:var(--accent,#1a3a4a);">&#9658;</span>${b}</li>`).join('')
+  ${bullets.length ? `<ul style="margin:6px 0 0 18px;padding:0;">${
+    bullets.map((b) => {
+      const cleanText = b.replace(/^[▶•\-\*]\s*/, '');
+      return `<li style="margin-bottom:4px;word-break:break-word;">${cleanText}</li>`;
+    }).join('')
   }</ul>` : ''}
 </div>`);
   }

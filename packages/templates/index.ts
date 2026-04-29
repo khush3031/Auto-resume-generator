@@ -344,6 +344,22 @@ export const templates: TemplateMeta[] = [
     thumbnail: '/templates/thumbnails/horizon.png',
     htmlPath: 'horizon.html'
   },
+  {
+    id: 'tech-pro',
+    name: 'Tech Pro',
+    slug: 'tech-pro',
+    style: 'Creative',
+    thumbnail: '/templates/thumbnails/tech-pro.png',
+    htmlPath: 'tech-pro.html'
+  },
+  {
+    id: 'gradient-pro',
+    name: 'Gradient Pro',
+    slug: 'gradient-pro',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/gradient-pro.png',
+    htmlPath: 'gradient-pro.html'
+  },
 ];
 
 export const templateStyles = ['Professional', 'Minimal', 'Creative', 'Modern'];

@@ -473,7 +473,10 @@ export class ResumesService {
       const bullets = [1, 2, 3]
         .map((b) => d[`job${n}Bullet${b}`] ?? '')
         .filter(Boolean)
-        .map((b) => `<li style="margin-bottom:4px;">${this.esc(b)}</li>`)
+        .map((b) => {
+          const cleanText = b.replace(/^[▶•\-\*]\s*/, '');
+          return `<li style="margin-bottom:4px;">${this.esc(cleanText)}</li>`;
+        })
         .join('');
       const bulletsHtml = bullets
         ? `<ul style="margin:6px 0 0 18px;padding:0;">${bullets}</ul>`
