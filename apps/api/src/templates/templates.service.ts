@@ -82,6 +82,16 @@ const DEFAULT_ACCENT_COLORS: Record<string, string> = {
   'ats-prime':    '#0f172a',
   'sterling':     '#0f5d73',
   'aurora':       '#0f766e',
+  'atlas':        '#1d4f91',
+  'beacon':       '#394867',
+  'mosaic':       '#b45309',
+  'horizon':      '#0f6d8c',
+  'prism':        '#7c3aed',
+  'cascade':      '#2563eb',
+  'ember':        '#ea580c',
+  'meridian':     '#0f766e',
+  'canopy':       '#16a34a',
+  'radian':       '#db2777',
 };
 
 @Injectable()

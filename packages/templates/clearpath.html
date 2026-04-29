@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clearpath Resume</title>
+  <style>
+    :root {
+      --accent: var(--resume-accent-color, #334155);
+      --ink: #0f172a;
+      --muted: #475569;
+      --line: #dbe2ea;
+      --soft: #f8fafc;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #eef2f6; color: var(--ink); font-family: "Segoe UI", Arial, sans-serif; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #ffffff; }
+    .shell { padding: 34px 38px 32px; }
+    .hero {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 22px 24px 18px;
+      margin-bottom: 18px;
+      background: linear-gradient(180deg, rgba(51, 65, 85, 0.06), rgba(51, 65, 85, 0));
+    }
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .name { font-size: 34px; line-height: 0.98; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 6px; }
+    .role {
+      font-size: 12px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      font-weight: 800;
+    }
+    .contact-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      max-width: 300px;
+    }
+    .contact-pill {
+      border: 1px solid var(--line);
+      background: #ffffff;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 10.5px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+    .summary { font-size: 12.5px; line-height: 1.76; color: #334155; }
+    .section {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #ffffff;
+      padding: 16px 18px 14px;
+      margin-bottom: 14px;
+    }
+    .section h2 {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--accent);
+      font-weight: 800;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+    .support-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .support-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--soft);
+      padding: 14px 16px 12px;
+    }
+    .support-card h3 {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="shell">
+      <header class="hero">
+        <div class="hero-top">
+          <div>
+            <div class="name">{{fullName}}</div>
+            <div class="role">{{jobTitle}}</div>
+          </div>
+          <div class="contact-wrap">
+            <span class="contact-pill">{{email}}</span>
+            <span class="contact-pill">{{phone}}</span>
+            <span class="contact-pill">{{location}}</span>
+            <span class="contact-pill">{{linkedin}}</span>
+            <span class="contact-pill">{{website}}</span>
+          </div>
+        </div>
+        <p class="summary">{{summary}}</p>
+      </header>
+
+      <section class="section">
+        <h2>Experience</h2>
+        {{experienceBlocks}}
+      </section>
+
+      <section class="section" style="display:{{projectsSectionDisplay}}">
+        <h2>Projects</h2>
+        {{projectBlocks}}
+      </section>
+
+      <div class="support-grid">
+        <section class="support-card">
+          <h3>Education</h3>
+          {{educationBlocks}}
+        </section>
+        <section class="support-card">
+          <h3>Skills</h3>
+          {{skillsBlock}}
+        </section>
+        <section class="support-card">
+          <h3>Certifications</h3>
+          {{certificationBlocks}}
+        </section>
+        <section class="support-card">
+          <h3>Languages</h3>
+          {{languagesBlock}}
+        </section>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

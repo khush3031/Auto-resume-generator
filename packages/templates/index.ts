@@ -312,6 +312,183 @@ export const templates: TemplateMeta[] = [
     thumbnail: '/templates/thumbnails/aurora.png',
     htmlPath: 'aurora.html'
   },
+  {
+    id: 'atlas',
+    name: 'Atlas',
+    slug: 'atlas',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/atlas.png',
+    htmlPath: 'atlas.html'
+  },
+  {
+    id: 'beacon',
+    name: 'Beacon',
+    slug: 'beacon',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/beacon.png',
+    htmlPath: 'beacon.html'
+  },
+  {
+    id: 'mosaic',
+    name: 'Mosaic',
+    slug: 'mosaic',
+    style: 'Creative',
+    thumbnail: '/templates/thumbnails/mosaic.png',
+    htmlPath: 'mosaic.html'
+  },
+  {
+    id: 'horizon',
+    name: 'Horizon',
+    slug: 'horizon',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/horizon.png',
+    htmlPath: 'horizon.html'
+  },
+  {
+    id: 'ledger',
+    name: 'Ledger',
+    slug: 'ledger',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/ledger.png',
+    htmlPath: 'ledger.html'
+  },
+  {
+    id: 'axis',
+    name: 'Axis',
+    slug: 'axis',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/axis.png',
+    htmlPath: 'axis.html'
+  },
+  {
+    id: 'signal',
+    name: 'Signal',
+    slug: 'signal',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/signal.png',
+    htmlPath: 'signal.html'
+  },
+  {
+    id: 'clearpath',
+    name: 'Clearpath',
+    slug: 'clearpath',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/clearpath.png',
+    htmlPath: 'clearpath.html'
+  },
+  {
+    id: 'pinstripe',
+    name: 'Pinstripe',
+    slug: 'pinstripe',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/pinstripe.png',
+    htmlPath: 'pinstripe.html'
+  },
+  {
+    id: 'quill',
+    name: 'Quill',
+    slug: 'quill',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/quill.png',
+    htmlPath: 'quill.html'
+  },
+  {
+    id: 'stride',
+    name: 'Stride',
+    slug: 'stride',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/stride.png',
+    htmlPath: 'stride.html'
+  },
+  {
+    id: 'summit',
+    name: 'Summit',
+    slug: 'summit',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/summit.png',
+    htmlPath: 'summit.html'
+  },
+  {
+    id: 'vector',
+    name: 'Vector',
+    slug: 'vector',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/vector.png',
+    htmlPath: 'vector.html'
+  },
+  {
+    id: 'columnist',
+    name: 'Columnist',
+    slug: 'columnist',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/columnist.png',
+    htmlPath: 'columnist.html'
+  },
+  {
+    id: 'prism',
+    name: 'Prism',
+    slug: 'prism',
+    style: 'Creative',
+    thumbnail: '/templates/thumbnails/prism.png',
+    htmlPath: 'prism.html'
+  },
+  {
+    id: 'cascade',
+    name: 'Cascade',
+    slug: 'cascade',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/cascade.png',
+    htmlPath: 'cascade.html'
+  },
+  {
+    id: 'ember',
+    name: 'Ember',
+    slug: 'ember',
+    style: 'Professional',
+    thumbnail: '/templates/thumbnails/ember.png',
+    htmlPath: 'ember.html'
+  },
+  {
+    id: 'meridian',
+    name: 'Meridian',
+    slug: 'meridian',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/meridian.png',
+    htmlPath: 'meridian.html'
+  },
+  {
+    id: 'canopy',
+    name: 'Canopy',
+    slug: 'canopy',
+    style: 'Minimal',
+    thumbnail: '/templates/thumbnails/canopy.png',
+    htmlPath: 'canopy.html'
+  },
+  {
+    id: 'radian',
+    name: 'Radian',
+    slug: 'radian',
+    style: 'Creative',
+    thumbnail: '/templates/thumbnails/radian.png',
+    htmlPath: 'radian.html'
+  },
+  {
+    id: 'tech-pro',
+    name: 'Tech Pro',
+    slug: 'tech-pro',
+    style: 'Creative',
+    thumbnail: '/templates/thumbnails/tech-pro.png',
+    htmlPath: 'tech-pro.html'
+  },
+  {
+    id: 'gradient-pro',
+    name: 'Gradient Pro',
+    slug: 'gradient-pro',
+    style: 'Modern',
+    thumbnail: '/templates/thumbnails/gradient-pro.png',
+    htmlPath: 'gradient-pro.html'
+  },
 ];
 
 export const templateStyles = ['Professional', 'Minimal', 'Creative', 'Modern'];
+export const templateCount = templates.length;

@@ -9,3 +9,4 @@ export type TemplateMeta = {
 
 export declare const templates: TemplateMeta[];
 export declare const templateStyles: string[];
+export declare const templateCount: number;

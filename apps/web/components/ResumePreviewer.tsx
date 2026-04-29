@@ -4,6 +4,7 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 
 const RESUME_W = 794;
 const RESUME_H = 1123;
+const PREVIEW_CSP_META = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: blob: https:; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src data: https://fonts.gstatic.com; script-src 'none'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">`;
 
 interface Props {
   html:       string;
@@ -71,9 +72,16 @@ font-family:sans-serif;color:#bbb;font-size:13px;
 text-align:center;padding:40px;box-sizing:border-box;}</style>
 </head><body>Fill in the form to see your resume preview</body>
 </html>`;
-    let h = html.includes('<meta charset')
-      ? html
-      : html.replace('<head>', '<head><meta charset="UTF-8">');
+    let h = html;
+    h = h.includes('<head>')
+      ? h
+      : h.replace(/<html([^>]*)>/i, '<html$1><head></head>');
+    h = h.includes('<meta charset')
+      ? h
+      : h.replace('<head>', '<head><meta charset="UTF-8">');
+    h = h.includes('http-equiv="Content-Security-Policy"')
+      ? h
+      : h.replace('<head>', `<head>${PREVIEW_CSP_META}`);
     h = h.includes('</head>')
       ? h.replace('</head>', PREVIEW_CSS + '</head>')
       : PREVIEW_CSS + h;
@@ -108,6 +116,7 @@ text-align:center;padding:40px;box-sizing:border-box;}</style>
           srcDoc={safeHtml}
           title="Resume Preview"
           sandbox="allow-same-origin"
+          referrerPolicy="no-referrer"
           onLoad={handleLoad}
           style={{
             width:      RESUME_W,

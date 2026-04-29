@@ -1,9 +1,12 @@
 import { ImageResponse } from 'next/og';
+import { templateCount } from '@resumeforge/templates';
 
 export const runtime = 'edge';
 export const alt = 'ResumeForge — Free Resume Builder Online';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
+
+const TEMPLATE_COUNT_LABEL = `${templateCount}+`;
 
 export default function OGImage() {
   return new ImageResponse(
@@ -104,7 +107,7 @@ export default function OGImage() {
 
         {/* Feature pills */}
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          {['38+ Templates', 'AI-Powered', 'PDF Export', '100% Free'].map((label) => (
+          {[`${TEMPLATE_COUNT_LABEL} Templates`, 'AI-Powered', 'PDF Export', '100% Free'].map((label) => (
             <div
               key={label}
               style={{

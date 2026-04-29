@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Horizon Resume</title>
+  <style>
+    :root {
+      --accent: var(--resume-accent-color, #0f6d8c);
+      --ink: #102331;
+      --muted: #5a6f7d;
+      --line: #d9e4ea;
+      --soft: #f3f8fa;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #eaf1f4; color: var(--ink); font-family: "Segoe UI", Arial, sans-serif; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #ffffff; }
+    .hero {
+      padding: 34px 38px 28px;
+      background: linear-gradient(135deg, #103246 0%, var(--accent) 100%);
+      color: #ffffff;
+    }
+    .hero-top { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; }
+    .hero-top > div:first-child { flex: 1 1 auto; min-width: 0; }
+    .name { font-size: 35px; line-height: 1; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .role { font-size: 13px; text-transform: uppercase; letter-spacing: 0.2em; color: rgba(255, 255, 255, 0.82); }
+    .summary { margin-top: 18px; max-width: 640px; font-size: 13px; line-height: 1.78; color: rgba(255, 255, 255, 0.92); }
+    .contact-grid {
+      flex: 0 0 290px;
+      min-width: 290px;
+      max-width: 290px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
+      gap: 7px 14px;
+      font-size: 10.5px;
+      color: rgba(255, 255, 255, 0.92);
+      text-align: right;
+      align-content: start;
+    }
+    .contact-grid span {
+      min-width: 0;
+      white-space: nowrap;
+    }
+    .contact-grid span:first-child {
+      grid-column: 1 / -1;
+      font-size: 10px;
+    }
+    .body { padding: 26px 38px 36px; display: grid; grid-template-columns: 1.12fr 0.88fr; gap: 24px; }
+    .section { margin-bottom: 22px; }
+    .section-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 12px;
+    }
+    .panel { background: var(--soft); border: 1px solid var(--line); padding: 14px 16px; border-radius: 16px; }
+
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="hero-top">
+        <div>
+          <div class="name">{{fullName}}</div>
+          <div class="role">{{jobTitle}}</div>
+        </div>
+
+        <div class="contact-grid">
+          <span>{{email}}</span>
+          <span>{{phone}}</span>
+          <span>{{location}}</span>
+          <span>{{linkedin}}</span>
+          <span>{{website}}</span>
+        </div>
+      </div>
+
+      <p class="summary">{{summary}}</p>
+    </header>
+
+    <div class="body">
+      <main>
+        <section class="section">
+          <div class="section-title">Experience</div>
+          {{experienceBlocks}}
+        </section>
+
+        <section class="section" style="display:{{projectsSectionDisplay}}">
+          <div class="section-title">Projects</div>
+          {{projectBlocks}}
+        </section>
+      </main>
+
+      <aside>
+        <section class="section panel">
+          <div class="section-title">Skills</div>
+          {{skillsBlock}}
+        </section>
+
+        <section class="section panel">
+          <div class="section-title">Education</div>
+          {{educationBlocks}}
+        </section>
+
+        <section class="section panel">
+          <div class="section-title">Certifications</div>
+          {{certificationBlocks}}
+        </section>
+
+        <section class="section panel">
+          <div class="section-title">Languages</div>
+          {{languagesBlock}}
+        </section>
+      </aside>
+    </div>
+  </div>
+</body>
+</html>

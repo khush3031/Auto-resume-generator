@@ -7,6 +7,7 @@ import { User, UserDocument } from '../users/schemas/user.schema';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { getJwtSecret } from '../common/security.util';
 
 @Injectable()
 export class AuthService {
@@ -113,7 +114,11 @@ export class AuthService {
     const accessToken = await this.jwtService.signAsync(
       { sub: userId, email },
       {
-        secret: this.config.get<string>('JWT_ACCESS_SECRET') || 'access-secret',
+        secret: getJwtSecret(
+          this.config.get<string>('JWT_ACCESS_SECRET'),
+          this.config.get<string>('JWT_SECRET'),
+          'JWT access secret',
+        ),
         expiresIn: this.config.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m'
       }
     );
@@ -121,7 +126,11 @@ export class AuthService {
     const refreshToken = await this.jwtService.signAsync(
       { sub: userId, email },
       {
-        secret: this.config.get<string>('JWT_REFRESH_SECRET') || 'refresh-secret',
+        secret: getJwtSecret(
+          this.config.get<string>('JWT_REFRESH_SECRET'),
+          undefined,
+          'JWT refresh secret',
+        ),
         expiresIn: this.config.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d'
       }
     );

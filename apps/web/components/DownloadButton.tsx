@@ -23,10 +23,10 @@ export function DownloadButton({ resumeId, iconOnly = false, fullWidth = false }
     }
     try {
       setIsDownloading(true);
-      const blob = await exportResumePdf(resumeId);
+      const { blob, fileName } = await exportResumePdf(resumeId);
       const url  = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       const a    = document.createElement('a');
-      a.href = url; a.download = `resume-${resumeId}.pdf`;
+      a.href = url; a.download = fileName;
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
     } finally {

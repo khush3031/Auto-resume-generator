@@ -10,6 +10,7 @@ import { join } from 'path';
 import puppeteer from 'puppeteer';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { UpdateResumeDto } from './dto/update-resume.dto';
+import { shouldAllowUnsafePdfSandbox } from '../common/security.util';
 
 const ACCENT_MAP: Record<string, string> = {
   'classic': '#0f3d5c', 'minimal': '#111827',
@@ -25,6 +26,8 @@ const ACCENT_MAP: Record<string, string> = {
   'mono': '#333333',
   'slate': '#38bdf8', 'indigo': '#4338ca', 'cobalt': '#0077cc', 'sage': '#3a5e3b',
   'infographic': '#7c3aed', 'academic': '#374151', 'harbor': '#0f5c7a',
+  'prism': '#7c3aed', 'cascade': '#2563eb', 'ember': '#ea580c',
+  'meridian': '#0f766e', 'canopy': '#16a34a', 'radian': '#db2777',
 };
 
 const DESIGN_FONT_STACKS: Record<string, string> = {
@@ -55,6 +58,8 @@ const LOCAL_BROWSER_CANDIDATES: Partial<Record<NodeJS.Platform, string[]>> = {
   ],
 };
 
+const SAFE_HEX_COLOR_PATTERN = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+
 @Injectable()
 export class ResumesService {
   constructor(
@@ -62,19 +67,24 @@ export class ResumesService {
     @InjectModel(UserResumeDetails.name) private readonly userResumeDetailsModel: Model<UserResumeDetailsDocument>,
   ) {}
 
+  private get resumeCollection() {
+    return this.resumeModel.collection;
+  }
+
   // ─── CRUD ─────────────────────────────────────────────────────────────────────
 
   async createResume(payload: CreateResumeDto) {
     const template = templates.find((t) => t.id === payload.templateId);
     if (!template) throw new BadRequestException('Template not found');
 
-    const renderedHtml = await this.generateRenderedHtml(payload.templateId, payload.formData);
+    const sanitizedFormData = this.sanitizeBeforeRender(payload.formData);
+    const renderedHtml = await this.generateRenderedHtml(payload.templateId, sanitizedFormData);
     return this.resumeModel.create({
       templateId: payload.templateId,
       templateName: template.name,
       title: 'My Resume',
       status: 'draft',
-      formData: payload.formData,
+      formData: sanitizedFormData,
       renderedHtml,
       userId: payload.userId || null,
     });
@@ -82,26 +92,47 @@ export class ResumesService {
 
   async findById(id: string) {
     if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).lean().exec();
+    const resume = await this.resumeCollection.findOne({
+      _id: new Types.ObjectId(id),
+      isDeleted: { $ne: true },
+    });
     if (!resume) throw new NotFoundException('Resume not found');
     return resume;
   }
 
   async updateResume(id: string, payload: UpdateResumeDto, currentUserId?: string) {
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).exec();
+    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
+
+    const resume = await this.resumeCollection.findOne({
+      _id: new Types.ObjectId(id),
+      isDeleted: { $ne: true },
+    });
     if (!resume) throw new NotFoundException('Resume not found');
-    if (resume.userId && currentUserId && resume.userId.toString() !== currentUserId) {
-      throw new ForbiddenException('You do not have permission to update this resume');
+    if (resume.userId) {
+      if (!currentUserId || String(resume.userId) !== currentUserId) {
+        throw new ForbiddenException('You do not have permission to update this resume');
+      }
     }
 
-    resume.formData = payload.formData;
-    resume.markModified('formData');
-    resume.renderedHtml = await this.generateRenderedHtml(resume.templateId, payload.formData);
-    if (payload.title) resume.title = payload.title;
-    if (payload.status) resume.status = payload.status;
+    const sanitizedFormData = this.sanitizeBeforeRender(payload.formData);
+    const renderedHtml = await this.generateRenderedHtml(String(resume.templateId), sanitizedFormData);
+    const updatedResumeResult = await this.resumeCollection.findOneAndUpdate(
+      { _id: new Types.ObjectId(id), isDeleted: { $ne: true } },
+      {
+        $set: {
+          formData: sanitizedFormData,
+          renderedHtml,
+          ...(payload.title ? { title: payload.title } : {}),
+          ...(payload.status ? { status: payload.status } : {}),
+          updatedAt: new Date(),
+        },
+      },
+      { returnDocument: 'after' },
+    );
 
-    await resume.save();
-    return resume.toObject();
+    const updatedResume = updatedResumeResult?.value ?? updatedResumeResult;
+    if (!updatedResume) throw new NotFoundException('Resume not found');
+    return updatedResume;
   }
 
   async findUserResumes(userId: string) {
@@ -115,25 +146,35 @@ export class ResumesService {
   }
 
   async softDeleteResume(id: string, userId: string) {
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).exec();
+    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
+
+    const resume = await this.resumeCollection.findOne({
+      _id: new Types.ObjectId(id),
+      isDeleted: { $ne: true },
+    });
     if (!resume) throw new NotFoundException('Resume not found');
-    if (!resume.userId || resume.userId.toString() !== userId) {
+    if (!resume.userId || String(resume.userId) !== userId) {
       throw new ForbiddenException('You do not have permission to delete this resume');
     }
-    resume.isDeleted = true;
-    await resume.save();
+    await this.resumeCollection.updateOne(
+      { _id: new Types.ObjectId(id) },
+      { $set: { isDeleted: true, updatedAt: new Date() } },
+    );
   }
 
   async exportToPdf(
     id: string,
     userId: string,
     clientFormData?: Record<string, string>,
-  ): Promise<Buffer> {
+  ): Promise<{ buffer: Buffer; fileName: string }> {
     if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
 
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).lean().exec();
+    const resume = await this.resumeCollection.findOne({
+      _id: new Types.ObjectId(id),
+      isDeleted: { $ne: true },
+    });
     if (!resume) throw new NotFoundException('Resume not found');
-    if (resume.userId && resume.userId.toString() !== userId) {
+    if (resume.userId && String(resume.userId) !== userId) {
       throw new ForbiddenException('You do not have permission to export this resume');
     }
 
@@ -145,27 +186,38 @@ export class ResumesService {
     const freshHtml = await this.generateRenderedHtml(resume.templateId, formData);
     const candidateName = (formData['fullName'] ?? 'Resume').trim();
     const buffer = await this.createPdfBuffer(this.prepareHtmlForPdf(freshHtml), candidateName);
+    const fileName = this.buildPdfFilename(candidateName, resume.templateId);
 
     await this.resumeModel.findByIdAndUpdate(id, {
       $inc: { downloadCount: 1 },
       lastExportedAt: new Date(),
     });
 
-    return buffer;
+    return { buffer, fileName };
   }
 
   async claimResume(id: string, userId: string) {
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).exec();
+    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
+
+    const resume = await this.resumeCollection.findOne({
+      _id: new Types.ObjectId(id),
+      isDeleted: { $ne: true },
+    });
     if (!resume) throw new NotFoundException('Resume not found');
     if (resume.userId) {
-      if (resume.userId.toString() !== userId) {
+      if (String(resume.userId) !== userId) {
         throw new ForbiddenException('Resume already belongs to another account');
       }
-      return resume.toObject();
+      return resume;
     }
-    resume.userId = new Types.ObjectId(userId);
-    await resume.save();
-    return resume.toObject();
+    const claimedResumeResult = await this.resumeCollection.findOneAndUpdate(
+      { _id: new Types.ObjectId(id), isDeleted: { $ne: true } },
+      { $set: { userId: new Types.ObjectId(userId), updatedAt: new Date() } },
+      { returnDocument: 'after' },
+    );
+    const claimedResume = claimedResumeResult?.value ?? claimedResumeResult;
+    if (!claimedResume) throw new NotFoundException('Resume not found');
+    return claimedResume;
   }
 
   // ─── User Resume Details (cross-template profile) ─────────────────────────────
@@ -195,8 +247,9 @@ export class ResumesService {
     }
 
     // Strip empty strings — keep only fields that have actual content
+    const sanitizedFormData = this.sanitizeBeforeRender(formData);
     const cleaned: Record<string, string> = {};
-    for (const [k, v] of Object.entries(formData)) {
+    for (const [k, v] of Object.entries(sanitizedFormData)) {
       if (typeof v === 'string' && v.trim()) cleaned[k] = v;
     }
 
@@ -215,22 +268,25 @@ export class ResumesService {
   // ─── Sanitization ─────────────────────────────────────────────────────────────
 
   private sanitizeBeforeRender(formData: Record<string, string>): Record<string, string> {
-    const out = { ...formData };
-    const isLocalhostUrl = (val: string): boolean => {
-      const v = (val ?? '').trim();
-      return v.startsWith('http') && (v.includes('localhost') || v.includes('127.0.0.1'));
-    };
-
-    ['fullName', 'initials', 'location'].forEach((f) => {
-      if (isLocalhostUrl(out[f] ?? '')) out[f] = '';
-    });
-    ['linkedin', 'website'].forEach((f) => {
-      if (isLocalhostUrl(out[f] ?? '')) out[f] = '';
-    });
-    for (let i = 1; i <= 10; i++) {
-      if (isLocalhostUrl(out[`cert${i}Url`]    ?? '')) out[`cert${i}Url`]    = '';
-      if (isLocalhostUrl(out[`project${i}Url`] ?? '')) out[`project${i}Url`] = '';
+    const out: Record<string, string> = {};
+    for (const [key, value] of Object.entries(formData)) {
+      out[key] = (value ?? '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
     }
+
+    if (out._accentColor) {
+      out._accentColor = this.normalizeAccentColor(out._accentColor) ?? '';
+    }
+
+    for (let i = 1; i <= 10; i++) {
+      out[`cert${i}Url`] = this.toSafeExternalUrl(out[`cert${i}Url`] ?? '') ?? '';
+      out[`project${i}Url`] = this.toSafeExternalUrl(out[`project${i}Url`] ?? '') ?? '';
+    }
+    ['linkedin', 'website'].forEach((field) => {
+      out[field] = this.toSafeExternalUrl(out[field] ?? '') ?? '';
+    });
+    ['fullName', 'initials', 'location'].forEach((field) => {
+      if (this.looksLikeDisallowedUrl(out[field] ?? '')) out[field] = '';
+    });
 
     if ((out.initials ?? '').length > 3) {
       out.initials = (out.fullName ?? '')
@@ -473,7 +529,10 @@ export class ResumesService {
       const bullets = [1, 2, 3]
         .map((b) => d[`job${n}Bullet${b}`] ?? '')
         .filter(Boolean)
-        .map((b) => `<li style="margin-bottom:4px;">${this.esc(b)}</li>`)
+        .map((b) => {
+          const cleanText = b.replace(/^[▶•\-\*]\s*/, '');
+          return `<li style="margin-bottom:4px;">${this.esc(cleanText)}</li>`;
+        })
         .join('');
       const bulletsHtml = bullets
         ? `<ul style="margin:6px 0 0 18px;padding:0;">${bullets}</ul>`
@@ -506,20 +565,28 @@ export class ResumesService {
       if (!name) break;
 
       const dateStr = start || end ? `${this.esc(start)}${start || end ? ' – ' : ''}${this.esc(end)}` : '';
-      const urlHtml = url
-        ? `<a href="${this.esc(url)}" style="font-size:0.8rem;color:#3b82f6;text-decoration:none;">${this.esc(url)}</a>`
+      const safeUrl = this.toSafeExternalUrl(url);
+      const urlHtml = safeUrl
+        ? `<a href="${this.esc(safeUrl)}" rel="noreferrer noopener" style="font-size:0.8rem;color:#3b82f6;text-decoration:none;">${this.esc(url)}</a>`
         : '';
 
       items.push(
         `<div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0;">` +
         `<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;">` +
-        `<strong style="font-size:0.95rem;">${this.esc(name)}</strong>` +
+        (safeUrl
+          ? `<a href="${this.esc(safeUrl)}" rel="noreferrer noopener" style="font-size:0.95rem;font-weight:700;color:inherit;text-decoration:none;">${this.esc(name)} \u2197</a>`
+          : `<strong style="font-size:0.95rem;">${this.esc(name)}</strong>`
+        ) +
         `${dateStr ? `<span style="font-size:0.85rem;color:#6b7280;white-space:nowrap;margin-left:8px;">${dateStr}</span>` : ''}` +
         `</div>` +
         `${role ? `<div style="color:#6b7280;font-size:0.88rem;margin-bottom:4px;">${this.esc(role)}</div>` : ''}` +
         `${tech ? `<div style="font-size:0.82rem;color:#9ca3af;margin-bottom:4px;">${this.esc(tech)}</div>` : ''}` +
         `${desc ? `<p style="font-size:0.9rem;margin:4px 0 0;">${this.esc(desc)}</p>` : ''}` +
-        `${urlHtml ? `<div style="margin-top:4px;">${urlHtml}</div>` : ''}` +
+        (url ? (
+          safeUrl 
+            ? `<div style="margin-top:4px;"><a href="${this.esc(safeUrl)}" rel="noreferrer noopener" style="font-size:0.8rem;color:#3b82f6;text-decoration:none;">${this.esc(url)}</a></div>`
+            : `<div style="margin-top:4px;font-size:0.8rem;color:#9ca3af;">${this.esc(url)} (Insecure URL blocked)</div>`
+        ) : '') +
         `</div>`,
       );
     }
@@ -535,14 +602,20 @@ export class ResumesService {
       const url    = d[`cert${n}Url`]    ?? '';
       if (!name) break;
 
-      const nameEl = url
-        ? `<a href="${this.esc(url)}" class="cert-name" style="font-size:12px;font-weight:600;color:inherit;text-decoration:none;">${this.esc(name)}</a>`
+      const safeUrl = this.toSafeExternalUrl(url);
+      const nameEl = safeUrl
+        ? `<a href="${this.esc(safeUrl)}" rel="noreferrer noopener" style="font-size:12px;font-weight:600;color:inherit;text-decoration:none;">${this.esc(name)} \u2197</a>`
         : `<span class="cert-name" style="font-size:12px;font-weight:600;">${this.esc(name)}</span>`;
 
       items.push(
         `<div class="cert-entry" style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(128,128,128,0.15);">` +
-        `${nameEl}` +
+        `<div>${nameEl}</div>` +
         `<div class="cert-meta" style="font-size:11px;opacity:0.75;margin-top:2px;">${this.esc(issuer)}${issuer && year ? ' · ' : ''}${this.esc(year)}</div>` +
+        (url ? (
+          safeUrl 
+            ? `<div style="margin-top:2px;"><a href="${this.esc(safeUrl)}" rel="noreferrer noopener" style="font-size:10px;color:var(--accent,#1a3a4a);text-decoration:none;">${this.esc(url)}</a></div>`
+            : `<div style="margin-top:2px;font-size:10px;color:#9ca3af;">${this.esc(url)} (Insecure URL blocked)</div>`
+        ) : '') +
         `</div>`,
       );
     }
@@ -668,10 +741,10 @@ export class ResumesService {
   private injectDesignSystem(html: string, formData: Record<string, string>): string {
     const fontFamilyId = formData['_fontFamily'] || 'modern-sans';
     const fontFamily = DESIGN_FONT_STACKS[fontFamilyId] ?? DESIGN_FONT_STACKS['modern-sans'];
-    const fontScale = this.parseNumberSetting(formData['_fontScale'], 1, 0.9, 1.15);
-    const lineHeight = this.parseNumberSetting(formData['_lineHeight'], 1.5, 1.25, 1.85);
-    const sectionGap = this.parseNumberSetting(formData['_sectionGap'], 1, 0.7, 1.45);
-    const entryGap = this.parseNumberSetting(formData['_entryGap'], 1, 0.7, 1.45);
+    const fontScale = this.parseNumberSetting(formData['_fontScale'], 0.96, 0.9, 1.15);
+    const lineHeight = this.parseNumberSetting(formData['_lineHeight'], 1.35, 1.25, 1.85);
+    const sectionGap = this.parseNumberSetting(formData['_sectionGap'], 0.8, 0.7, 1.45);
+    const entryGap = this.parseNumberSetting(formData['_entryGap'], 0.78, 0.7, 1.45);
     const letterSpacing = this.parseNumberSetting(formData['_letterSpacing'], 0, 0, 0.15);
     const headingCaps = formData['_headingCaps'] === '1';
     const sectionDividers = formData['_sectionDividers'] !== '0';
@@ -757,16 +830,19 @@ export class ResumesService {
   // ─── Accent color injection ───────────────────────────────────────────────────
 
   private injectAccentColor(html: string, hex: string, templateId: string): string {
+    const safeHex = this.normalizeAccentColor(hex);
+    if (!safeHex) return html;
+
     const knownAccent = ACCENT_MAP[templateId];
     if (knownAccent) {
       const norm = knownAccent.replace('#', '').length === 3
         ? '#' + knownAccent.replace('#', '').split('').map((c: string) => c + c).join('')
         : knownAccent.toLowerCase();
-      html = html.split(norm).join(hex);
-      html = html.split(knownAccent).join(hex);
+      html = html.split(norm).join(safeHex);
+      html = html.split(knownAccent).join(safeHex);
     }
 
-    const cssVar = `\n<style id="resume-forge-theme">:root { --resume-accent-color: ${hex} !important; --accent: ${hex} !important; }</style>`;
+    const cssVar = `\n<style id="resume-forge-theme">:root { --resume-accent-color: ${safeHex} !important; --accent: ${safeHex} !important; }</style>`;
     html = html.includes('</head>') ? html.replace('</head>', cssVar + '\n</head>') : cssVar + html;
     return html;
   }
@@ -840,15 +916,39 @@ export class ResumesService {
     const A4_H = 1122;
     try {
       const executablePath = await this.resolveBrowserExecutablePath();
+      const launchArgs = [
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--font-render-hinting=none',
+      ];
+      if (shouldAllowUnsafePdfSandbox()) {
+        launchArgs.push('--no-sandbox', '--disable-setuid-sandbox');
+      }
+
       browser = await puppeteer.launch({
         executablePath,
         headless: 'new' as any,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--font-render-hinting=none'],
+        args: launchArgs,
       });
 
       const page = await browser.newPage();
+      await page.setJavaScriptEnabled(false);
+      await page.setRequestInterception(true);
+      page.on('request', (request) => {
+        const url = request.url();
+        if (
+          url === 'about:blank' ||
+          url.startsWith('data:') ||
+          url.startsWith('blob:')
+        ) {
+          request.continue().catch(() => {});
+          return;
+        }
+
+        request.abort().catch(() => {});
+      });
       await page.setViewport({ width: 794, height: A4_H, deviceScaleFactor: 1 });
-      await page.setContent(html, { waitUntil: ['networkidle0', 'domcontentloaded'], timeout: 30000 });
+      await page.setContent(html, { waitUntil: ['domcontentloaded'], timeout: 30000 });
       await page.emulateMediaType('screen');
       await page.evaluateHandle('document.fonts.ready');
       await new Promise((r) => setTimeout(r, 1500));
@@ -913,10 +1013,20 @@ export class ResumesService {
   }
 
   private prepareHtmlForPdf(html: string): string {
+    html = this.stripRemoteResourceImports(html);
+    if (!html.includes('<head>')) {
+      html = html.replace(/<html([^>]*)>/i, '<html$1><head></head>');
+    }
     if (!html.trimStart().startsWith('<!DOCTYPE')) html = '<!DOCTYPE html>\n' + html;
     if (!html.includes('charset')) html = html.replace('<head>', '<head>\n<meta charset="UTF-8">');
     html = html.replace(/(<meta[^>]*name=["']viewport["'][^>]*>)/i, '<meta name="viewport" content="width=794">');
     if (!html.includes('viewport')) html = html.replace('<head>', '<head>\n<meta name="viewport" content="width=794">');
+    if (!html.includes('http-equiv="Content-Security-Policy"')) {
+      html = html.replace(
+        '<head>',
+        `<head>\n<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; font-src data:; script-src 'none'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">`,
+      );
+    }
 
     const css = `
 <style id="pdf-render-styles">
@@ -951,5 +1061,97 @@ img { max-width: 100% !important; height: auto !important; }
 </style>`;
 
     return html.includes('</head>') ? html.replace('</head>', css + '\n</head>') : css + html;
+  }
+
+  private normalizeAccentColor(value: string): string | null {
+    const normalized = value.trim();
+    if (!SAFE_HEX_COLOR_PATTERN.test(normalized)) return null;
+    return normalized.toLowerCase();
+  }
+
+  private looksLikeDisallowedUrl(value: string): boolean {
+    const trimmed = value.trim();
+    if (!trimmed) return false;
+    if (!/^(https?:\/\/|www\.)/i.test(trimmed)) return false;
+    return this.toSafeExternalUrl(trimmed) === null;
+  }
+
+  private toSafeExternalUrl(value: string): string | null {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    const candidate = /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)
+      ? trimmed
+      : `https://${trimmed.replace(/^\/+/, '')}`;
+
+    let parsed: URL;
+    try {
+      parsed = new URL(candidate);
+    } catch {
+      return null;
+    }
+
+    if (!['http:', 'https:'].includes(parsed.protocol)) return null;
+    if (parsed.username || parsed.password) return null;
+    if (this.isPrivateOrLocalHostname(parsed.hostname)) return null;
+
+    return parsed.toString();
+  }
+
+  private isPrivateOrLocalHostname(hostname: string): boolean {
+    const normalized = hostname.trim().toLowerCase();
+    if (!normalized) return true;
+    if (
+      normalized === 'localhost' ||
+      normalized.endsWith('.localhost') ||
+      normalized.endsWith('.local')
+    ) {
+      return true;
+    }
+    if (!normalized.includes('.') && !normalized.includes(':')) {
+      return true;
+    }
+
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(normalized)) {
+      const [a, b] = normalized.split('.').map((part) => Number(part));
+      if (a === 10 || a === 127 || a === 0) return true;
+      if (a === 169 && b === 254) return true;
+      if (a === 192 && b === 168) return true;
+      if (a === 172 && b >= 16 && b <= 31) return true;
+    }
+
+    if (
+      normalized === '::1' ||
+      normalized.startsWith('fc') ||
+      normalized.startsWith('fd') ||
+      normalized.startsWith('fe80:')
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private stripRemoteResourceImports(html: string): string {
+    return html
+      .replace(/<link[^>]+href=["']https?:\/\/[^"']+["'][^>]*>/gi, '')
+      .replace(/@import\s+url\((['"]?)https?:\/\/[^)]+\1\)\s*;?/gi, '');
+  }
+
+  private buildPdfFilename(candidateName: string, templateId: string): string {
+    const safeName = (candidateName || 'resume')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60);
+    const safeTemplate = (templateId || 'resume')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    const baseName = [safeName || 'resume', safeTemplate, 'resume']
+      .filter(Boolean)
+      .join('-');
+    return `${baseName}.pdf`;
   }
 }

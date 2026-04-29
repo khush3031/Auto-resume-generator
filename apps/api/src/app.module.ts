@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TemplatesModule } from './templates/templates.module';
 import { ResumesModule } from './resumes/resumes.module';
@@ -9,6 +10,8 @@ import { SeederModule } from './seeder/seeder.module';
 import { AiModule } from './ai/ai.module';
 import { UploadModule } from './upload/upload.module';
 import { RequestTrackerNestMiddleware } from './common/request-tracker';
+import { RateLimitGuard } from './common/rate-limit.guard';
+import { shouldEnableRequestTracking } from './common/security.util';
 
 @Module({
   imports: [
@@ -30,10 +33,20 @@ import { RequestTrackerNestMiddleware } from './common/request-tracker';
     AiModule,
     UploadModule,
   ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: RateLimitGuard,
+    },
+  ],
 })
 export class AppModule {
   // Apply request-tracker middleware to every route (*)
   configure(consumer: MiddlewareConsumer) {
+    if (!shouldEnableRequestTracking()) {
+      return;
+    }
+
     consumer
       .apply(RequestTrackerNestMiddleware)
       .forRoutes('*');

@@ -49,6 +49,21 @@ const EMPTY_WRAPPER_CLASSES = [
   's-section',
   'summary-box',
   'top-bar',
+  'panel',
+  'panel-soft',
+  'panel-inner',
+  'panel-body',
+  'panel-body--soft',
+  'info',
+  'rail-copy',
+  'rail-card',
+  'section-card',
+  'card',
+  'card-soft',
+  'skill-list',
+  'language-list',
+  'sidebar-card',
+  'support-card',
 ];
 
 const HEADING_CLASSES = [
@@ -60,9 +75,12 @@ const HEADING_CLASSES = [
   's-label',
   's-section-label',
   's-title',
+  'section-title',
+  'sidebar-section-title',
 ];
 
 const STANDALONE_LABEL_CLASSES = ['s-label', 's-section-label', 's-title'];
+const LEAF_WRAPPER_CLASSES = ['summary', 'rail-copy'];
 
 function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -87,13 +105,21 @@ function stripMeaningfulContent(inner: string): string {
     'gi',
   );
 
-  return inner
+  let cleaned = inner
     .replace(/<span[^>]*\brf-hidden\b[^>]*>\s*<\/span>/gi, '')
     .replace(headingLikePattern, '')
-    .replace(/<h[1-6][^>]*>[\s\S]*?<\/h[1-6]>/gi, '')
-    .replace(/<p[^>]*>\s*<\/p>/gi, '')
-    .replace(/<div[^>]*>\s*<\/div>/gi, '')
-    .replace(/<span[^>]*>\s*<\/span>/gi, '')
+    .replace(/<h[1-6][^>]*>[\s\S]*?<\/h[1-6]>/gi, '');
+
+  let previous = '';
+  while (cleaned !== previous) {
+    previous = cleaned;
+    cleaned = cleaned
+      .replace(/<(p|div|span)[^>]*>\s*<\/\1>/gi, '')
+      .replace(/<(p|div|span)[^>]*>\s*(?:<(?:p|div|span)[^>]*>\s*<\/(?:p|div|span)>\s*)+<\/\1>/gi, '')
+      .replace(/<(p|div|span)[^>]*>\s*(?:<!--[\s\S]*?-->\s*)*<\/\1>/gi, '');
+  }
+
+  return cleaned
     .replace(/<[^>]+>/g, '')
     .replace(/&nbsp;|&#160;/gi, ' ')
     .replace(/\s+/g, ' ')
@@ -202,8 +228,24 @@ function hideStandaloneLabelPairs(html: string): string {
     });
 }
 
+function hideEmptyLeafWrappers(html: string): string {
+  const leafClassPattern = LEAF_WRAPPER_CLASSES.map(escapeRegex).join('|');
+  const leafPattern = new RegExp(
+    `(<(p|div|span)\\b[^>]*\\bclass=(["'])[^"']*\\b(?:${leafClassPattern})\\b[^"']*\\3[^>]*>)([\\s\\S]*?)(<\\/\\2>)`,
+    'gi',
+  );
+
+  return html.replace(leafPattern, (match, openTag: string, tagName: string, _quote: string, inner: string, closeTag: string) => {
+    if (/display\s*:\s*none/i.test(openTag)) return match;
+    return stripMeaningfulContent(inner)
+      ? match
+      : `${addStyleDisplayNone(openTag, tagName)}${inner}${closeTag}`;
+  });
+}
+
 export function hideEmptyResumeSections(html: string): string {
   let result = hideStandaloneLabelPairs(html);
+  result = hideEmptyLeafWrappers(result);
   result = hideEmptySectionTags(result);
   result = hideEmptyDivWrappers(result);
   return result;

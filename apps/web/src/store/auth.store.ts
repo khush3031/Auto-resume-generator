@@ -50,8 +50,9 @@ function getStoredTokens() {
 function clearStorage() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(storageKey);
-  document.cookie = 'accessToken=; path=/; max-age=0; samesite=lax';
-  document.cookie = 'refreshToken=; path=/; max-age=0; samesite=lax';
+  const secure = window.location.protocol === 'https:' ? '; secure' : '';
+  document.cookie = `accessToken=; path=/; max-age=0; samesite=strict${secure}`;
+  document.cookie = `refreshToken=; path=/; max-age=0; samesite=strict${secure}`;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -85,12 +86,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   logout: async () => {
     set({ isLoading: true, error: null });
-    try {
-      await api.logout();
-    } finally {
-      clearStorage();
-      set({ user: null, isAuthenticated: false, isLoading: false });
-    }
+    const logoutRequest = api.logout().catch(() => undefined);
+    clearStorage();
+    set({ user: null, isAuthenticated: false, isLoading: false });
+    await logoutRequest;
   },
   refreshTokens: async () => {
     set({ isLoading: true, error: null });

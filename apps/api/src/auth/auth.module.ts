@@ -9,6 +9,7 @@ import { User, UserSchema } from '../users/schemas/user.schema';
 import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { getJwtSecret } from '../common/security.util';
 
 @Module({
   imports: [
@@ -17,7 +18,11 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
-        secret: config.get<string>('JWT_ACCESS_SECRET') || 'access-secret',
+        secret: getJwtSecret(
+          config.get<string>('JWT_ACCESS_SECRET'),
+          config.get<string>('JWT_SECRET'),
+          'JWT access secret',
+        ),
         signOptions: { expiresIn: config.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m' }
       }),
       inject: [ConfigService]

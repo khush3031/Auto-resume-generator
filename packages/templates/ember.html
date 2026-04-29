@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ember Resume</title>
+  <style>
+    :root {
+      --accent: var(--resume-accent-color, #ea580c);
+      --ink: #2c1a12;
+      --muted: #6f5649;
+      --line: #eed8cb;
+      --soft: #fff8f4;
+      --hero-deep: #4a1f13;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f8efe9; color: var(--ink); font-family: Georgia, "Times New Roman", serif; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #ffffff; }
+    .hero {
+      padding: 28px 34px 24px;
+      background: linear-gradient(135deg, var(--hero-deep) 0%, var(--accent) 100%);
+      color: #ffffff;
+    }
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .name { font-size: 35px; line-height: 0.98; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 7px; }
+    .role {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: rgba(255, 255, 255, 0.82);
+      font-weight: 700;
+    }
+    .contact {
+      text-align: right;
+      display: grid;
+      gap: 6px;
+      font-size: 9.2px;
+      line-height: 1.2;
+      color: rgba(255, 255, 255, 0.92);
+    }
+    .contact div { white-space: nowrap; }
+    .summary {
+      max-width: 640px;
+      font-size: 12.6px;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.94);
+    }
+    .shell { padding: 22px 34px 30px; }
+    .body { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 18px; }
+    .section { margin-bottom: 16px; }
+    .section-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #ffffff;
+      padding: 14px 16px 12px;
+    }
+    .panel-soft {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(234, 88, 12, 0.08), rgba(234, 88, 12, 0.02));
+      padding: 14px 16px 12px;
+    }
+
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .page {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="hero-top">
+        <div>
+          <div class="name">{{fullName}}</div>
+          <div class="role">{{jobTitle}}</div>
+        </div>
+        <div class="contact">
+          <div>{{email}}</div>
+          <div>{{phone}}</div>
+          <div>{{location}}</div>
+          <div>{{linkedin}}</div>
+          <div>{{website}}</div>
+        </div>
+      </div>
+      <p class="summary">{{summary}}</p>
+    </header>
+
+    <div class="shell">
+      <div class="body">
+        <main>
+          <section class="section">
+            <div class="section-title">Experience</div>
+            <div class="panel">{{experienceBlocks}}</div>
+          </section>
+          <section class="section" style="display:{{projectsSectionDisplay}}">
+            <div class="section-title">Projects</div>
+            <div class="panel">{{projectBlocks}}</div>
+          </section>
+        </main>
+
+        <aside>
+          <section class="section">
+            <div class="section-title">Education</div>
+            <div class="panel-soft">{{educationBlocks}}</div>
+          </section>
+          <section class="section">
+            <div class="section-title">Skills</div>
+            <div class="panel">{{skillsBlock}}</div>
+          </section>
+          <section class="section">
+            <div class="section-title">Certifications</div>
+            <div class="panel-soft">{{certificationBlocks}}</div>
+          </section>
+          <section class="section">
+            <div class="section-title">Languages</div>
+            <div class="panel">{{languagesBlock}}</div>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -5,6 +5,7 @@ import { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../../users/users.service';
 import * as bcrypt from 'bcryptjs';
+import { getJwtSecret } from '../../common/security.util';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
@@ -12,7 +13,11 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: config.get<string>('JWT_REFRESH_SECRET') || 'refresh-secret',
+      secretOrKey: getJwtSecret(
+        config.get<string>('JWT_REFRESH_SECRET'),
+        undefined,
+        'JWT refresh secret',
+      ),
       passReqToCallback: true
     });
   }

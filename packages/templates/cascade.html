@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cascade Resume</title>
+  <style>
+    :root {
+      --accent: var(--resume-accent-color, #2563eb);
+      --ink: #122033;
+      --muted: #56667a;
+      --line: #dbe5f1;
+      --soft: #f6faff;
+      --hero-deep: #10253f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #eef4fb; color: var(--ink); font-family: "Segoe UI", Arial, sans-serif; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #ffffff; }
+    .layout { display: grid; grid-template-columns: 224px 1fr; min-height: 1123px; }
+    .rail {
+      background: linear-gradient(180deg, var(--hero-deep) 0%, var(--accent) 100%);
+      color: #ffffff;
+      padding: 32px 22px 28px;
+    }
+    .main { padding: 32px 32px 28px; }
+    .avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.14);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      margin-bottom: 14px;
+    }
+    .name { font-size: 31px; line-height: 0.98; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 8px; }
+    .role {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: rgba(255, 255, 255, 0.82);
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+    .rail-section { margin-bottom: 20px; }
+    .rail-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: rgba(255, 255, 255, 0.82);
+      font-weight: 800;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .rail-copy {
+      font-size: 11.2px;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.92);
+      overflow-wrap: anywhere;
+    }
+    .hero {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 18px 20px 16px;
+      background: linear-gradient(180deg, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0));
+      margin-bottom: 18px;
+    }
+    .hero-contact {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      font-size: 9.4px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+    .hero-contact span { white-space: nowrap; }
+    .summary { font-size: 12.5px; line-height: 1.76; color: #334155; }
+    .section { margin-bottom: 16px; }
+    .section-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #ffffff;
+      padding: 14px 16px 12px;
+    }
+    .panel-soft {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--soft);
+      padding: 14px 16px 12px;
+    }
+    .support-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .page {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="layout">
+      <aside class="rail">
+        <div class="avatar">{{initials}}</div>
+        <div class="name">{{fullName}}</div>
+        <div class="role">{{jobTitle}}</div>
+
+        <section class="rail-section">
+          <div class="rail-title">Summary</div>
+          <p class="rail-copy">{{summary}}</p>
+        </section>
+
+        <section class="rail-section">
+          <div class="rail-title">Skills</div>
+          <div class="rail-copy">{{skillsBlock}}</div>
+        </section>
+
+        <section class="rail-section">
+          <div class="rail-title">Languages</div>
+          <div class="rail-copy">{{languagesBlock}}</div>
+        </section>
+      </aside>
+
+      <main class="main">
+        <header class="hero">
+          <p class="summary">Structured layout with a gradient rail, compact detail blocks, and fast recruiter scanning flow.</p>
+          <div class="hero-contact">
+            <span>{{email}}</span>
+            <span>{{phone}}</span>
+            <span>{{location}}</span>
+            <span>{{linkedin}}</span>
+            <span>{{website}}</span>
+          </div>
+        </header>
+
+        <section class="section">
+          <div class="section-title">Experience</div>
+          <div class="panel">{{experienceBlocks}}</div>
+        </section>
+
+        <section class="section" style="display:{{projectsSectionDisplay}}">
+          <div class="section-title">Projects</div>
+          <div class="panel">{{projectBlocks}}</div>
+        </section>
+
+        <div class="support-grid">
+          <section class="section">
+            <div class="section-title">Education</div>
+            <div class="panel-soft">{{educationBlocks}}</div>
+          </section>
+          <section class="section">
+            <div class="section-title">Certifications</div>
+            <div class="panel-soft">{{certificationBlocks}}</div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vector Resume</title>
+  <style>
+    :root {
+      --accent: var(--resume-accent-color, #166534);
+      --ink: #102217;
+      --muted: #4b6354;
+      --line: #d9e7dc;
+      --soft: #f4faf5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #eef5ef; color: var(--ink); font-family: "Aptos", "Segoe UI", Arial, sans-serif; }
+    .page { width: 794px; min-height: 1123px; margin: 0 auto; background: #ffffff; }
+    .shell { padding: 34px 34px 30px; }
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 18px;
+      margin-bottom: 18px;
+      align-items: start;
+    }
+    .title-block {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 20px 22px 18px;
+      background: linear-gradient(180deg, rgba(22, 101, 52, 0.08), rgba(22, 101, 52, 0));
+    }
+    .name { font-size: 34px; line-height: 0.98; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 7px; }
+    .role {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--accent);
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .summary { font-size: 12.5px; line-height: 1.76; color: #334155; }
+    .contact-panel {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--soft);
+      padding: 16px 16px 12px;
+      display: grid;
+      gap: 8px;
+      font-size: 10.5px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+    }
+    .section { margin-bottom: 16px; }
+    .section h2 {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--accent);
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #ffffff;
+      padding: 14px 16px 12px;
+    }
+    .panel-soft {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--soft);
+      padding: 14px 16px 12px;
+    }
+
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="shell">
+      <header class="hero">
+        <div class="title-block">
+          <div class="name">{{fullName}}</div>
+          <div class="role">{{jobTitle}}</div>
+          <p class="summary">{{summary}}</p>
+        </div>
+        <div class="contact-panel">
+          <span>{{email}}</span>
+          <span>{{phone}}</span>
+          <span>{{location}}</span>
+          <span>{{linkedin}}</span>
+          <span>{{website}}</span>
+        </div>
+      </header>
+
+      <div class="grid">
+        <main>
+          <section class="section">
+            <h2>Experience</h2>
+            <div class="panel">{{experienceBlocks}}</div>
+          </section>
+
+          <section class="section" style="display:{{projectsSectionDisplay}}">
+            <h2>Projects</h2>
+            <div class="panel">{{projectBlocks}}</div>
+          </section>
+        </main>
+
+        <aside>
+          <section class="section">
+            <h2>Skills</h2>
+            <div class="panel-soft">{{skillsBlock}}</div>
+          </section>
+
+          <section class="section">
+            <h2>Education</h2>
+            <div class="panel-soft">{{educationBlocks}}</div>
+          </section>
+
+          <section class="section">
+            <h2>Certifications</h2>
+            <div class="panel-soft">{{certificationBlocks}}</div>
+          </section>
+
+          <section class="section">
+            <h2>Languages</h2>
+            <div class="panel-soft">{{languagesBlock}}</div>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

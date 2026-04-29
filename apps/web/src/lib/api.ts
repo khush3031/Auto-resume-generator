@@ -9,6 +9,14 @@ interface AuthTokens {
   refreshToken: string;
 }
 
+function getCookieAttributes(maxAgeSeconds: number) {
+  const attributes = [`path=/`, `max-age=${maxAgeSeconds}`, `samesite=strict`];
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    attributes.push('secure');
+  }
+  return attributes.join('; ');
+}
+
 function getStoredTokens(): AuthTokens | null {
   if (typeof window === 'undefined') return null;
   const raw = window.localStorage.getItem(storageKey);
@@ -23,15 +31,15 @@ function getStoredTokens(): AuthTokens | null {
 function saveTokens(tokens: AuthTokens) {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(storageKey, JSON.stringify(tokens));
-  document.cookie = `accessToken=${tokens.accessToken}; path=/; max-age=900; samesite=lax`;
-  document.cookie = `refreshToken=${tokens.refreshToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`;
+  document.cookie = `accessToken=${tokens.accessToken}; ${getCookieAttributes(900)}`;
+  document.cookie = `refreshToken=${tokens.refreshToken}; ${getCookieAttributes(7 * 24 * 60 * 60)}`;
 }
 
 function clearTokens() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(storageKey);
-  document.cookie = 'accessToken=; path=/; max-age=0; samesite=lax';
-  document.cookie = 'refreshToken=; path=/; max-age=0; samesite=lax';
+  document.cookie = `accessToken=; ${getCookieAttributes(0)}`;
+  document.cookie = `refreshToken=; ${getCookieAttributes(0)}`;
 }
 
 function getAccessToken() {
@@ -205,7 +213,12 @@ export async function exportResumePdf(resumeId: string, formData?: Record<string
     formData ? { formData } : {},
     { responseType: 'blob' },
   );
-  return response.data;
+  const contentDisposition = response.headers['content-disposition'] as string | undefined;
+  const fileNameMatch = contentDisposition?.match(/filename="([^"]+)"/i);
+  return {
+    blob: response.data,
+    fileName: fileNameMatch?.[1] ?? `resume-${resumeId}.pdf`,
+  };
 }
 
 export { api };

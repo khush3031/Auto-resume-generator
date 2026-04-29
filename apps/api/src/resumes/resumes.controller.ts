@@ -19,6 +19,8 @@ import { OptionalJwtGuard } from '../auth/guards/optional-jwt.guard';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { UpdateResumeDto } from './dto/update-resume.dto';
 import { ExportResumeDto } from './dto/export-resume.dto';
+import { UpsertUserResumeDetailsDto } from './dto/upsert-user-resume-details.dto';
+import { RateLimit } from '../common/rate-limit.decorator';
 
 @Controller('resumes')
 @UseFilters(HttpExceptionFilter)
@@ -62,7 +64,7 @@ export class ResumesController {
   /** PATCH /resumes/my-details — upsert the form-data profile for the logged-in user */
   @UseGuards(JwtAuthGuard)
   @Patch('my-details')
-  async upsertMyDetails(@Req() req: Request, @Body() body: { formData: Record<string, string> }) {
+  async upsertMyDetails(@Req() req: Request, @Body() body: UpsertUserResumeDetailsDto) {
     const user = req.user as any;
     const saved = await this.resumesService.upsertUserResumeDetails(user.sub, body.formData ?? {});
     return { success: true, data: saved, message: 'User resume details saved.' };
@@ -70,18 +72,22 @@ export class ResumesController {
 
   // ------------------------------------------------------- SINGLE RESUME (public)
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const resume = await this.resumesService.findById(id);
-    return { success: true, data: resume, message: 'Resume retrieved.' };
+  async findOne(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const resume = await this.resumesService.findById(id);
+      return res.status(200).json({ success: true, data: resume, message: 'Resume retrieved.' });
+    } catch (err) {
+      throw err;
+    }
   }
 
   // ------------------------------------------------------------------ UPDATE
   @UseGuards(OptionalJwtGuard)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() payload: UpdateResumeDto, @Req() req: Request) {
+  async update(@Param('id') id: string, @Body() payload: UpdateResumeDto, @Req() req: Request, @Res() res: Response) {
     const currentUserId = req.user ? (req.user as any).sub : undefined;
     const resume = await this.resumesService.updateResume(id, payload, currentUserId);
-    return { success: true, data: resume, message: 'Resume updated.' };
+    return res.status(200).json({ success: true, data: resume, message: 'Resume updated.' });
   }
 
   // ------------------------------------------------------------------ DELETE
@@ -96,6 +102,7 @@ export class ResumesController {
   // ------------------------------------------------------------ PDF EXPORT
   @UseGuards(JwtAuthGuard)
   @Post(':id/export')
+  @RateLimit({ limit: 12, ttlMs: 10 * 60 * 1000, keyPrefix: 'resumes:export' })
   async exportPdf(
     @Param('id') id: string,
     @Body() body: ExportResumeDto,
@@ -104,16 +111,16 @@ export class ResumesController {
   ) {
     try {
       const user = req.user as any;
-      const pdf = await this.resumesService.exportToPdf(id, user.sub, body.formData);
+      const { buffer, fileName } = await this.resumesService.exportToPdf(id, user.sub, body.formData);
       res.set({
         'Content-Type':        'application/pdf',
-        'Content-Disposition': `attachment; filename="resume-${id}.pdf"`,
-        'Content-Length':      pdf.length.toString(),
+        'Content-Disposition': `attachment; filename="${fileName}"`,
+        'Content-Length':      buffer.length.toString(),
         'Cache-Control':       'no-cache, no-store, must-revalidate',
         'Pragma':              'no-cache',
         'Expires':             '0',
       });
-      res.end(pdf);
+      res.end(buffer);
     } catch (err: any) {
       res.status(err?.status || 500).json({
         success: false,

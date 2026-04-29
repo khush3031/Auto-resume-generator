@@ -19,12 +19,12 @@ const baseFormData: Record<string, string> = {
   fullName: '', jobTitle: '', email: '', phone: '',
   location: '', linkedin: '', website: '', initials: '', summary: '',
   _accentColor: '',
-  _designPreset: 'balanced',
+  _designPreset: 'compact',
   _fontFamily: 'modern-sans',
-  _fontScale: '1',
-  _lineHeight: '1.5',
-  _sectionGap: '1',
-  _entryGap: '1',
+  _fontScale: '0.96',
+  _lineHeight: '1.35',
+  _sectionGap: '0.8',
+  _entryGap: '0.78',
   _headingCaps: '0',
   _sectionDividers: '1',
   _paperTone: 'white',
@@ -110,10 +110,103 @@ function projectFields(n: number): Record<string, string> {
   };
 }
 
+function getFilledJobNumbers(data: Record<string, string>): number[] {
+  const numbers: number[] = [];
+  for (let i = 1; i <= 10; i++) {
+    const hasJobContent = Object.keys(jobFields(i)).some((key) => (data[key] ?? '').trim());
+    if (hasJobContent) numbers.push(i);
+  }
+  return numbers;
+}
+
+function compactJobEntries(data: Record<string, string>): Record<string, string> {
+  const next = { ...data };
+  const filledJobs = getFilledJobNumbers(data);
+
+  for (let i = 1; i <= 10; i++) {
+    Object.keys(jobFields(i)).forEach((key) => delete next[key]);
+  }
+
+  filledJobs.forEach((sourceJob, index) => {
+    const targetJob = index + 1;
+    Object.keys(jobFields(sourceJob)).forEach((sourceKey) => {
+      const targetKey = sourceKey.replace(`job${sourceJob}`, `job${targetJob}`);
+      next[targetKey] = data[sourceKey] ?? '';
+    });
+  });
+
+  return next;
+}
+
 // URL fields: cert*Url, project*Url, linkedin, website — everything else is plain text
 const URL_FIELD_RX    = /Url$|^linkedin$|^website$/;
-const LOCALHOST_RX    = /localhost|127\.0\.0\.1|builder\//i;
 const ANY_URL_RX      = /https?:\/\/|localhost|127\.0\.0\.1|builder\//i;
+const EXPLICIT_SCHEME_RX = /^[a-z][a-z0-9+.-]*:/i;
+
+function escapeHtml(value: string): string {
+  return (value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function isPrivateOrLocalHostname(hostname: string): boolean {
+  const normalized = hostname.trim().toLowerCase();
+  if (!normalized) return true;
+  if (
+    normalized === 'localhost' ||
+    normalized.endsWith('.localhost') ||
+    normalized.endsWith('.local')
+  ) {
+    return true;
+  }
+  if (!normalized.includes('.') && !normalized.includes(':')) {
+    return true;
+  }
+
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(normalized)) {
+    const [a, b] = normalized.split('.').map((part) => Number(part));
+    if (a === 10 || a === 127 || a === 0) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+  }
+
+  if (
+    normalized === '::1' ||
+    normalized.startsWith('fc') ||
+    normalized.startsWith('fd') ||
+    normalized.startsWith('fe80:')
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+function toSafeExternalUrl(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const candidate = EXPLICIT_SCHEME_RX.test(trimmed)
+    ? trimmed
+    : `https://${trimmed.replace(/^\/+/, '')}`;
+
+  let parsed: URL;
+  try {
+    parsed = new URL(candidate);
+  } catch {
+    return null;
+  }
+
+  if (!['http:', 'https:'].includes(parsed.protocol)) return null;
+  if (parsed.username || parsed.password) return null;
+  if (isPrivateOrLocalHostname(parsed.hostname)) return null;
+
+  return parsed.toString();
+}
 
 function sanitizeEncoding(html: string): string {
   return html
@@ -268,7 +361,7 @@ function expandJobSlots(html: string, data: Record<string, string>): string {
 function expandAllDynamicSlots(html: string, data: Record<string, string>): string {
   html = expandSingleSlots(html, data, 'skill');
   html = expandMultiSlots(html, data, 'lang', ['Level']);
-  html = expandMultiSlots(html, data, 'cert', ['Issuer', 'Year']);
+  html = expandMultiSlots(html, data, 'cert', ['Issuer', 'Year', 'Url']);
   html = expandJobSlots(html, data);
   return html;
 }
@@ -291,12 +384,15 @@ function buildExpBlocksFront(d: Record<string, string>): string {
     items.push(`
 <div style="margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #f0f0f0;">
   <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">
-    <span style="font-size:13px;font-weight:700;color:#1a1a1a;">${title}</span>
-    ${dateStr ? `<span style="font-size:11px;color:var(--accent,#1a3a4a);white-space:nowrap;margin-left:8px;">${dateStr}</span>` : ''}
+    <span style="font-size:13px;font-weight:700;color:#1a1a1a;">${escapeHtml(title)}</span>
+    ${dateStr ? `<span style="font-size:11px;color:var(--accent,#1a3a4a);white-space:nowrap;margin-left:8px;">${escapeHtml(dateStr)}</span>` : ''}
   </div>
-  ${companyStr ? `<div style="font-size:12px;color:#666;margin-bottom:6px;">${companyStr}</div>` : ''}
-  ${bullets.length ? `<ul style="list-style:none;padding:0;margin:0;">${
-    bullets.map((b) => `<li style="font-size:12px;color:#444;line-height:1.65;padding-left:14px;position:relative;margin-bottom:2px;word-break:break-word;"><span style="position:absolute;left:0;color:var(--accent,#1a3a4a);">&#9658;</span>${b}</li>`).join('')
+  ${companyStr ? `<div style="font-size:12px;color:#666;margin-bottom:6px;">${escapeHtml(companyStr)}</div>` : ''}
+  ${bullets.length ? `<ul style="margin:6px 0 0 18px;padding:0;">${
+    bullets.map((b) => {
+      const cleanText = b.replace(/^[▶•\-\*]\s*/, '');
+      return `<li style="margin-bottom:4px;word-break:break-word;">${escapeHtml(cleanText)}</li>`;
+    }).join('')
   }</ul>` : ''}
 </div>`);
   }
@@ -312,15 +408,23 @@ function buildCertBlocksFront(d: Record<string, string>): string {
     const issuer = (d[`cert${i}Issuer`] ?? '').trim();
     const year   = (d[`cert${i}Year`]   ?? '').trim();
     const url    = (d[`cert${i}Url`]    ?? '').trim();
+    const safeUrl = toSafeExternalUrl(url);
     items.push(`
 <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f5f5f5;">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;">
     <div>
-      <div style="font-size:12px;font-weight:700;color:#1a1a1a;">${name}</div>
-      ${issuer ? `<div style="font-size:11px;color:#777;margin-top:1px;">${issuer}</div>` : ''}
-      ${url ? `<a href="${url}" style="font-size:10px;color:var(--accent,#1a3a4a);text-decoration:none;display:inline-block;margin-top:2px;">View \u2192</a>` : ''}
+      ${safeUrl 
+        ? `<a href="${escapeHtml(safeUrl)}" rel="noreferrer noopener" style="font-size:12px;font-weight:700;color:inherit;text-decoration:none;">${escapeHtml(name)} \u2197</a>`
+        : `<div style="font-size:12px;font-weight:700;color:#1a1a1a;">${escapeHtml(name)}</div>`
+      }
+      ${issuer ? `<div style="font-size:11px;color:#777;margin-top:1px;">${escapeHtml(issuer)}</div>` : ''}
+      ${url ? (
+        safeUrl 
+          ? `<div style="margin-top:2px;"><a href="${escapeHtml(safeUrl)}" rel="noreferrer noopener" style="font-size:10px;color:var(--accent,#1a3a4a);text-decoration:none;">${escapeHtml(url)}</a></div>`
+          : `<div style="font-size:10px;color:#999;margin-top:2px;">${escapeHtml(url)} (Insecure URL blocked)</div>`
+      ) : ''}
     </div>
-    ${year ? `<span style="font-size:11px;color:var(--accent,#1a3a4a);font-weight:600;white-space:nowrap;margin-left:8px;">${year}</span>` : ''}
+    ${year ? `<span style="font-size:11px;color:var(--accent,#1a3a4a);font-weight:600;white-space:nowrap;margin-left:8px;">${escapeHtml(year)}</span>` : ''}
   </div>
 </div>`);
   }
@@ -340,16 +444,20 @@ function buildProjBlocksFront(d: Record<string, string>): string {
     const desc  = (d[`project${i}Description`] ?? '').trim();
     const url   = (d[`project${i}Url`]         ?? '').trim();
     const dateStr = [start, end].filter(Boolean).join(' \u2013 ');
+    const safeUrl = toSafeExternalUrl(url);
     items.push(`
 <div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0;">
   <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;">
-    <span style="font-size:13px;font-weight:700;color:#1a1a1a;">${name}</span>
-    ${dateStr ? `<span style="font-size:11px;color:var(--accent,#1a3a4a);white-space:nowrap;">${dateStr}</span>` : ''}
+    ${safeUrl
+      ? `<a href="${escapeHtml(safeUrl)}" rel="noreferrer noopener" style="font-size:13px;font-weight:700;color:inherit;text-decoration:none;">${escapeHtml(name)} \u2197</a>`
+      : `<span style="font-size:13px;font-weight:700;color:#1a1a1a;">${escapeHtml(name)}</span>`
+    }
+    ${dateStr ? `<span style="font-size:11px;color:var(--accent,#1a3a4a);white-space:nowrap;">${escapeHtml(dateStr)}</span>` : ''}
   </div>
-  ${role ? `<div style="font-size:12px;color:var(--accent,#1a3a4a);font-weight:600;margin-bottom:2px;">${role}</div>` : ''}
-  ${tech ? `<div style="font-size:11px;color:#777;margin-bottom:5px;">Tech: ${tech}</div>` : ''}
-  ${desc ? `<div style="font-size:12px;color:#444;line-height:1.65;word-break:break-word;">${desc}</div>` : ''}
-  ${url ? `<a href="${url}" style="font-size:10px;color:var(--accent,#1a3a4a);text-decoration:none;margin-top:3px;display:inline-block;">View Project \u2192</a>` : ''}
+  ${role ? `<div style="font-size:12px;color:var(--accent,#1a3a4a);font-weight:600;margin-bottom:2px;">${escapeHtml(role)}</div>` : ''}
+  ${tech ? `<div style="font-size:11px;color:#777;margin-bottom:5px;">Tech: ${escapeHtml(tech)}</div>` : ''}
+  ${desc ? `<div style="font-size:12px;color:#444;line-height:1.65;word-break:break-word;">${escapeHtml(desc)}</div>` : ''}
+  ${safeUrl ? `<div style="margin-top:4px;"><a href="${escapeHtml(safeUrl)}" rel="noreferrer noopener" style="font-size:10px;color:var(--accent,#1a3a4a);text-decoration:none;">${escapeHtml(url)}</a></div>` : ''}
 </div>`);
   }
   return items.join('');
@@ -368,9 +476,9 @@ function buildEducationBlocksFront(d: Record<string, string>): string {
     if (!degree && !school) continue;
     items.push(`
 <div style="margin-bottom:12px;">
-  <div style="font-size:13px;font-weight:700;color:#1a1a1a;">${degree || school}</div>
-  ${degree && school ? `<div style="font-size:12px;color:#666;">${school}</div>` : ''}
-  ${year ? `<div style="font-size:11px;color:var(--accent,#1a3a4a);margin-top:2px;">${year}</div>` : ''}
+  <div style="font-size:13px;font-weight:700;color:#1a1a1a;">${escapeHtml(degree || school)}</div>
+  ${degree && school ? `<div style="font-size:12px;color:#666;">${escapeHtml(school)}</div>` : ''}
+  ${year ? `<div style="font-size:11px;color:var(--accent,#1a3a4a);margin-top:2px;">${escapeHtml(year)}</div>` : ''}
 </div>`);
   }
   return items.join('');
@@ -383,7 +491,7 @@ function buildLanguagesBlockFront(d: Record<string, string>): string {
     const lang  = (d[`lang${i}`]      ?? '').trim();
     const level = (d[`lang${i}Level`] ?? '').trim();
     if (!lang) continue;
-    rows.push(`<div style="font-size:12px;color:#444;margin-bottom:5px;"><strong>${lang}</strong>${level ? ` \u2014 ${level}` : ''}</div>`);
+    rows.push(`<div style="font-size:12px;color:#444;margin-bottom:5px;"><strong>${escapeHtml(lang)}</strong>${level ? ` \u2014 ${escapeHtml(level)}` : ''}</div>`);
   }
   return rows.join('');
 }
@@ -399,7 +507,7 @@ function buildSkillsBlockFront(d: Record<string, string>): string {
   return skills
     .map(
       (s) =>
-        `<span style="display:inline-block;padding:5px 10px;margin:3px 4px 3px 0;border-radius:999px;font-size:0.85rem;background:rgba(59,130,246,0.1);color:inherit;">${s}</span>`,
+        `<span style="display:inline-block;padding:5px 10px;margin:3px 4px 3px 0;border-radius:999px;font-size:0.85rem;background:rgba(59,130,246,0.1);color:inherit;">${escapeHtml(s)}</span>`,
     )
     .join('');
 }
@@ -427,7 +535,7 @@ function populateTemplate(html: string, data: Record<string, string>): string {
   const populated = withBlocks.replace(/{{\s*([^}\s]+)\s*}}/g, (_, key: string) => {
     if (key === 'summary' && hide('_hideSummary')) return HIDDEN_SENTINEL;
     const v = data[key];
-    return v !== undefined && v.trim() !== '' ? v : (sampleData[key] ?? '');
+    return v !== undefined && v.trim() !== '' ? escapeHtml(v) : escapeHtml(sampleData[key] ?? '');
   });
 
   return hideEmptyResumeSections(populated);
@@ -478,6 +586,16 @@ const TEMPLATE_ACCENT_COLORS: Record<string, string> = {
   'ats-prime':    '#0f172a',
   'sterling':     '#0f5d73',
   'aurora':       '#0f766e',
+  'atlas':        '#1d4f91',
+  'beacon':       '#394867',
+  'mosaic':       '#b45309',
+  'horizon':      '#0f6d8c',
+  'prism':        '#7c3aed',
+  'cascade':      '#2563eb',
+  'ember':        '#ea580c',
+  'meridian':     '#0f766e',
+  'canopy':       '#16a34a',
+  'radian':       '#db2777',
 };
 
 /** Convert any hex color to its lowercase 6-char form (#abc → #aabbcc) */
@@ -535,10 +653,10 @@ function parseNumberSetting(value: string | undefined, fallback: number, min: nu
 function injectDesignSystem(html: string, formData: Record<string, string>): string {
   const fontFamilyId = formData['_fontFamily'] || 'modern-sans';
   const fontFamily = DESIGN_FONT_STACKS[fontFamilyId] ?? DESIGN_FONT_STACKS['modern-sans'];
-  const fontScale = parseNumberSetting(formData['_fontScale'], 1, 0.9, 1.15);
-  const lineHeight = parseNumberSetting(formData['_lineHeight'], 1.5, 1.25, 1.85);
-  const sectionGap = parseNumberSetting(formData['_sectionGap'], 1, 0.7, 1.45);
-  const entryGap = parseNumberSetting(formData['_entryGap'], 1, 0.7, 1.45);
+  const fontScale = parseNumberSetting(formData['_fontScale'], 0.96, 0.9, 1.15);
+  const lineHeight = parseNumberSetting(formData['_lineHeight'], 1.35, 1.25, 1.85);
+  const sectionGap = parseNumberSetting(formData['_sectionGap'], 0.8, 0.7, 1.45);
+  const entryGap = parseNumberSetting(formData['_entryGap'], 0.78, 0.7, 1.45);
   const letterSpacing = parseNumberSetting(formData['_letterSpacing'], 0, 0, 0.15);
   const headingCaps = formData['_headingCaps'] === '1';
   const sectionDividers = formData['_sectionDividers'] !== '0';
@@ -640,11 +758,10 @@ function validate(
     if (!formData[key]?.trim()) err[key] = `${label} is required`;
   };
   req('fullName', 'Full Name'); req('email', 'Email');
-  // First job entry is required
-  if (jobs.length > 0) {
-    const n = jobs[0];
-    req(`job${n}Title`, 'Job Title'); req(`job${n}Company`, 'Company');
-  }
+  jobs.forEach((n) => {
+    req(`job${n}Title`, 'Job Title');
+    req(`job${n}Company`, 'Company');
+  });
   educations.forEach((n) => {
     const p = n === 1 ? '' : String(n);
     req(`degree${p}`, 'Degree'); req(`university${p}`, 'University / School');
@@ -655,6 +772,14 @@ function validate(
   return err;
 }
 
+function getDownloadErrorMessage(error: unknown): string {
+  const status = (error as { response?: { status?: number } })?.response?.status;
+  if (status === 401) return 'Your session expired. Please sign in again to download this resume.';
+  if (status === 403) return 'This resume belongs to a different account. Start a new resume or switch back to the original account.';
+  if (status === 404) return 'This resume could not be found anymore. Please create a new one.';
+  return 'Could not download the PDF right now. Please try again.';
+}
+
 export function BuilderShell({
   template,
   resumeId: initialResumeId,
@@ -662,17 +787,17 @@ export function BuilderShell({
   template: { id: string; name: string; style: string; htmlContent: string };
   resumeId?: string;
 }) {
-  const { isAuthenticated, loadFromStorage } = useAuthStore();
+  const { isAuthenticated, loadFromStorage, user } = useAuthStore();
 
   const [formData,     setFormData]     = useState<Record<string, string>>(baseFormData);
-  const [jobs,         setJobs]         = useState<number[]>([1]);
+  const [jobs,         setJobs]         = useState<number[]>([]);
   const [educations,   setEducations]   = useState<number[]>([]);
   const [certs,        setCerts]        = useState<number[]>([]);
   const [skills,       setSkills]       = useState<number[]>([]);
   const [langs,        setLangs]        = useState<number[]>([]);
   const [projects,     setProjects]     = useState<number[]>([]);
 
-  const jobCounter   = useRef(1);
+  const jobCounter   = useRef(0);
   const eduCounter   = useRef(0);
   const certCounter  = useRef(0);
   const skillCounter = useRef(0);
@@ -689,6 +814,7 @@ export function BuilderShell({
   const [activeTab,       setActiveTab]       = useState<'edit' | 'preview'>('edit');
   const [errors,          setErrors]          = useState<Record<string, string>>({});
   const [showErrorBanner, setShowErrorBanner] = useState(false);
+  const [actionMessage,   setActionMessage]   = useState<string | null>(null);
   const [panelWidth,      setPanelWidth]      = useState<number | null>(null);
   const [isDragging,      setIsDragging]      = useState(false);
   const [previewZoom,     setPreviewZoom]     = useState<number>(0.75);
@@ -697,8 +823,33 @@ export function BuilderShell({
   const profileSaveRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const profileLoadedRef  = useRef(false);  // prevent multiple fetches per mount
   const panelWidthRef     = useRef<number | null>(null);
+  const viewerKeyRef      = useRef<string>('guest');
 
   useEffect(() => { loadFromStorage(); }, [loadFromStorage]);
+
+  const resetBuilderState = useCallback((nextResumeId: string | null = null) => {
+    jobCounter.current = 0;
+    eduCounter.current = 0;
+    certCounter.current = 0;
+    skillCounter.current = 0;
+    langCounter.current = 0;
+    projCounter.current = 0;
+
+    setFormData(baseFormData);
+    setJobs([]);
+    setEducations([]);
+    setCerts([]);
+    setSkills([]);
+    setLangs([]);
+    setProjects([]);
+    setResumeId(nextResumeId);
+    setLastSavedAt(null);
+    setErrors({});
+    setShowErrorBanner(false);
+    setActionMessage(null);
+    setShowAuthModal(false);
+    setActiveTab('edit');
+  }, []);
 
   const applyAccentColor = useCallback((hex: string) => {
     const resolved = resolveResumeColor(hex);
@@ -732,6 +883,21 @@ export function BuilderShell({
     ));
   }, [formData._accentColor, template.id]);
 
+  useEffect(() => {
+    const nextViewerKey = user?._id ?? 'guest';
+    if (viewerKeyRef.current === nextViewerKey) return;
+
+    viewerKeyRef.current = nextViewerKey;
+    profileLoadedRef.current = false;
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (profileSaveRef.current) clearTimeout(profileSaveRef.current);
+
+    if (!initialResumeId) {
+      resetBuilderState(null);
+    }
+  }, [initialResumeId, resetBuilderState, user?._id]);
+
   // ── Auto-fill from saved profile when opening a NEW template (no existing resume) ──
   // Only runs once per builder session; skipped when editing an existing resume.
   useEffect(() => {
@@ -742,10 +908,11 @@ export function BuilderShell({
 
     fetchUserResumeDetails().then((saved) => {
       if (!saved || !Object.keys(saved).length) return;
+      const normalizedSaved = compactJobEntries(saved);
       setFormData((prev) => {
         // Merge: saved values fill in empty fields; user-entered values are preserved
         const next = { ...prev };
-        for (const [k, v] of Object.entries(saved)) {
+        for (const [k, v] of Object.entries(normalizedSaved)) {
           if (typeof v === 'string' && v.trim() && !next[k]?.trim()) {
             next[k] = v;
           }
@@ -754,9 +921,14 @@ export function BuilderShell({
       });
 
       // Restore section counters from saved profile data
-      let jc = 0;
-      for (let i = 1; i <= 10; i++) { if (saved[`job${i}Title`]?.trim()) jc = i; else break; }
-      if (jc > 0) { setJobs(Array.from({ length: jc }, (_, i) => i + 1)); jobCounter.current = jc; }
+      const jc = getFilledJobNumbers(normalizedSaved).length;
+      if (jc > 0) {
+        setJobs(Array.from({ length: jc }, (_, i) => i + 1));
+        jobCounter.current = jc;
+      } else {
+        setJobs([]);
+        jobCounter.current = 0;
+      }
 
       let cc = 0;
       for (let i = 1; i <= 10; i++) { if (saved[`cert${i}`]?.trim()) cc = i; else break; }
@@ -784,7 +956,7 @@ export function BuilderShell({
       const savedAccent = resolveResumeColor(saved['_accentColor'] ?? '');
       if (savedAccent) setAccentColor(savedAccent);
     }).catch(() => {}); // silently ignore — non-critical
-  }, [isAuthenticated, initialResumeId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, initialResumeId, user?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Auto-save profile: persist form data to /resumes/my-details on every change ──
   // Debounced 3s so we don't hammer the API on every keystroke.
@@ -894,20 +1066,25 @@ export function BuilderShell({
     if (!stored) return;
     try {
       const parsed: Record<string, string> = JSON.parse(stored);
+      const d = compactJobEntries(parsed);
       sessionStorage.removeItem(key);
       const urlRx = /https?:\/\/|localhost|127\.0\.0\.1|builder\//i;
       setFormData((prev) => {
         const next = { ...prev };
-        Object.entries(parsed).forEach(([k, v]) => {
+        Object.entries(d).forEach(([k, v]) => {
           if (typeof v === 'string' && v.trim() && !urlRx.test(v)) next[k] = v;
         });
         return next;
       });
       // Restore section counts from parsed data
-      const d = parsed;
-      let jc = 0;
-      for (let i = 1; i <= 10; i++) { if (d[`job${i}Title`]?.trim()) jc = i; else break; }
-      if (jc > 0) { setJobs(Array.from({ length: jc }, (_, i) => i + 1)); jobCounter.current = jc; }
+      const jc = getFilledJobNumbers(d).length;
+      if (jc > 0) {
+        setJobs(Array.from({ length: jc }, (_, i) => i + 1));
+        jobCounter.current = jc;
+      } else {
+        setJobs([]);
+        jobCounter.current = 0;
+      }
 
       let cc = 0;
       for (let i = 1; i <= 10; i++) { if (d[`cert${i}`]?.trim()) cc = i; else break; }
@@ -944,16 +1121,23 @@ export function BuilderShell({
   // Load existing resume when editing from dashboard
   useEffect(() => {
     if (!initialResumeId) return;
-    setResumeId(initialResumeId);
+    let cancelled = false;
+    resetBuilderState(initialResumeId);
     fetchResume(initialResumeId).then((resume) => {
-      if (!resume?.formData) return;
-      const d: Record<string, string> = resume.formData;
+      if (cancelled || !resume?.formData) return;
+      const d: Record<string, string> = compactJobEntries(resume.formData);
+      setActionMessage(null);
       setFormData((prev) => ({ ...prev, ...d }));
 
       // Restore section counters from saved formData
-      let jc = 0;
-      for (let i = 1; i <= 10; i++) { if (d[`job${i}Title`]?.trim()) jc = i; else break; }
-      if (jc > 0) { setJobs(Array.from({ length: jc }, (_, i) => i + 1)); jobCounter.current = jc; }
+      const jc = getFilledJobNumbers(d).length;
+      if (jc > 0) {
+        setJobs(Array.from({ length: jc }, (_, i) => i + 1));
+        jobCounter.current = jc;
+      } else {
+        setJobs([]);
+        jobCounter.current = 0;
+      }
 
       let cc = 0;
       for (let i = 1; i <= 10; i++) { if (d[`cert${i}`]?.trim()) cc = i; else break; }
@@ -980,8 +1164,16 @@ export function BuilderShell({
 
       const savedAccent = resolveResumeColor(d['_accentColor'] ?? '');
       if (savedAccent) setAccentColor(savedAccent);
-    }).catch(() => {});
-  }, [initialResumeId]); // eslint-disable-line react-hooks/exhaustive-deps
+    }).catch(() => {
+      if (cancelled) return;
+      resetBuilderState(null);
+      setActionMessage('This resume is not available for the current account.');
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialResumeId, resetBuilderState, user?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-save: create on first meaningful input, then update on every change
   useEffect(() => {
@@ -1006,11 +1198,11 @@ export function BuilderShell({
   }, [formData, resumeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateField = useCallback((field: string, value: string) => {
-    // Reject browser-autofilled URLs before they reach state
+    // We no longer aggressively sanitize URL fields on every keystroke because it
+    // prevents users from typing "github.com" character-by-character.
+    // The Live Preview and Backend export both run toSafeExternalUrl() when rendering.
     let sanitized = value;
-    if (URL_FIELD_RX.test(field)) {
-      if (LOCALHOST_RX.test(value)) sanitized = '';   // URL fields: reject localhost/builder
-    } else {
+    if (!URL_FIELD_RX.test(field)) {
       if (ANY_URL_RX.test(value)) sanitized = '';     // text fields: reject any URL
     }
     setFormData((prev) => ({ ...prev, [field]: sanitized }));
@@ -1109,8 +1301,73 @@ export function BuilderShell({
     });
   };
 
+  const addJobSection = () => {
+    const nextJob = jobs.length === 0 ? 1 : jobCounter.current + 1;
+    jobCounter.current = nextJob;
+    setJobs((prev) => [...prev, nextJob]);
+    setFormData((prev) => ({ ...prev, ...jobFields(nextJob) }));
+  };
+
+  const addJobAndFocus = () => {
+    addJobSection();
+    const newN = jobCounter.current;
+    setTimeout(() => {
+      document.getElementById(`field-job${newN}Title`)?.querySelector('input')?.focus();
+    }, 50);
+  };
+
+  const removeJobSection = (n: number) => {
+    const prevJobs = jobs;
+    const idx = prevJobs.indexOf(n);
+    if (idx < 0) return;
+
+    setFormData((prev) => {
+      const next = { ...prev };
+      for (let i = idx; i < prevJobs.length - 1; i++) {
+        const fromN = prevJobs[i + 1];
+        const toN = prevJobs[i];
+        Object.keys(jobFields(fromN)).forEach((sourceKey) => {
+          const targetKey = sourceKey.replace(`job${fromN}`, `job${toN}`);
+          next[targetKey] = prev[sourceKey] ?? '';
+        });
+      }
+
+      const lastN = prevJobs[prevJobs.length - 1];
+      Object.keys(jobFields(lastN)).forEach((key) => delete next[key]);
+      return next;
+    });
+
+    setErrors((prev) => {
+      const next = { ...prev };
+      for (let i = idx; i < prevJobs.length - 1; i++) {
+        const fromN = prevJobs[i + 1];
+        const toN = prevJobs[i];
+        Object.keys(jobFields(fromN)).forEach((sourceKey) => {
+          const targetKey = sourceKey.replace(`job${fromN}`, `job${toN}`);
+          if (prev[sourceKey]) next[targetKey] = prev[sourceKey];
+          else delete next[targetKey];
+        });
+      }
+
+      const lastN = prevJobs[prevJobs.length - 1];
+      Object.keys(jobFields(lastN)).forEach((key) => delete next[key]);
+      if (Object.keys(next).length === 0) setShowErrorBanner(false);
+      return next;
+    });
+
+    const nextJobs = prevJobs.filter((job) => job !== n).map((_, index) => index + 1);
+    setJobs(nextJobs);
+    jobCounter.current = nextJobs.length;
+  };
+
   const handleDownload = async () => {
-    if (!isAuthenticated) { setShowAuthModal(true); return; }
+    if (!isAuthenticated) {
+      setActionMessage('Please sign in to download your PDF.');
+      setShowAuthModal(true);
+      return;
+    }
+
+    setActionMessage(null);
     const errs = validate(formData, jobs, educations, skills, langs, certs);
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
@@ -1122,7 +1379,10 @@ export function BuilderShell({
       }, 50);
       return;
     }
-    if (!resumeId) return;
+    if (!resumeId) {
+      setActionMessage('This draft is no longer available. Please wait for auto-save or start a new resume.');
+      return;
+    }
     try {
       setIsDownloading(true);
       // Persist the user's profile immediately so it's available on other templates
@@ -1132,14 +1392,19 @@ export function BuilderShell({
       // Cancel any pending debounce and pass formData directly in the export
       // request — the server uses it instead of reading (potentially stale) MongoDB.
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      const blob = await exportResumePdf(resumeId, formData);
+      const { blob, fileName } = await exportResumePdf(resumeId, formData);
       const url  = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       const a    = document.createElement('a');
-      a.href = url; a.download = `resume-${resumeId}.pdf`;
+      a.href = url; a.download = fileName;
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
       // Persist the latest formData after the export
       updateResume(resumeId, { formData }).then(() => setLastSavedAt(new Date().toISOString())).catch(() => {});
+    } catch (error) {
+      setActionMessage(getDownloadErrorMessage(error));
+      if ((error as { response?: { status?: number } })?.response?.status === 401) {
+        setShowAuthModal(true);
+      }
     } finally { setIsDownloading(false); }
   };
 
@@ -1161,6 +1426,22 @@ export function BuilderShell({
         {' '}before downloading. Required fields are highlighted in red.
       </p>
       <button onClick={() => setShowErrorBanner(false)} aria-label="Dismiss error banner"
+        className="builder-error-banner__dismiss">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  ) : null;
+
+  const actionBanner = actionMessage ? (
+    <div className="builder-error-banner" role="alert">
+      <svg className="builder-error-banner__icon" width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" /><path d="M12 8v4m0 4h.01" />
+      </svg>
+      <p className="builder-error-banner__text">{actionMessage}</p>
+      <button onClick={() => setActionMessage(null)} aria-label="Dismiss error message"
         className="builder-error-banner__dismiss">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
           <path d="M18 6 6 18M6 6l12 12" />
@@ -1202,7 +1483,7 @@ export function BuilderShell({
             min={0.9}
             max={1.15}
             step={0.01}
-            display={`${Math.round(parseNumberSetting(formData._fontScale, 1, 0.9, 1.15) * 100)}%`}
+            display={`${Math.round(parseNumberSetting(formData._fontScale, 0.96, 0.9, 1.15) * 100)}%`}
             onChange={(value) => updateDesignField('_fontScale', value)}
           />
 
@@ -1212,7 +1493,7 @@ export function BuilderShell({
             min={1.25}
             max={1.85}
             step={0.01}
-            display={parseNumberSetting(formData._lineHeight, 1.5, 1.25, 1.85).toFixed(2)}
+            display={parseNumberSetting(formData._lineHeight, 1.35, 1.25, 1.85).toFixed(2)}
             onChange={(value) => updateDesignField('_lineHeight', value)}
           />
 
@@ -1222,7 +1503,7 @@ export function BuilderShell({
             min={0.7}
             max={1.45}
             step={0.01}
-            display={parseNumberSetting(formData._sectionGap, 1, 0.7, 1.45).toFixed(2)}
+            display={parseNumberSetting(formData._sectionGap, 0.8, 0.7, 1.45).toFixed(2)}
             onChange={(value) => updateDesignField('_sectionGap', value)}
           />
 
@@ -1232,7 +1513,7 @@ export function BuilderShell({
             min={0.7}
             max={1.45}
             step={0.01}
-            display={parseNumberSetting(formData._entryGap, 1, 0.7, 1.45).toFixed(2)}
+            display={parseNumberSetting(formData._entryGap, 0.78, 0.7, 1.45).toFixed(2)}
             onChange={(value) => updateDesignField('_entryGap', value)}
           />
 
@@ -1339,10 +1620,11 @@ export function BuilderShell({
       </FormSection>
 
       <FormSection title="Work Experience">
+        {jobs.length === 0 && <EmptyHint text="No work experience added yet." />}
         {jobs.map((n) => {
           const isLastJob = n === jobs[jobs.length - 1];
           return (
-          <Card key={n} label={`Job ${n}`} onRemove={jobs.length > 1 ? () => removeSection(n, setJobs, jobFields) : undefined}>
+          <Card key={n} label={`Job ${n}`} onRemove={() => removeJobSection(n)}>
             <Input id={`field-job${n}Title`}   label="Job Title *" field={`job${n}Title`}   value={formData[`job${n}Title`]   ?? ''} onChange={updateField} error={errors[`job${n}Title`]} />
             <Input id={`field-job${n}Company`} label="Company *"   field={`job${n}Company`} value={formData[`job${n}Company`] ?? ''} onChange={updateField} error={errors[`job${n}Company`]} />
             <Input label="Location"            field={`job${n}Location`} value={formData[`job${n}Location`] ?? ''} onChange={updateField} />
@@ -1353,7 +1635,7 @@ export function BuilderShell({
             <Input label="Bullet 1" field={`job${n}Bullet1`} value={formData[`job${n}Bullet1`] ?? ''} onChange={updateField} />
             <Input label="Bullet 2" field={`job${n}Bullet2`} value={formData[`job${n}Bullet2`] ?? ''} onChange={updateField} />
             <Input label="Bullet 3" field={`job${n}Bullet3`} value={formData[`job${n}Bullet3`] ?? ''} onChange={updateField}
-              onEnter={isLastJob && jobs.length < 10 ? () => addAndFocus(setJobs, jobCounter, jobFields, (newN) => `field-job${newN}Title`) : undefined}
+              onEnter={isLastJob && jobs.length < 10 ? addJobAndFocus : undefined}
             />
             {/* <AiBulletSuggestions
               jobTitle={formData[`job${n}Title`] || ''}
@@ -1373,7 +1655,7 @@ export function BuilderShell({
           );
         })}
         {jobs.length < 10 && (
-          <AddButton label="Add Work Experience" onClick={() => addSection(setJobs, jobCounter, jobFields)} />
+          <AddButton label="Add Work Experience" onClick={addJobSection} />
         )}
       </FormSection>
 
@@ -1568,6 +1850,7 @@ export function BuilderShell({
           className={`builder-form-panel${activeTab === 'preview' ? ' builder-form-panel--mobile-hidden' : ''}`}
           style={panelWidth ? { width: panelWidth } : undefined}
         >
+          {actionBanner && <div className="builder-error-wrap">{actionBanner}</div>}
           {errorBanner && <div className="builder-error-wrap">{errorBanner}</div>}
           <div className="builder-form-body">
             {formSections}
