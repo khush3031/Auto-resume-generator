@@ -26,6 +26,8 @@ const ACCENT_MAP: Record<string, string> = {
   'mono': '#333333',
   'slate': '#38bdf8', 'indigo': '#4338ca', 'cobalt': '#0077cc', 'sage': '#3a5e3b',
   'infographic': '#7c3aed', 'academic': '#374151', 'harbor': '#0f5c7a',
+  'prism': '#7c3aed', 'cascade': '#2563eb', 'ember': '#ea580c',
+  'meridian': '#0f766e', 'canopy': '#16a34a', 'radian': '#db2777',
 };
 
 const DESIGN_FONT_STACKS: Record<string, string> = {
@@ -106,8 +108,10 @@ export class ResumesService {
       isDeleted: { $ne: true },
     });
     if (!resume) throw new NotFoundException('Resume not found');
-    if (resume.userId && currentUserId && String(resume.userId) !== currentUserId) {
-      throw new ForbiddenException('You do not have permission to update this resume');
+    if (resume.userId) {
+      if (!currentUserId || String(resume.userId) !== currentUserId) {
+        throw new ForbiddenException('You do not have permission to update this resume');
+      }
     }
 
     const sanitizedFormData = this.sanitizeBeforeRender(payload.formData);
@@ -274,11 +278,11 @@ export class ResumesService {
     }
 
     for (let i = 1; i <= 10; i++) {
-      if (this.looksLikeDisallowedUrl(out[`cert${i}Url`] ?? '')) out[`cert${i}Url`] = '';
-      if (this.looksLikeDisallowedUrl(out[`project${i}Url`] ?? '')) out[`project${i}Url`] = '';
+      out[`cert${i}Url`] = this.toSafeExternalUrl(out[`cert${i}Url`] ?? '') ?? '';
+      out[`project${i}Url`] = this.toSafeExternalUrl(out[`project${i}Url`] ?? '') ?? '';
     }
     ['linkedin', 'website'].forEach((field) => {
-      if (this.looksLikeDisallowedUrl(out[field] ?? '')) out[field] = '';
+      out[field] = this.toSafeExternalUrl(out[field] ?? '') ?? '';
     });
     ['fullName', 'initials', 'location'].forEach((field) => {
       if (this.looksLikeDisallowedUrl(out[field] ?? '')) out[field] = '';
@@ -569,13 +573,20 @@ export class ResumesService {
       items.push(
         `<div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0;">` +
         `<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;">` +
-        `<strong style="font-size:0.95rem;">${this.esc(name)}</strong>` +
+        (safeUrl
+          ? `<a href="${this.esc(safeUrl)}" rel="noreferrer noopener" style="font-size:0.95rem;font-weight:700;color:inherit;text-decoration:none;">${this.esc(name)} \u2197</a>`
+          : `<strong style="font-size:0.95rem;">${this.esc(name)}</strong>`
+        ) +
         `${dateStr ? `<span style="font-size:0.85rem;color:#6b7280;white-space:nowrap;margin-left:8px;">${dateStr}</span>` : ''}` +
         `</div>` +
         `${role ? `<div style="color:#6b7280;font-size:0.88rem;margin-bottom:4px;">${this.esc(role)}</div>` : ''}` +
         `${tech ? `<div style="font-size:0.82rem;color:#9ca3af;margin-bottom:4px;">${this.esc(tech)}</div>` : ''}` +
         `${desc ? `<p style="font-size:0.9rem;margin:4px 0 0;">${this.esc(desc)}</p>` : ''}` +
-        `${urlHtml ? `<div style="margin-top:4px;">${urlHtml}</div>` : ''}` +
+        (url ? (
+          safeUrl 
+            ? `<div style="margin-top:4px;"><a href="${this.esc(safeUrl)}" rel="noreferrer noopener" style="font-size:0.8rem;color:#3b82f6;text-decoration:none;">${this.esc(url)}</a></div>`
+            : `<div style="margin-top:4px;font-size:0.8rem;color:#9ca3af;">${this.esc(url)} (Insecure URL blocked)</div>`
+        ) : '') +
         `</div>`,
       );
     }
@@ -593,13 +604,18 @@ export class ResumesService {
 
       const safeUrl = this.toSafeExternalUrl(url);
       const nameEl = safeUrl
-        ? `<a href="${this.esc(safeUrl)}" rel="noreferrer noopener" class="cert-name" style="font-size:12px;font-weight:600;color:inherit;text-decoration:none;">${this.esc(name)}</a>`
+        ? `<a href="${this.esc(safeUrl)}" rel="noreferrer noopener" style="font-size:12px;font-weight:600;color:inherit;text-decoration:none;">${this.esc(name)} \u2197</a>`
         : `<span class="cert-name" style="font-size:12px;font-weight:600;">${this.esc(name)}</span>`;
 
       items.push(
         `<div class="cert-entry" style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(128,128,128,0.15);">` +
-        `${nameEl}` +
+        `<div>${nameEl}</div>` +
         `<div class="cert-meta" style="font-size:11px;opacity:0.75;margin-top:2px;">${this.esc(issuer)}${issuer && year ? ' · ' : ''}${this.esc(year)}</div>` +
+        (url ? (
+          safeUrl 
+            ? `<div style="margin-top:2px;"><a href="${this.esc(safeUrl)}" rel="noreferrer noopener" style="font-size:10px;color:var(--accent,#1a3a4a);text-decoration:none;">${this.esc(url)}</a></div>`
+            : `<div style="margin-top:2px;font-size:10px;color:#9ca3af;">${this.esc(url)} (Insecure URL blocked)</div>`
+        ) : '') +
         `</div>`,
       );
     }
@@ -725,10 +741,10 @@ export class ResumesService {
   private injectDesignSystem(html: string, formData: Record<string, string>): string {
     const fontFamilyId = formData['_fontFamily'] || 'modern-sans';
     const fontFamily = DESIGN_FONT_STACKS[fontFamilyId] ?? DESIGN_FONT_STACKS['modern-sans'];
-    const fontScale = this.parseNumberSetting(formData['_fontScale'], 1, 0.9, 1.15);
-    const lineHeight = this.parseNumberSetting(formData['_lineHeight'], 1.5, 1.25, 1.85);
-    const sectionGap = this.parseNumberSetting(formData['_sectionGap'], 1, 0.7, 1.45);
-    const entryGap = this.parseNumberSetting(formData['_entryGap'], 1, 0.7, 1.45);
+    const fontScale = this.parseNumberSetting(formData['_fontScale'], 0.96, 0.9, 1.15);
+    const lineHeight = this.parseNumberSetting(formData['_lineHeight'], 1.35, 1.25, 1.85);
+    const sectionGap = this.parseNumberSetting(formData['_sectionGap'], 0.8, 0.7, 1.45);
+    const entryGap = this.parseNumberSetting(formData['_entryGap'], 0.78, 0.7, 1.45);
     const letterSpacing = this.parseNumberSetting(formData['_letterSpacing'], 0, 0, 0.15);
     const headingCaps = formData['_headingCaps'] === '1';
     const sectionDividers = formData['_sectionDividers'] !== '0';

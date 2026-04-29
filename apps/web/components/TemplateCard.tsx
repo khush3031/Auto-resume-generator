@@ -16,7 +16,7 @@ export function TemplateCard({ template }: { template: Template }) {
   const [scale, setScale] = useState(0.22);
   const isPremium = /-pro$/.test(template.id) || /\bpro\b/i.test(template.name);
   const isAts = /\bats\b/i.test(template.name) || template.id.startsWith('ats');
-  const isNew = ['ats-focus', 'ats-prime', 'sterling', 'aurora', 'atlas', 'beacon', 'mosaic', 'horizon'].includes(template.id);
+  const isNew = ['ats-focus', 'ats-prime', 'sterling', 'aurora', 'atlas', 'beacon', 'mosaic', 'horizon', 'prism', 'cascade', 'ember', 'meridian', 'canopy', 'radian'].includes(template.id);
 
   useEffect(() => {
     const el = thumbRef.current;

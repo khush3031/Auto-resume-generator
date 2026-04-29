@@ -419,6 +419,54 @@ exports.templates = [
         htmlPath: 'columnist.html'
     },
     {
+        id: 'prism',
+        name: 'Prism',
+        slug: 'prism',
+        style: 'Creative',
+        thumbnail: '/templates/thumbnails/prism.png',
+        htmlPath: 'prism.html'
+    },
+    {
+        id: 'cascade',
+        name: 'Cascade',
+        slug: 'cascade',
+        style: 'Modern',
+        thumbnail: '/templates/thumbnails/cascade.png',
+        htmlPath: 'cascade.html'
+    },
+    {
+        id: 'ember',
+        name: 'Ember',
+        slug: 'ember',
+        style: 'Professional',
+        thumbnail: '/templates/thumbnails/ember.png',
+        htmlPath: 'ember.html'
+    },
+    {
+        id: 'meridian',
+        name: 'Meridian',
+        slug: 'meridian',
+        style: 'Modern',
+        thumbnail: '/templates/thumbnails/meridian.png',
+        htmlPath: 'meridian.html'
+    },
+    {
+        id: 'canopy',
+        name: 'Canopy',
+        slug: 'canopy',
+        style: 'Minimal',
+        thumbnail: '/templates/thumbnails/canopy.png',
+        htmlPath: 'canopy.html'
+    },
+    {
+        id: 'radian',
+        name: 'Radian',
+        slug: 'radian',
+        style: 'Creative',
+        thumbnail: '/templates/thumbnails/radian.png',
+        htmlPath: 'radian.html'
+    },
+    {
         id: 'tech-pro',
         name: 'Tech Pro',
         slug: 'tech-pro',

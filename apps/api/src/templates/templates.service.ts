@@ -86,6 +86,12 @@ const DEFAULT_ACCENT_COLORS: Record<string, string> = {
   'beacon':       '#394867',
   'mosaic':       '#b45309',
   'horizon':      '#0f6d8c',
+  'prism':        '#7c3aed',
+  'cascade':      '#2563eb',
+  'ember':        '#ea580c',
+  'meridian':     '#0f766e',
+  'canopy':       '#16a34a',
+  'radian':       '#db2777',
 };
 
 @Injectable()

@@ -86,12 +86,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   logout: async () => {
     set({ isLoading: true, error: null });
-    try {
-      await api.logout();
-    } finally {
-      clearStorage();
-      set({ user: null, isAuthenticated: false, isLoading: false });
-    }
+    const logoutRequest = api.logout().catch(() => undefined);
+    clearStorage();
+    set({ user: null, isAuthenticated: false, isLoading: false });
+    await logoutRequest;
   },
   refreshTokens: async () => {
     set({ isLoading: true, error: null });

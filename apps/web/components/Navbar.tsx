@@ -11,6 +11,11 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
+  const handleLogout = async () => {
+    setIsOpen(false);
+    await logout();
+  };
+
   useEffect(() => { loadFromStorage(); }, [loadFromStorage]);
   useEffect(() => { setIsOpen(false); }, [pathname]);
   useEffect(() => {
@@ -41,7 +46,7 @@ export function Navbar() {
             <>
               <NavLink href="/dashboard" className="navbar__link">My Resumes</NavLink>
               <span className="navbar__user-badge">{user?.fullName}</span>
-              <button onClick={logout} className="navbar__btn">Logout</button>
+              <button onClick={handleLogout} className="navbar__btn">Logout</button>
             </>
           ) : (
             <>
@@ -88,7 +93,7 @@ export function Navbar() {
                 <div className="navbar__divider" />
                 <span className="navbar__mobile-user">{user?.fullName}</span>
                 <button
-                  onClick={() => { logout(); setIsOpen(false); }}
+                  onClick={handleLogout}
                   className="navbar__mobile-link navbar__mobile-link--danger"
                 >
                   Logout
