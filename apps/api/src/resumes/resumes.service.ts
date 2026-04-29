@@ -133,7 +133,7 @@ export class ResumesService {
     id: string,
     userId: string,
     clientFormData?: Record<string, string>,
-  ): Promise<Buffer> {
+  ): Promise<{ buffer: Buffer; fileName: string }> {
     if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
 
     const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).lean().exec();
@@ -150,13 +150,14 @@ export class ResumesService {
     const freshHtml = await this.generateRenderedHtml(resume.templateId, formData);
     const candidateName = (formData['fullName'] ?? 'Resume').trim();
     const buffer = await this.createPdfBuffer(this.prepareHtmlForPdf(freshHtml), candidateName);
+    const fileName = this.buildPdfFilename(candidateName, resume.templateId);
 
     await this.resumeModel.findByIdAndUpdate(id, {
       $inc: { downloadCount: 1 },
       lastExportedAt: new Date(),
     });
 
-    return buffer;
+    return { buffer, fileName };
   }
 
   async claimResume(id: string, userId: string) {
@@ -1077,5 +1078,22 @@ img { max-width: 100% !important; height: auto !important; }
     return html
       .replace(/<link[^>]+href=["']https?:\/\/[^"']+["'][^>]*>/gi, '')
       .replace(/@import\s+url\((['"]?)https?:\/\/[^)]+\1\)\s*;?/gi, '');
+  }
+
+  private buildPdfFilename(candidateName: string, templateId: string): string {
+    const safeName = (candidateName || 'resume')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60);
+    const safeTemplate = (templateId || 'resume')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    const baseName = [safeName || 'resume', safeTemplate, 'resume']
+      .filter(Boolean)
+      .join('-');
+    return `${baseName}.pdf`;
   }
 }

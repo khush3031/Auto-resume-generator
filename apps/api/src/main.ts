@@ -37,6 +37,7 @@ async function bootstrap() {
       return callback(new Error(`Origin ${origin} not allowed by CORS`), false);
     },
     credentials: true,
+    exposedHeaders: ['Content-Disposition', 'Content-Length'],
   });
 
   const { httpAdapter } = app.get(HttpAdapterHost);

@@ -107,16 +107,16 @@ export class ResumesController {
   ) {
     try {
       const user = req.user as any;
-      const pdf = await this.resumesService.exportToPdf(id, user.sub, body.formData);
+      const { buffer, fileName } = await this.resumesService.exportToPdf(id, user.sub, body.formData);
       res.set({
         'Content-Type':        'application/pdf',
-        'Content-Disposition': `attachment; filename="resume-${id}.pdf"`,
-        'Content-Length':      pdf.length.toString(),
+        'Content-Disposition': `attachment; filename="${fileName}"`,
+        'Content-Length':      buffer.length.toString(),
         'Cache-Control':       'no-cache, no-store, must-revalidate',
         'Pragma':              'no-cache',
         'Expires':             '0',
       });
-      res.end(pdf);
+      res.end(buffer);
     } catch (err: any) {
       res.status(err?.status || 500).json({
         success: false,

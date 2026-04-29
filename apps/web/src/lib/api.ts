@@ -213,7 +213,12 @@ export async function exportResumePdf(resumeId: string, formData?: Record<string
     formData ? { formData } : {},
     { responseType: 'blob' },
   );
-  return response.data;
+  const contentDisposition = response.headers['content-disposition'] as string | undefined;
+  const fileNameMatch = contentDisposition?.match(/filename="([^"]+)"/i);
+  return {
+    blob: response.data,
+    fileName: fileNameMatch?.[1] ?? `resume-${resumeId}.pdf`,
+  };
 }
 
 export { api };
