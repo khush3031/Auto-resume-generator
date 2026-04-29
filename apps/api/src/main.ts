@@ -1,15 +1,22 @@
-import { NestFactory } from '@nestjs/core';
-import { HttpAdapterHost } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 import { json } from 'express';
 import helmet from 'helmet';
-import cookieParser from 'cookie-parser';
+import mongoose from 'mongoose';
 import passport from 'passport';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import { mountRequestTrackerDashboard } from './common/request-tracker';
+import {
+  getAllowedCorsOrigins,
+  shouldMountRequestTrackerDashboard,
+} from './common/security.util';
 
 async function bootstrap() {
+  mongoose.set('sanitizeFilter', true);
+  mongoose.set('strictQuery', true);
+
   const app = await NestFactory.create(AppModule);
 
   app.use(helmet());
@@ -17,15 +24,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(passport.initialize());
 
-  const allowedOrigins = process.env.CORS_ORIGINS?.split(',') ?? [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:3005',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:3001',
-    'http://127.0.0.1:3005',
-    'https://resumeforge-web.onrender.com',
-  ];
+  const allowedOrigins = getAllowedCorsOrigins();
   app.enableCors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
@@ -40,31 +39,38 @@ async function bootstrap() {
     credentials: true,
   });
 
-  
-  // ── Trust the reverse-proxy headers forwarded by Render.com (and similar) ───
-  // Render terminates TLS at its load-balancer and forwards the real protocol in
-  // X-Forwarded-Proto.  Without this, Express sees req.protocol === 'http' even
-  // on an HTTPS deployment, which makes the dashboard serve a DATA_URL that
-  // starts with "http://" — blocked by the browser as Mixed Content.
   const { httpAdapter } = app.get(HttpAdapterHost);
   const expressApp = httpAdapter.getInstance();
-  expressApp.set('trust proxy', 1);   // <── fixes req.protocol on Render / Railway / Fly / Heroku
+  expressApp.set('trust proxy', 1);
 
-  // ── Mount request-tracker dashboard on the underlying Express instance ──────
-  // Dashboard UI  → /request-tracker
-  // JSON API      → /admin/request-tracker/*
-  expressApp.get('/__ping', (_req: any, res: { send: (arg0: string) => any; }) => res.send('ok'));
+  expressApp.get('/__ping', (_req: unknown, res: { send: (value: string) => void }) => {
+    res.send('ok');
+  });
+
   const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/resumeforge';
-  mountRequestTrackerDashboard(expressApp, mongoUri);
+  if (shouldMountRequestTrackerDashboard()) {
+    mountRequestTrackerDashboard(expressApp, mongoUri);
+  }
 
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: false },
+      validationError: { target: false, value: false },
+    }),
+  );
   app.useGlobalFilters(new HttpExceptionFilter());
 
   const port = process.env.PORT ? Number(process.env.PORT) : 4000;
   await app.listen(port);
 
   console.log(`API running on http://localhost:${port}`);
-  console.log(`Request tracker → http://localhost:${port}/request-tracker`);
+  if (shouldMountRequestTrackerDashboard()) {
+    console.log(`Request tracker available at http://localhost:${port}/request-tracker`);
+  }
 }
 
 bootstrap();

@@ -19,6 +19,8 @@ import { OptionalJwtGuard } from '../auth/guards/optional-jwt.guard';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { UpdateResumeDto } from './dto/update-resume.dto';
 import { ExportResumeDto } from './dto/export-resume.dto';
+import { UpsertUserResumeDetailsDto } from './dto/upsert-user-resume-details.dto';
+import { RateLimit } from '../common/rate-limit.decorator';
 
 @Controller('resumes')
 @UseFilters(HttpExceptionFilter)
@@ -62,7 +64,7 @@ export class ResumesController {
   /** PATCH /resumes/my-details — upsert the form-data profile for the logged-in user */
   @UseGuards(JwtAuthGuard)
   @Patch('my-details')
-  async upsertMyDetails(@Req() req: Request, @Body() body: { formData: Record<string, string> }) {
+  async upsertMyDetails(@Req() req: Request, @Body() body: UpsertUserResumeDetailsDto) {
     const user = req.user as any;
     const saved = await this.resumesService.upsertUserResumeDetails(user.sub, body.formData ?? {});
     return { success: true, data: saved, message: 'User resume details saved.' };
@@ -96,6 +98,7 @@ export class ResumesController {
   // ------------------------------------------------------------ PDF EXPORT
   @UseGuards(JwtAuthGuard)
   @Post(':id/export')
+  @RateLimit({ limit: 12, ttlMs: 10 * 60 * 1000, keyPrefix: 'resumes:export' })
   async exportPdf(
     @Param('id') id: string,
     @Body() body: ExportResumeDto,

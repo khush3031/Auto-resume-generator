@@ -6,6 +6,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { RateLimit } from '../common/rate-limit.decorator';
 
 @Controller('auth')
 @UseFilters(HttpExceptionFilter)
@@ -13,12 +14,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
   @Post('register')
+  @RateLimit({ limit: 5, ttlMs: 15 * 60 * 1000, keyPrefix: 'auth:register' })
   async register(@Body() payload: RegisterDto) {
     const result = await this.authService.register(payload);
     return { success: true, data: result, message: 'Registration successful.' };
   }
 
   @Post('login')
+  @RateLimit({ limit: 8, ttlMs: 10 * 60 * 1000, keyPrefix: 'auth:login' })
   async login(@Body() payload: LoginDto) {
     const result = await this.authService.login(payload);
     return { success: true, data: result, message: 'Login successful.' };
@@ -26,6 +29,7 @@ export class AuthController {
 
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
+  @RateLimit({ limit: 20, ttlMs: 10 * 60 * 1000, keyPrefix: 'auth:refresh' })
   async refresh(@Req() req: Request) {
     const user = req.user as any;
     const result = await this.authService.refreshTokens(user.sub, user.email);

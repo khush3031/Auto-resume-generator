@@ -10,6 +10,7 @@ import { join } from 'path';
 import puppeteer from 'puppeteer';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { UpdateResumeDto } from './dto/update-resume.dto';
+import { shouldAllowUnsafePdfSandbox } from '../common/security.util';
 
 const ACCENT_MAP: Record<string, string> = {
   'classic': '#0f3d5c', 'minimal': '#111827',
@@ -55,6 +56,8 @@ const LOCAL_BROWSER_CANDIDATES: Partial<Record<NodeJS.Platform, string[]>> = {
   ],
 };
 
+const SAFE_HEX_COLOR_PATTERN = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+
 @Injectable()
 export class ResumesService {
   constructor(
@@ -68,13 +71,14 @@ export class ResumesService {
     const template = templates.find((t) => t.id === payload.templateId);
     if (!template) throw new BadRequestException('Template not found');
 
-    const renderedHtml = await this.generateRenderedHtml(payload.templateId, payload.formData);
+    const sanitizedFormData = this.sanitizeBeforeRender(payload.formData);
+    const renderedHtml = await this.generateRenderedHtml(payload.templateId, sanitizedFormData);
     return this.resumeModel.create({
       templateId: payload.templateId,
       templateName: template.name,
       title: 'My Resume',
       status: 'draft',
-      formData: payload.formData,
+      formData: sanitizedFormData,
       renderedHtml,
       userId: payload.userId || null,
     });
@@ -94,9 +98,10 @@ export class ResumesService {
       throw new ForbiddenException('You do not have permission to update this resume');
     }
 
-    resume.formData = payload.formData;
+    const sanitizedFormData = this.sanitizeBeforeRender(payload.formData);
+    resume.formData = sanitizedFormData;
     resume.markModified('formData');
-    resume.renderedHtml = await this.generateRenderedHtml(resume.templateId, payload.formData);
+    resume.renderedHtml = await this.generateRenderedHtml(resume.templateId, sanitizedFormData);
     if (payload.title) resume.title = payload.title;
     if (payload.status) resume.status = payload.status;
 
@@ -195,8 +200,9 @@ export class ResumesService {
     }
 
     // Strip empty strings — keep only fields that have actual content
+    const sanitizedFormData = this.sanitizeBeforeRender(formData);
     const cleaned: Record<string, string> = {};
-    for (const [k, v] of Object.entries(formData)) {
+    for (const [k, v] of Object.entries(sanitizedFormData)) {
       if (typeof v === 'string' && v.trim()) cleaned[k] = v;
     }
 
@@ -215,22 +221,25 @@ export class ResumesService {
   // ─── Sanitization ─────────────────────────────────────────────────────────────
 
   private sanitizeBeforeRender(formData: Record<string, string>): Record<string, string> {
-    const out = { ...formData };
-    const isLocalhostUrl = (val: string): boolean => {
-      const v = (val ?? '').trim();
-      return v.startsWith('http') && (v.includes('localhost') || v.includes('127.0.0.1'));
-    };
-
-    ['fullName', 'initials', 'location'].forEach((f) => {
-      if (isLocalhostUrl(out[f] ?? '')) out[f] = '';
-    });
-    ['linkedin', 'website'].forEach((f) => {
-      if (isLocalhostUrl(out[f] ?? '')) out[f] = '';
-    });
-    for (let i = 1; i <= 10; i++) {
-      if (isLocalhostUrl(out[`cert${i}Url`]    ?? '')) out[`cert${i}Url`]    = '';
-      if (isLocalhostUrl(out[`project${i}Url`] ?? '')) out[`project${i}Url`] = '';
+    const out: Record<string, string> = {};
+    for (const [key, value] of Object.entries(formData)) {
+      out[key] = (value ?? '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
     }
+
+    if (out._accentColor) {
+      out._accentColor = this.normalizeAccentColor(out._accentColor) ?? '';
+    }
+
+    for (let i = 1; i <= 10; i++) {
+      if (this.looksLikeDisallowedUrl(out[`cert${i}Url`] ?? '')) out[`cert${i}Url`] = '';
+      if (this.looksLikeDisallowedUrl(out[`project${i}Url`] ?? '')) out[`project${i}Url`] = '';
+    }
+    ['linkedin', 'website'].forEach((field) => {
+      if (this.looksLikeDisallowedUrl(out[field] ?? '')) out[field] = '';
+    });
+    ['fullName', 'initials', 'location'].forEach((field) => {
+      if (this.looksLikeDisallowedUrl(out[field] ?? '')) out[field] = '';
+    });
 
     if ((out.initials ?? '').length > 3) {
       out.initials = (out.fullName ?? '')
@@ -509,8 +518,9 @@ export class ResumesService {
       if (!name) break;
 
       const dateStr = start || end ? `${this.esc(start)}${start || end ? ' – ' : ''}${this.esc(end)}` : '';
-      const urlHtml = url
-        ? `<a href="${this.esc(url)}" style="font-size:0.8rem;color:#3b82f6;text-decoration:none;">${this.esc(url)}</a>`
+      const safeUrl = this.toSafeExternalUrl(url);
+      const urlHtml = safeUrl
+        ? `<a href="${this.esc(safeUrl)}" rel="noreferrer noopener" style="font-size:0.8rem;color:#3b82f6;text-decoration:none;">${this.esc(url)}</a>`
         : '';
 
       items.push(
@@ -538,8 +548,9 @@ export class ResumesService {
       const url    = d[`cert${n}Url`]    ?? '';
       if (!name) break;
 
-      const nameEl = url
-        ? `<a href="${this.esc(url)}" class="cert-name" style="font-size:12px;font-weight:600;color:inherit;text-decoration:none;">${this.esc(name)}</a>`
+      const safeUrl = this.toSafeExternalUrl(url);
+      const nameEl = safeUrl
+        ? `<a href="${this.esc(safeUrl)}" rel="noreferrer noopener" class="cert-name" style="font-size:12px;font-weight:600;color:inherit;text-decoration:none;">${this.esc(name)}</a>`
         : `<span class="cert-name" style="font-size:12px;font-weight:600;">${this.esc(name)}</span>`;
 
       items.push(
@@ -760,16 +771,19 @@ export class ResumesService {
   // ─── Accent color injection ───────────────────────────────────────────────────
 
   private injectAccentColor(html: string, hex: string, templateId: string): string {
+    const safeHex = this.normalizeAccentColor(hex);
+    if (!safeHex) return html;
+
     const knownAccent = ACCENT_MAP[templateId];
     if (knownAccent) {
       const norm = knownAccent.replace('#', '').length === 3
         ? '#' + knownAccent.replace('#', '').split('').map((c: string) => c + c).join('')
         : knownAccent.toLowerCase();
-      html = html.split(norm).join(hex);
-      html = html.split(knownAccent).join(hex);
+      html = html.split(norm).join(safeHex);
+      html = html.split(knownAccent).join(safeHex);
     }
 
-    const cssVar = `\n<style id="resume-forge-theme">:root { --resume-accent-color: ${hex} !important; --accent: ${hex} !important; }</style>`;
+    const cssVar = `\n<style id="resume-forge-theme">:root { --resume-accent-color: ${safeHex} !important; --accent: ${safeHex} !important; }</style>`;
     html = html.includes('</head>') ? html.replace('</head>', cssVar + '\n</head>') : cssVar + html;
     return html;
   }
@@ -843,15 +857,39 @@ export class ResumesService {
     const A4_H = 1122;
     try {
       const executablePath = await this.resolveBrowserExecutablePath();
+      const launchArgs = [
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--font-render-hinting=none',
+      ];
+      if (shouldAllowUnsafePdfSandbox()) {
+        launchArgs.push('--no-sandbox', '--disable-setuid-sandbox');
+      }
+
       browser = await puppeteer.launch({
         executablePath,
         headless: 'new' as any,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--font-render-hinting=none'],
+        args: launchArgs,
       });
 
       const page = await browser.newPage();
+      await page.setJavaScriptEnabled(false);
+      await page.setRequestInterception(true);
+      page.on('request', (request) => {
+        const url = request.url();
+        if (
+          url === 'about:blank' ||
+          url.startsWith('data:') ||
+          url.startsWith('blob:')
+        ) {
+          request.continue().catch(() => {});
+          return;
+        }
+
+        request.abort().catch(() => {});
+      });
       await page.setViewport({ width: 794, height: A4_H, deviceScaleFactor: 1 });
-      await page.setContent(html, { waitUntil: ['networkidle0', 'domcontentloaded'], timeout: 30000 });
+      await page.setContent(html, { waitUntil: ['domcontentloaded'], timeout: 30000 });
       await page.emulateMediaType('screen');
       await page.evaluateHandle('document.fonts.ready');
       await new Promise((r) => setTimeout(r, 1500));
@@ -916,10 +954,20 @@ export class ResumesService {
   }
 
   private prepareHtmlForPdf(html: string): string {
+    html = this.stripRemoteResourceImports(html);
+    if (!html.includes('<head>')) {
+      html = html.replace(/<html([^>]*)>/i, '<html$1><head></head>');
+    }
     if (!html.trimStart().startsWith('<!DOCTYPE')) html = '<!DOCTYPE html>\n' + html;
     if (!html.includes('charset')) html = html.replace('<head>', '<head>\n<meta charset="UTF-8">');
     html = html.replace(/(<meta[^>]*name=["']viewport["'][^>]*>)/i, '<meta name="viewport" content="width=794">');
     if (!html.includes('viewport')) html = html.replace('<head>', '<head>\n<meta name="viewport" content="width=794">');
+    if (!html.includes('http-equiv="Content-Security-Policy"')) {
+      html = html.replace(
+        '<head>',
+        `<head>\n<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; font-src data:; script-src 'none'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">`,
+      );
+    }
 
     const css = `
 <style id="pdf-render-styles">
@@ -954,5 +1002,80 @@ img { max-width: 100% !important; height: auto !important; }
 </style>`;
 
     return html.includes('</head>') ? html.replace('</head>', css + '\n</head>') : css + html;
+  }
+
+  private normalizeAccentColor(value: string): string | null {
+    const normalized = value.trim();
+    if (!SAFE_HEX_COLOR_PATTERN.test(normalized)) return null;
+    return normalized.toLowerCase();
+  }
+
+  private looksLikeDisallowedUrl(value: string): boolean {
+    const trimmed = value.trim();
+    if (!trimmed) return false;
+    if (!/^(https?:\/\/|www\.)/i.test(trimmed)) return false;
+    return this.toSafeExternalUrl(trimmed) === null;
+  }
+
+  private toSafeExternalUrl(value: string): string | null {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    const candidate = /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)
+      ? trimmed
+      : `https://${trimmed.replace(/^\/+/, '')}`;
+
+    let parsed: URL;
+    try {
+      parsed = new URL(candidate);
+    } catch {
+      return null;
+    }
+
+    if (!['http:', 'https:'].includes(parsed.protocol)) return null;
+    if (parsed.username || parsed.password) return null;
+    if (this.isPrivateOrLocalHostname(parsed.hostname)) return null;
+
+    return parsed.toString();
+  }
+
+  private isPrivateOrLocalHostname(hostname: string): boolean {
+    const normalized = hostname.trim().toLowerCase();
+    if (!normalized) return true;
+    if (
+      normalized === 'localhost' ||
+      normalized.endsWith('.localhost') ||
+      normalized.endsWith('.local')
+    ) {
+      return true;
+    }
+    if (!normalized.includes('.') && !normalized.includes(':')) {
+      return true;
+    }
+
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(normalized)) {
+      const [a, b] = normalized.split('.').map((part) => Number(part));
+      if (a === 10 || a === 127 || a === 0) return true;
+      if (a === 169 && b === 254) return true;
+      if (a === 192 && b === 168) return true;
+      if (a === 172 && b >= 16 && b <= 31) return true;
+    }
+
+    if (
+      normalized === '::1' ||
+      normalized.startsWith('fc') ||
+      normalized.startsWith('fd') ||
+      normalized.startsWith('fe80:')
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private stripRemoteResourceImports(html: string): string {
+    return html
+      .replace(/<link[^>]+href=["']https?:\/\/[^"']+["'][^>]*>/gi, '')
+      .replace(/@import\s+url\((['"]?)https?:\/\/[^)]+\1\)\s*;?/gi, '');
   }
 }
