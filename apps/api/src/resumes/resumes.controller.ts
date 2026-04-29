@@ -72,18 +72,22 @@ export class ResumesController {
 
   // ------------------------------------------------------- SINGLE RESUME (public)
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const resume = await this.resumesService.findById(id);
-    return { success: true, data: resume, message: 'Resume retrieved.' };
+  async findOne(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const resume = await this.resumesService.findById(id);
+      return res.status(200).json({ success: true, data: resume, message: 'Resume retrieved.' });
+    } catch (err) {
+      throw err;
+    }
   }
 
   // ------------------------------------------------------------------ UPDATE
   @UseGuards(OptionalJwtGuard)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() payload: UpdateResumeDto, @Req() req: Request) {
+  async update(@Param('id') id: string, @Body() payload: UpdateResumeDto, @Req() req: Request, @Res() res: Response) {
     const currentUserId = req.user ? (req.user as any).sub : undefined;
     const resume = await this.resumesService.updateResume(id, payload, currentUserId);
-    return { success: true, data: resume, message: 'Resume updated.' };
+    return res.status(200).json({ success: true, data: resume, message: 'Resume updated.' });
   }
 
   // ------------------------------------------------------------------ DELETE

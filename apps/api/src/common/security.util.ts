@@ -59,6 +59,10 @@ export function shouldMountRequestTrackerDashboard(): boolean {
   return !isProductionEnvironment() || process.env.ENABLE_REQUEST_TRACKER_DASHBOARD === 'true';
 }
 
+export function shouldEnableRequestTracking(): boolean {
+  return process.env.ENABLE_REQUEST_TRACKING === 'true';
+}
+
 export function shouldAllowUnsafePdfSandbox(): boolean {
   return process.env.PDF_ALLOW_UNSAFE_NO_SANDBOX === 'true';
 }

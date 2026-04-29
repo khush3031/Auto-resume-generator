@@ -11,6 +11,7 @@ import { AiModule } from './ai/ai.module';
 import { UploadModule } from './upload/upload.module';
 import { RequestTrackerNestMiddleware } from './common/request-tracker';
 import { RateLimitGuard } from './common/rate-limit.guard';
+import { shouldEnableRequestTracking } from './common/security.util';
 
 @Module({
   imports: [
@@ -42,6 +43,10 @@ import { RateLimitGuard } from './common/rate-limit.guard';
 export class AppModule {
   // Apply request-tracker middleware to every route (*)
   configure(consumer: MiddlewareConsumer) {
+    if (!shouldEnableRequestTracking()) {
+      return;
+    }
+
     consumer
       .apply(RequestTrackerNestMiddleware)
       .forRoutes('*');

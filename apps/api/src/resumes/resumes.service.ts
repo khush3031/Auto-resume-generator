@@ -65,6 +65,10 @@ export class ResumesService {
     @InjectModel(UserResumeDetails.name) private readonly userResumeDetailsModel: Model<UserResumeDetailsDocument>,
   ) {}
 
+  private get resumeCollection() {
+    return this.resumeModel.collection;
+  }
+
   // ─── CRUD ─────────────────────────────────────────────────────────────────────
 
   async createResume(payload: CreateResumeDto) {
@@ -86,27 +90,45 @@ export class ResumesService {
 
   async findById(id: string) {
     if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).lean().exec();
+    const resume = await this.resumeCollection.findOne({
+      _id: new Types.ObjectId(id),
+      isDeleted: { $ne: true },
+    });
     if (!resume) throw new NotFoundException('Resume not found');
     return resume;
   }
 
   async updateResume(id: string, payload: UpdateResumeDto, currentUserId?: string) {
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).exec();
+    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
+
+    const resume = await this.resumeCollection.findOne({
+      _id: new Types.ObjectId(id),
+      isDeleted: { $ne: true },
+    });
     if (!resume) throw new NotFoundException('Resume not found');
-    if (resume.userId && currentUserId && resume.userId.toString() !== currentUserId) {
+    if (resume.userId && currentUserId && String(resume.userId) !== currentUserId) {
       throw new ForbiddenException('You do not have permission to update this resume');
     }
 
     const sanitizedFormData = this.sanitizeBeforeRender(payload.formData);
-    resume.formData = sanitizedFormData;
-    resume.markModified('formData');
-    resume.renderedHtml = await this.generateRenderedHtml(resume.templateId, sanitizedFormData);
-    if (payload.title) resume.title = payload.title;
-    if (payload.status) resume.status = payload.status;
+    const renderedHtml = await this.generateRenderedHtml(String(resume.templateId), sanitizedFormData);
+    const updatedResumeResult = await this.resumeCollection.findOneAndUpdate(
+      { _id: new Types.ObjectId(id), isDeleted: { $ne: true } },
+      {
+        $set: {
+          formData: sanitizedFormData,
+          renderedHtml,
+          ...(payload.title ? { title: payload.title } : {}),
+          ...(payload.status ? { status: payload.status } : {}),
+          updatedAt: new Date(),
+        },
+      },
+      { returnDocument: 'after' },
+    );
 
-    await resume.save();
-    return resume.toObject();
+    const updatedResume = updatedResumeResult?.value ?? updatedResumeResult;
+    if (!updatedResume) throw new NotFoundException('Resume not found');
+    return updatedResume;
   }
 
   async findUserResumes(userId: string) {
@@ -120,13 +142,20 @@ export class ResumesService {
   }
 
   async softDeleteResume(id: string, userId: string) {
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).exec();
+    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
+
+    const resume = await this.resumeCollection.findOne({
+      _id: new Types.ObjectId(id),
+      isDeleted: { $ne: true },
+    });
     if (!resume) throw new NotFoundException('Resume not found');
-    if (!resume.userId || resume.userId.toString() !== userId) {
+    if (!resume.userId || String(resume.userId) !== userId) {
       throw new ForbiddenException('You do not have permission to delete this resume');
     }
-    resume.isDeleted = true;
-    await resume.save();
+    await this.resumeCollection.updateOne(
+      { _id: new Types.ObjectId(id) },
+      { $set: { isDeleted: true, updatedAt: new Date() } },
+    );
   }
 
   async exportToPdf(
@@ -136,9 +165,12 @@ export class ResumesService {
   ): Promise<{ buffer: Buffer; fileName: string }> {
     if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
 
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).lean().exec();
+    const resume = await this.resumeCollection.findOne({
+      _id: new Types.ObjectId(id),
+      isDeleted: { $ne: true },
+    });
     if (!resume) throw new NotFoundException('Resume not found');
-    if (resume.userId && resume.userId.toString() !== userId) {
+    if (resume.userId && String(resume.userId) !== userId) {
       throw new ForbiddenException('You do not have permission to export this resume');
     }
 
@@ -161,17 +193,27 @@ export class ResumesService {
   }
 
   async claimResume(id: string, userId: string) {
-    const resume = await this.resumeModel.findOne({ _id: id, isDeleted: { $ne: true } }).exec();
+    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
+
+    const resume = await this.resumeCollection.findOne({
+      _id: new Types.ObjectId(id),
+      isDeleted: { $ne: true },
+    });
     if (!resume) throw new NotFoundException('Resume not found');
     if (resume.userId) {
-      if (resume.userId.toString() !== userId) {
+      if (String(resume.userId) !== userId) {
         throw new ForbiddenException('Resume already belongs to another account');
       }
-      return resume.toObject();
+      return resume;
     }
-    resume.userId = new Types.ObjectId(userId);
-    await resume.save();
-    return resume.toObject();
+    const claimedResumeResult = await this.resumeCollection.findOneAndUpdate(
+      { _id: new Types.ObjectId(id), isDeleted: { $ne: true } },
+      { $set: { userId: new Types.ObjectId(userId), updatedAt: new Date() } },
+      { returnDocument: 'after' },
+    );
+    const claimedResume = claimedResumeResult?.value ?? claimedResumeResult;
+    if (!claimedResume) throw new NotFoundException('Resume not found');
+    return claimedResume;
   }
 
   // ─── User Resume Details (cross-template profile) ─────────────────────────────
