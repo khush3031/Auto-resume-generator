@@ -70,7 +70,7 @@ function LoginForm() {
       <p className="auth-form__eyebrow">Login</p>
       <h1 className="auth-form__title">Welcome back to ResumeForge</h1>
       <p className="auth-form__subtitle">
-        Log in to access your dashboard, manage resumes, and download PDFs.
+        Log in to access your dashboard, manage resumes, and download PDF or Word files.
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="auth-form__body" noValidate>

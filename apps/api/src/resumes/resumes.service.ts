@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Resume, ResumeDocument } from './schemas/resume.schema';
 import { UserResumeDetails, UserResumeDetailsDocument } from './schemas/userResumeDetails.schema';
+import HTMLtoDOCX = require('@turbodocx/html-to-docx');
 import { templates } from '@resumeforge/templates';
 import { hideEmptyResumeSections } from '@resumeforge/shared';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import puppeteer from 'puppeteer';
 import { CreateResumeDto } from './dto/create-resume.dto';
+import { ResumeExportFormat } from './dto/export-resume.dto';
 import { UpdateResumeDto } from './dto/update-resume.dto';
 import { shouldAllowUnsafePdfSandbox } from '../common/security.util';
 
@@ -162,11 +164,12 @@ export class ResumesService {
     );
   }
 
-  async exportToPdf(
+  async exportResume(
     id: string,
     userId: string,
+    format: ResumeExportFormat,
     clientFormData?: Record<string, string>,
-  ): Promise<{ buffer: Buffer; fileName: string }> {
+  ): Promise<{ buffer: Buffer; contentType: string; fileName: string }> {
     if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
 
     const resume = await this.resumeCollection.findOne({
@@ -185,15 +188,32 @@ export class ResumesService {
 
     const freshHtml = await this.generateRenderedHtml(resume.templateId, formData);
     const candidateName = (formData['fullName'] ?? 'Resume').trim();
-    const buffer = await this.createPdfBuffer(this.prepareHtmlForPdf(freshHtml), candidateName);
-    const fileName = this.buildPdfFilename(candidateName, resume.templateId);
+    const baseFileName = this.buildExportBasename(candidateName, resume.templateId);
+
+    let buffer: Buffer;
+    let contentType: string;
+    let fileName: string;
+
+    if (format === 'docx') {
+      buffer = await this.createDocxBuffer(this.prepareHtmlForWordExport(freshHtml), candidateName);
+      contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      fileName = `${baseFileName}.docx`;
+    } else if (format === 'doc') {
+      buffer = Buffer.from(this.prepareHtmlForLegacyDoc(this.prepareHtmlForWordExport(freshHtml)), 'utf8');
+      contentType = 'application/msword';
+      fileName = `${baseFileName}.doc`;
+    } else {
+      buffer = await this.createPdfBuffer(this.prepareHtmlForPdf(freshHtml), candidateName);
+      contentType = 'application/pdf';
+      fileName = `${baseFileName}.pdf`;
+    }
 
     await this.resumeModel.findByIdAndUpdate(id, {
       $inc: { downloadCount: 1 },
       lastExportedAt: new Date(),
     });
 
-    return { buffer, fileName };
+    return { buffer, contentType, fileName };
   }
 
   async claimResume(id: string, userId: string) {
@@ -1012,6 +1032,50 @@ export class ResumesService {
     }
   }
 
+  private async createDocxBuffer(html: string, candidateName = 'Resume'): Promise<Buffer> {
+    try {
+      const result = await HTMLtoDOCX(
+        html,
+        null,
+        {
+          orientation: 'portrait',
+          title: `${candidateName || 'Resume'} Resume`,
+          creator: 'ResumeForge',
+          description: 'Resume exported from ResumeForge',
+          lang: 'en-US',
+          margins: {
+            top: 720,
+            right: 720,
+            bottom: 720,
+            left: 720,
+          },
+          table: {
+            row: { cantSplit: true },
+          },
+          preprocessing: {
+            skipHTMLMinify: true,
+          },
+        },
+        null,
+      );
+
+      if (Buffer.isBuffer(result)) {
+        return result;
+      }
+      if (result instanceof ArrayBuffer) {
+        return Buffer.from(result);
+      }
+      if (result instanceof Blob) {
+        return Buffer.from(await result.arrayBuffer());
+      }
+
+      return Buffer.from(result as Uint8Array);
+    } catch (err: any) {
+      console.error('[DOCX] generation failed:', err);
+      throw new InternalServerErrorException(`DOCX generation failed: ${err?.message}`);
+    }
+  }
+
   private prepareHtmlForPdf(html: string): string {
     html = this.stripRemoteResourceImports(html);
     if (!html.includes('<head>')) {
@@ -1061,6 +1125,75 @@ img { max-width: 100% !important; height: auto !important; }
 </style>`;
 
     return html.includes('</head>') ? html.replace('</head>', css + '\n</head>') : css + html;
+  }
+
+  private prepareHtmlForWordExport(html: string): string {
+    html = this.stripRemoteResourceImports(html);
+    if (!html.includes('<head>')) {
+      html = html.replace(/<html([^>]*)>/i, '<html$1><head></head>');
+    }
+    if (!html.trimStart().startsWith('<!DOCTYPE')) html = '<!DOCTYPE html>\n' + html;
+    if (!html.includes('charset')) html = html.replace('<head>', '<head>\n<meta charset="UTF-8">');
+
+    const css = `
+<style id="word-export-styles">
+@page { size: A4; margin: 14mm 12mm; }
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #ffffff !important;
+}
+body {
+  font-family: Arial, sans-serif;
+  color: #111827;
+}
+.page {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: auto !important;
+  margin: 0 auto !important;
+  box-shadow: none !important;
+}
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+p, div, span, li, td, h1, h2, h3, h4 {
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  max-width: 100% !important;
+}
+img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+a {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+</style>`;
+
+    return html.includes('</head>') ? html.replace('</head>', css + '\n</head>') : css + html;
+  }
+
+  private prepareHtmlForLegacyDoc(html: string): string {
+    if (!/xmlns:o=/i.test(html)) {
+      html = html.replace(
+        /<html([^>]*)>/i,
+        '<html$1 xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">',
+      );
+    }
+
+    const meta = [
+      '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">',
+      '<meta name="ProgId" content="Word.Document">',
+      '<meta name="Generator" content="ResumeForge">',
+    ].join('\n');
+
+    if (html.includes('</head>')) {
+      return html.replace('</head>', `${meta}\n</head>`);
+    }
+
+    return `${meta}\n${html}`;
   }
 
   private normalizeAccentColor(value: string): string | null {
@@ -1138,7 +1271,7 @@ img { max-width: 100% !important; height: auto !important; }
       .replace(/@import\s+url\((['"]?)https?:\/\/[^)]+\1\)\s*;?/gi, '');
   }
 
-  private buildPdfFilename(candidateName: string, templateId: string): string {
+  private buildExportBasename(candidateName: string, templateId: string): string {
     const safeName = (candidateName || 'resume')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -1152,6 +1285,6 @@ img { max-width: 100% !important; height: auto !important; }
     const baseName = [safeName || 'resume', safeTemplate, 'resume']
       .filter(Boolean)
       .join('-');
-    return `${baseName}.pdf`;
+    return baseName;
   }
 }

@@ -42,7 +42,7 @@ export default function SupportPage() {
             <div style={{ marginTop: '2rem' }}>
               <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>How do I save my resume as a PDF?</h3>
               <p style={{ marginBottom: '1.5rem' }}>
-                Once you have finished editing your resume in the builder, click the "Download PDF" or "Export" button in the top navigation bar. Your browser will then generate and download the PDF file.
+                Once you have finished editing your resume in the builder, choose PDF, DOC, or DOCX from the export picker and download the file directly from the top bar.
               </p>
 
               <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>Is ResumeForge completely free?</h3>

@@ -9,6 +9,8 @@ interface AuthTokens {
   refreshToken: string;
 }
 
+export type ResumeExportFormat = 'pdf' | 'doc' | 'docx';
+
 function getCookieAttributes(maxAgeSeconds: number) {
   const attributes = [`path=/`, `max-age=${maxAgeSeconds}`, `samesite=strict`];
   if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
@@ -208,16 +210,31 @@ export async function saveUserResumeDetails(formData: Record<string, string>): P
 }
 
 export async function exportResumePdf(resumeId: string, formData?: Record<string, string>) {
+  return exportResumeFile(resumeId, 'pdf', formData);
+}
+
+export async function exportResumeFile(
+  resumeId: string,
+  format: ResumeExportFormat,
+  formData?: Record<string, string>,
+) {
+  const mimeTypes: Record<ResumeExportFormat, string> = {
+    pdf: 'application/pdf',
+    doc: 'application/msword',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  };
+
   const response = await api.post(
     `/resumes/${resumeId}/export`,
-    formData ? { formData } : {},
+    formData ? { format, formData } : { format },
     { responseType: 'blob' },
   );
   const contentDisposition = response.headers['content-disposition'] as string | undefined;
   const fileNameMatch = contentDisposition?.match(/filename="([^"]+)"/i);
   return {
     blob: response.data,
-    fileName: fileNameMatch?.[1] ?? `resume-${resumeId}.pdf`,
+    fileName: fileNameMatch?.[1] ?? `resume-${resumeId}.${format}`,
+    mimeType: mimeTypes[format],
   };
 }
 
@@ -236,6 +253,7 @@ export default {
   fetchResume,
   fetchMyResumes,
   deleteResume,
+  exportResumeFile,
   exportResumePdf,
   fetchUserResumeDetails,
   saveUserResumeDetails,

@@ -2,10 +2,11 @@
 
 import { NavLink } from './NavLink';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createResume, exportResumePdf, fetchResume, fetchUserResumeDetails, saveUserResumeDetails, updateResume } from '../src/lib/api';
+import { createResume, exportResumeFile, fetchResume, fetchUserResumeDetails, ResumeExportFormat, saveUserResumeDetails, updateResume } from '../src/lib/api';
 import { useAuthStore } from '../src/store/auth.store';
 import { AuthModal } from './AuthModal';
 import { ResumePreviewer } from './ResumePreviewer';
+import { ResumeExportControl } from './ResumeExportControl';
 // import { AiBulletSuggestions } from './builder/AiBulletSuggestions';
 // import { AiSkillSuggestions } from './builder/AiSkillSuggestions';
 // import { AiSummarySuggestions } from './builder/AiSummarySuggestions';
@@ -777,7 +778,7 @@ function getDownloadErrorMessage(error: unknown): string {
   if (status === 401) return 'Your session expired. Please sign in again to download this resume.';
   if (status === 403) return 'This resume belongs to a different account. Start a new resume or switch back to the original account.';
   if (status === 404) return 'This resume could not be found anymore. Please create a new one.';
-  return 'Could not download the PDF right now. Please try again.';
+  return 'Could not download this resume right now. Please try again.';
 }
 
 export function BuilderShell({
@@ -809,6 +810,7 @@ export function BuilderShell({
   const [accentColor,     setAccentColor]     = useState<ResumeColor>(DEFAULT_COLOR);
   const [isSaving,        setIsSaving]        = useState(false);
   const [isDownloading,   setIsDownloading]   = useState(false);
+  const [exportFormat,    setExportFormat]    = useState<ResumeExportFormat>('pdf');
   const [lastSavedAt,     setLastSavedAt]     = useState<string | null>(null);
   const [showAuthModal,   setShowAuthModal]   = useState(false);
   const [activeTab,       setActiveTab]       = useState<'edit' | 'preview'>('edit');
@@ -1362,7 +1364,7 @@ export function BuilderShell({
 
   const handleDownload = async () => {
     if (!isAuthenticated) {
-      setActionMessage('Please sign in to download your PDF.');
+      setActionMessage('Please sign in to download your resume.');
       setShowAuthModal(true);
       return;
     }
@@ -1392,8 +1394,8 @@ export function BuilderShell({
       // Cancel any pending debounce and pass formData directly in the export
       // request — the server uses it instead of reading (potentially stale) MongoDB.
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      const { blob, fileName } = await exportResumePdf(resumeId, formData);
-      const url  = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      const { blob, fileName, mimeType } = await exportResumeFile(resumeId, exportFormat, formData);
+      const url  = URL.createObjectURL(new Blob([blob], { type: mimeType }));
       const a    = document.createElement('a');
       a.href = url; a.download = fileName;
       document.body.appendChild(a); a.click(); a.remove();
@@ -1833,13 +1835,15 @@ export function BuilderShell({
           ))}
         </div>
 
-        <button
-          onClick={handleDownload}
-          disabled={isDownloading || !resumeId}
-          className="builder-download-btn builder-download-btn--topbar"
-        >
-          {isDownloading ? 'Preparing…' : 'Download PDF'}
-        </button>
+        <div className="builder-export-control builder-export-control--topbar">
+          <ResumeExportControl
+            format={exportFormat}
+            onFormatChange={setExportFormat}
+            onDownload={handleDownload}
+            isDownloading={isDownloading}
+            disabled={!resumeId}
+          />
+        </div>
       </div>
 
       {/* ── Split (form + preview) ── */}
@@ -1917,13 +1921,14 @@ export function BuilderShell({
       <div className="builder-download-bar">
         <div className="builder-download-bar__inner">
           <p className="builder-save-status">{saveStatus}</p>
-          <button
-            onClick={handleDownload}
-            disabled={isDownloading || !resumeId}
-            className="builder-download-btn"
-          >
-            {isDownloading ? 'Preparing…' : 'Download PDF'}
-          </button>
+          <ResumeExportControl
+            format={exportFormat}
+            onFormatChange={setExportFormat}
+            onDownload={handleDownload}
+            isDownloading={isDownloading}
+            disabled={!resumeId}
+            fullWidth
+          />
         </div>
       </div>
     </>
