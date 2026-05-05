@@ -3005,6 +3005,7 @@ svg {
 .export-control {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.65rem;
   width: 100%;
 }
