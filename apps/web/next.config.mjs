@@ -1,5 +1,10 @@
-const distDir =
-  process.env.NODE_ENV === 'development' ? '.next-runtime-dev' : '.next-runtime';
+// On Vercel (VERCEL=1) use the default '.next' output dir so Vercel can find it.
+// Locally we keep the custom dirs to avoid polluting the repo root .next folder.
+const distDir = process.env.VERCEL
+  ? undefined
+  : process.env.NODE_ENV === 'development'
+    ? '.next-runtime-dev'
+    : '.next-runtime';
 
 function getOrigin(url, fallback) {
   try {
