@@ -22,3 +22,13 @@ npm-debug.log*
 # Upload temp files (keep .gitkeep)
 apps/api/uploads/temp/*
 !apps/api/uploads/temp/.gitkeep
+
+# Puppeteer browser cache — downloaded at runtime, not part of source
+.cache
+
+# Runtime log files
+*.log
+**/*.log
+
+# Local test/security plan docs
+LOCAL_SECURITY_*.md
