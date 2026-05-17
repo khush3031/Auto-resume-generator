@@ -1,13 +1,13 @@
 # railway.toml — Railway deployment config for ResumeForge API
-# Build logic is fully defined in nixpacks.toml (install, build, start).
 # Docs: https://docs.railway.app/reference/config-as-code
 
 [build]
-  builder = "NIXPACKS"
+  builder        = "DOCKERFILE"
+  dockerfilePath = "apps/api/Dockerfile"
 
 [deploy]
-  # Railway injects PORT automatically — NestJS reads process.env.PORT in main.ts
   healthcheckPath         = "/__ping"
   healthcheckTimeout      = 300
   restartPolicyType       = "ON_FAILURE"
   restartPolicyMaxRetries = 10
+

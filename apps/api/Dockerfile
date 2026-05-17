@@ -1,15 +1,14 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# ResumeForge API — Fly.io Production Image
+# ResumeForge API — Railway / Production Docker Image
 #
-# Build context: repo ROOT  (fly.toml sets dockerfile = "apps/api/Dockerfile")
-# This lets Docker resolve workspace packages (@resumeforge/shared, etc.)
+# Build context: repo ROOT (railway.toml sets dockerfilePath = "apps/api/Dockerfile")
+# This lets Docker resolve workspace packages (@resumeforge/shared, @resumeforge/templates)
 # ─────────────────────────────────────────────────────────────────────────────
 FROM node:20-slim
 
 WORKDIR /app
 
-# ── System Chromium + all Puppeteer dependencies ──────────────────────────────
-# Using the distro's Chromium avoids a ~300 MB puppeteer browser download.
+# ── System Chromium + all Puppeteer runtime dependencies ─────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
       chromium \
       fonts-liberation \
@@ -39,8 +38,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# ── pnpm ──────────────────────────────────────────────────────────────────────
-RUN npm install -g pnpm@9
+# ── Install pnpm AND verify it works — all in ONE RUN so PATH is consistent ──
+RUN npm install -g pnpm@9 && pnpm --version
 
 # ── Tell Puppeteer to skip its own Chrome download & use system binary ────────
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
@@ -52,31 +51,26 @@ COPY apps/api/package.json               ./apps/api/
 COPY packages/shared/package.json        ./packages/shared/
 COPY packages/templates/package.json     ./packages/templates/
 
-# Install all workspace deps.
-# The postinstall script (puppeteer browsers install chrome) is suppressed
-# because PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true is already set above.
+# ── Install all deps in ONE RUN (pnpm is already in PATH from above layer) ───
 RUN pnpm install --no-frozen-lockfile
 
-# ── Copy source files ─────────────────────────────────────────────────────────
-COPY apps/api/src         ./apps/api/src
-COPY apps/api/tsconfig.json apps/api/nest-cli.json ./apps/api/
-COPY packages/shared/src  ./packages/shared/src
+# ── Copy all source files ─────────────────────────────────────────────────────
+COPY apps/api/src            ./apps/api/src
+COPY apps/api/tsconfig.json  ./apps/api/
+COPY apps/api/nest-cli.json  ./apps/api/
+COPY packages/shared/src     ./packages/shared/src
 COPY packages/shared/tsconfig.json ./packages/shared/
-# Templates package is pre-compiled plain JS — copy the whole folder as-is
-COPY packages/templates/  ./packages/templates/
+# Templates are pre-compiled plain JS — copy whole folder
+COPY packages/templates/     ./packages/templates/
 
-# ── Build ─────────────────────────────────────────────────────────────────────
-# 1. Compile shared types first (NestJS API imports from it)
+# ── Build: shared types first, then NestJS API ───────────────────────────────
 RUN pnpm --filter @resumeforge/shared build
-
-# 2. Compile the NestJS API
 RUN pnpm --filter resumeforge-api build
 
 # ── Runtime ───────────────────────────────────────────────────────────────────
 ENV NODE_ENV=production
 
-# Fly.io routes external HTTPS → internal port 8080.
-# NestJS reads PORT from the env (set in fly.toml [env] block).
-EXPOSE 8080
+# Railway injects PORT automatically — NestJS reads process.env.PORT in main.ts
+EXPOSE 3000
 
 CMD ["node", "apps/api/dist/main.js"]
