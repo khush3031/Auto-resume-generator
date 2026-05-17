@@ -1,0 +1,14 @@
+# railway.toml — Railway deployment config for ResumeForge API
+# Docs: https://docs.railway.app/reference/config-as-code
+
+[build]
+  # Use the Dockerfile we already have (handles pnpm monorepo + Puppeteer)
+  builder        = "DOCKERFILE"
+  dockerfilePath = "apps/api/Dockerfile"
+
+[deploy]
+  # Railway injects PORT automatically — NestJS reads it from process.env.PORT
+  healthcheckPath    = "/__ping"
+  healthcheckTimeout = 300
+  restartPolicyType  = "ON_FAILURE"
+  restartPolicyMaxRetries = 10
