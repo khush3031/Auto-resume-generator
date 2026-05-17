@@ -1,19 +1,19 @@
 # nixpacks.toml — Nixpacks build config for ResumeForge API on Railway
-# This overrides Railway/Nixpacks defaults for the pnpm monorepo.
 
 [phases.setup]
   nixPkgs = ["nodejs_20"]
 
 [phases.install]
+  # Single command string so pnpm is in PATH when install runs.
+  # corepack is bundled with Node.js 20 — no separate install needed.
   cmds = [
-    "npm install -g pnpm@9",
-    "pnpm install --no-frozen-lockfile"
+    "corepack enable && corepack prepare pnpm@9 --activate && pnpm install --no-frozen-lockfile"
   ]
 
 [phases.build]
+  # Build shared types package first (API depends on it), then compile NestJS.
   cmds = [
-    "pnpm --filter @resumeforge/shared build",
-    "pnpm --filter resumeforge-api build"
+    "pnpm --filter @resumeforge/shared build && pnpm --filter resumeforge-api build"
   ]
 
 [start]
