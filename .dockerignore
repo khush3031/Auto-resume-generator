@@ -1,0 +1,46 @@
+# .dockerignore — Repo root, used when `fly deploy` builds from repo root
+#
+# Exclude everything that shouldn't be sent to the Docker build daemon.
+# Smaller build context = faster uploads to Fly.io's remote builder.
+
+# ── Deps (rebuilt inside Docker) ─────────────────────────────────────────────
+**/node_modules
+
+# ── Build artifacts (rebuilt inside Docker) ───────────────────────────────────
+apps/api/dist
+packages/shared/dist
+
+# ── Next.js (frontend — not built in this image) ──────────────────────────────
+apps/web
+**/.next
+**/.next-runtime
+**/.next-runtime-dev
+**/out
+
+# ── Secrets & local config ────────────────────────────────────────────────────
+**/.env
+**/.env.local
+**/.env.*.local
+
+# ── Puppeteer cached Chrome (we use system Chromium instead) ──────────────────
+.cache
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+**/*.log
+apps/api/uploads/temp/*
+!apps/api/uploads/temp/.gitkeep
+
+# ── Dev & tooling ─────────────────────────────────────────────────────────────
+.git
+.github
+.claude
+.turbo
+**/.turbo
+**/tsconfig.tsbuildinfo
+**/*.tsbuildinfo
+*.md
+!README.md
+
+# ── Debug / misc ──────────────────────────────────────────────────────────────
+apps/api/debug.png
