@@ -6,6 +6,7 @@
   dockerfilePath = "apps/api/Dockerfile"
 
 [deploy]
+  startCommand            = "node apps/api/dist/main.js"
   healthcheckPath         = "/__ping"
   healthcheckTimeout      = 300
   restartPolicyType       = "ON_FAILURE"
