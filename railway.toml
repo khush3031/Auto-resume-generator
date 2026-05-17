@@ -1,14 +1,12 @@
 # railway.toml — Railway deployment config for ResumeForge API
+# Build logic is fully defined in nixpacks.toml (install, build, start).
 # Docs: https://docs.railway.app/reference/config-as-code
 
 [build]
-  builder      = "NIXPACKS"
-  # Install pnpm, then build shared types package first, then the NestJS API
-  buildCommand = "npm install -g pnpm@9 && pnpm install --no-frozen-lockfile && pnpm --filter @resumeforge/shared build && pnpm --filter resumeforge-api build"
+  builder = "NIXPACKS"
 
 [deploy]
   # Railway injects PORT automatically — NestJS reads process.env.PORT in main.ts
-  startCommand            = "node apps/api/dist/main.js"
   healthcheckPath         = "/__ping"
   healthcheckTimeout      = 300
   restartPolicyType       = "ON_FAILURE"
