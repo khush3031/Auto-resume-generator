@@ -100,7 +100,7 @@ export default function RegisterPage() {
           <p className="auth-form__eyebrow">Register</p>
           <h1 className="auth-form__title">Create your ResumeForge account</h1>
           <p className="auth-form__subtitle">
-            Sign up to save resumes, access the dashboard, and download PDFs.
+            Sign up to save resumes, access the dashboard, and download PDF or Word files.
           </p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="auth-form__body" noValidate>

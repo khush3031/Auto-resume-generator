@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Resume, ResumeDocument } from './schemas/resume.schema';
 import { UserResumeDetails, UserResumeDetailsDocument } from './schemas/userResumeDetails.schema';
+import HTMLtoDOCX = require('@turbodocx/html-to-docx');
 import { templates } from '@resumeforge/templates';
 import { hideEmptyResumeSections } from '@resumeforge/shared';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import puppeteer from 'puppeteer';
 import { CreateResumeDto } from './dto/create-resume.dto';
+import { ResumeExportFormat } from './dto/export-resume.dto';
 import { UpdateResumeDto } from './dto/update-resume.dto';
 import { shouldAllowUnsafePdfSandbox } from '../common/security.util';
 
@@ -59,6 +61,15 @@ const LOCAL_BROWSER_CANDIDATES: Partial<Record<NodeJS.Platform, string[]>> = {
 };
 
 const SAFE_HEX_COLOR_PATTERN = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+const A4_PAGE_WIDTH_PX = 794;
+const A4_PAGE_HEIGHT_PX = 1122;
+const A4_PAGE_WIDTH_PT = 595.5;
+type WordPageImage = {
+  dataUrl: string;
+  buffer: Buffer;
+  widthPx: number;
+  heightPx: number;
+};
 
 @Injectable()
 export class ResumesService {
@@ -162,11 +173,12 @@ export class ResumesService {
     );
   }
 
-  async exportToPdf(
+  async exportResume(
     id: string,
     userId: string,
+    format: ResumeExportFormat,
     clientFormData?: Record<string, string>,
-  ): Promise<{ buffer: Buffer; fileName: string }> {
+  ): Promise<{ buffer: Buffer; contentType: string; fileName: string }> {
     if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Resume not found');
 
     const resume = await this.resumeCollection.findOne({
@@ -185,15 +197,33 @@ export class ResumesService {
 
     const freshHtml = await this.generateRenderedHtml(resume.templateId, formData);
     const candidateName = (formData['fullName'] ?? 'Resume').trim();
-    const buffer = await this.createPdfBuffer(this.prepareHtmlForPdf(freshHtml), candidateName);
-    const fileName = this.buildPdfFilename(candidateName, resume.templateId);
+    const baseFileName = this.buildExportBasename(candidateName, resume.templateId);
+
+    let buffer: Buffer;
+    let contentType: string;
+    let fileName: string;
+
+    if (format === 'docx') {
+      const wordHtml = await this.prepareHtmlForWordExport(freshHtml);
+      buffer = await this.createDocxBuffer(wordHtml, candidateName);
+      contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      fileName = `${baseFileName}.docx`;
+    } else if (format === 'doc') {
+      buffer = await this.createLegacyDocBuffer(freshHtml);
+      contentType = 'application/msword';
+      fileName = `${baseFileName}.doc`;
+    } else {
+      buffer = await this.createPdfBuffer(this.prepareHtmlForPdf(freshHtml), candidateName);
+      contentType = 'application/pdf';
+      fileName = `${baseFileName}.pdf`;
+    }
 
     await this.resumeModel.findByIdAndUpdate(id, {
       $inc: { downloadCount: 1 },
       lastExportedAt: new Date(),
     });
 
-    return { buffer, fileName };
+    return { buffer, contentType, fileName };
   }
 
   async claimResume(id: string, userId: string) {
@@ -911,47 +941,61 @@ export class ResumesService {
     return undefined;
   }
 
+  private async launchHeadlessBrowser() {
+    const executablePath = await this.resolveBrowserExecutablePath();
+    const launchArgs = [
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--font-render-hinting=none',
+    ];
+    if (shouldAllowUnsafePdfSandbox()) {
+      launchArgs.push('--no-sandbox', '--disable-setuid-sandbox');
+    }
+
+    return puppeteer.launch({
+      executablePath,
+      headless: 'new' as any,
+      args: launchArgs,
+    });
+  }
+
+  private async openStaticRenderPage(html: string, viewportHeight = 1122) {
+    const browser = await this.launchHeadlessBrowser();
+    const page = await browser.newPage();
+
+    await page.setJavaScriptEnabled(false);
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      const url = request.url();
+      if (
+        url === 'about:blank' ||
+        url.startsWith('data:') ||
+        url.startsWith('blob:')
+      ) {
+        request.continue().catch(() => {});
+        return;
+      }
+
+      request.abort().catch(() => {});
+    });
+
+    await page.setViewport({ width: 794, height: viewportHeight, deviceScaleFactor: 1 });
+    await page.setContent(html, { waitUntil: ['domcontentloaded'], timeout: 30000 });
+    await page.emulateMediaType('screen');
+    await page.evaluateHandle('document.fonts.ready');
+    await new Promise((r) => setTimeout(r, 400));
+
+    return { browser, page };
+  }
+
   private async createPdfBuffer(html: string, candidateName = 'Resume'): Promise<Buffer> {
     let browser: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
     const A4_H = 1122;
     try {
-      const executablePath = await this.resolveBrowserExecutablePath();
-      const launchArgs = [
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--font-render-hinting=none',
-      ];
-      if (shouldAllowUnsafePdfSandbox()) {
-        launchArgs.push('--no-sandbox', '--disable-setuid-sandbox');
-      }
-
-      browser = await puppeteer.launch({
-        executablePath,
-        headless: 'new' as any,
-        args: launchArgs,
-      });
-
-      const page = await browser.newPage();
-      await page.setJavaScriptEnabled(false);
-      await page.setRequestInterception(true);
-      page.on('request', (request) => {
-        const url = request.url();
-        if (
-          url === 'about:blank' ||
-          url.startsWith('data:') ||
-          url.startsWith('blob:')
-        ) {
-          request.continue().catch(() => {});
-          return;
-        }
-
-        request.abort().catch(() => {});
-      });
-      await page.setViewport({ width: 794, height: A4_H, deviceScaleFactor: 1 });
-      await page.setContent(html, { waitUntil: ['domcontentloaded'], timeout: 30000 });
-      await page.emulateMediaType('screen');
-      await page.evaluateHandle('document.fonts.ready');
-      await new Promise((r) => setTimeout(r, 1500));
+      const renderContext = await this.openStaticRenderPage(html, A4_H);
+      browser = renderContext.browser;
+      const page = renderContext.page;
+      await new Promise((r) => setTimeout(r, 1100));
 
       // Step 1: Universal layout fix (colored column stretch)
       await this.fixLayoutForPdf(page);
@@ -1012,6 +1056,53 @@ export class ResumesService {
     }
   }
 
+  private async createDocxBuffer(html: string, candidateName = 'Resume'): Promise<Buffer> {
+    try {
+      const result = await HTMLtoDOCX(
+        html,
+        null,
+        {
+          orientation: 'portrait',
+          title: `${candidateName || 'Resume'} Resume`,
+          creator: 'ResumeForge',
+          description: 'Resume exported from ResumeForge',
+          lang: 'en-US',
+          margins: {
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+          },
+          table: {
+            row: { cantSplit: true },
+          },
+          imageProcessing: {
+            maxImageSize: 15 * 1024 * 1024,
+          },
+          preprocessing: {
+            skipHTMLMinify: true,
+          },
+        },
+        null,
+      );
+
+      if (Buffer.isBuffer(result)) {
+        return result;
+      }
+      if (result instanceof ArrayBuffer) {
+        return Buffer.from(result);
+      }
+      if (result instanceof Blob) {
+        return Buffer.from(await result.arrayBuffer());
+      }
+
+      return Buffer.from(result as Uint8Array);
+    } catch (err: any) {
+      console.error('[DOCX] generation failed:', err);
+      throw new InternalServerErrorException(`DOCX generation failed: ${err?.message}`);
+    }
+  }
+
   private prepareHtmlForPdf(html: string): string {
     html = this.stripRemoteResourceImports(html);
     if (!html.includes('<head>')) {
@@ -1061,6 +1152,536 @@ img { max-width: 100% !important; height: auto !important; }
 </style>`;
 
     return html.includes('</head>') ? html.replace('</head>', css + '\n</head>') : css + html;
+  }
+
+  private async createWordSnapshotHtml(html: string): Promise<string> {
+    let browser: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
+    try {
+      const renderContext = await this.openStaticRenderPage(html, 1122);
+      browser = renderContext.browser;
+      const page = renderContext.page;
+      await new Promise((r) => setTimeout(r, 1100));
+      await this.fixLayoutForPdf(page);
+      await new Promise((r) => setTimeout(r, 200));
+
+      const snapshot = await page.evaluate(() => {
+        const sourceRoot = (document.querySelector('.page') as HTMLElement | null) ?? document.body;
+        const outputDoc = document.implementation.createHTMLDocument('Resume Word Export');
+        const meta = outputDoc.createElement('meta');
+        meta.setAttribute('charset', 'UTF-8');
+        outputDoc.head.appendChild(meta);
+
+        const style = outputDoc.createElement('style');
+        style.textContent = `
+@page { size: A4; margin: 11mm 10mm; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+}
+body {
+  font-family: Aptos, "Segoe UI", Arial, sans-serif;
+  color: #111827;
+}
+.rf-word-page {
+  width: 100%;
+  max-width: none;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+td {
+  vertical-align: top;
+}
+img {
+  max-width: 100%;
+  height: auto;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+        `.trim();
+        outputDoc.head.appendChild(style);
+        outputDoc.documentElement.lang = document.documentElement.lang || 'en';
+
+        const structuralTagMap: Record<string, string> = {
+          article: 'div',
+          aside: 'div',
+          figure: 'div',
+          figcaption: 'div',
+          footer: 'div',
+          header: 'div',
+          main: 'div',
+          nav: 'div',
+          section: 'div',
+        };
+
+        const transparentColors = new Set(['transparent', 'rgba(0, 0, 0, 0)', 'rgba(0,0,0,0)']);
+
+        const normalizeTagName = (tagName: string) => structuralTagMap[tagName] ?? tagName;
+
+        const shouldSkipElement = (el: Element) => {
+          const tagName = el.tagName.toLowerCase();
+          return ['script', 'style', 'link', 'meta', 'title', 'noscript'].includes(tagName);
+        };
+
+        const isVisible = (el: Element) => {
+          const computed = window.getComputedStyle(el);
+          if (computed.display === 'none' || computed.visibility === 'hidden') {
+            return false;
+          }
+          if (computed.opacity === '0') {
+            return false;
+          }
+          return true;
+        };
+
+        const appendPseudoText = (src: HTMLElement, dest: HTMLElement, pseudo: 'before' | 'after') => {
+          const computed = window.getComputedStyle(src, `::${pseudo}`);
+          if (!computed) return;
+
+          let content = computed.content || '';
+          if (content === 'none' || content === 'normal') {
+            content = '';
+          }
+
+          if (!content || content === '""' || content === "''") {
+            const width = Number.parseFloat(computed.width || '0');
+            const height = Number.parseFloat(computed.height || '0');
+            if (
+              width > 0 &&
+              height > 0 &&
+              width <= 12 &&
+              height <= 12 &&
+              !transparentColors.has(computed.backgroundColor)
+            ) {
+              content = '"•"';
+            }
+          }
+
+          if (!content || content === '""' || content === "''") return;
+
+          const normalizedText = content
+            .replace(/^['"]|['"]$/g, '')
+            .replace(/\\A/g, ' ')
+            .replace(/\\2022/g, '•');
+          if (!normalizedText) return;
+
+          const span = outputDoc.createElement('span');
+          span.textContent = normalizedText;
+          const pseudoStyles = [
+            `color:${computed.color}`,
+            `font-size:${computed.fontSize}`,
+            `font-weight:${computed.fontWeight}`,
+            pseudo === 'before' ? 'margin-right:6px' : 'margin-left:6px',
+          ];
+          span.setAttribute('style', pseudoStyles.join('; '));
+          if (pseudo === 'before') {
+            dest.appendChild(span);
+          } else {
+            dest.appendChild(span);
+          }
+        };
+
+        const addStyle = (styles: string[], property: string, value: string | null | undefined) => {
+          if (!value) return;
+          styles.push(`${property}:${value}`);
+        };
+
+        const hasNonZeroBoxValue = (value: string) => value !== '0px' && value !== '0px 0px 0px 0px';
+
+        const applyComputedStyles = (
+          src: HTMLElement,
+          dest: HTMLElement,
+          overrides: Record<string, string> = {},
+        ) => {
+          const computed = window.getComputedStyle(src);
+          const rect = src.getBoundingClientRect();
+          const styles: string[] = [];
+
+          addStyle(styles, 'color', computed.color);
+          addStyle(styles, 'font-family', computed.fontFamily);
+          addStyle(styles, 'font-size', computed.fontSize);
+          addStyle(styles, 'font-weight', computed.fontWeight);
+          addStyle(styles, 'font-style', computed.fontStyle);
+          addStyle(styles, 'line-height', computed.lineHeight);
+          addStyle(styles, 'letter-spacing', computed.letterSpacing);
+          addStyle(styles, 'text-transform', computed.textTransform);
+          addStyle(styles, 'text-decoration', computed.textDecorationLine);
+          addStyle(styles, 'text-align', computed.textAlign);
+          addStyle(styles, 'white-space', computed.whiteSpace);
+          addStyle(styles, 'word-break', computed.wordBreak);
+          addStyle(styles, 'overflow-wrap', computed.overflowWrap);
+          addStyle(styles, 'vertical-align', computed.verticalAlign);
+
+          if (!transparentColors.has(computed.backgroundColor)) {
+            addStyle(styles, 'background-color', computed.backgroundColor);
+          }
+
+          if (hasNonZeroBoxValue(computed.margin)) {
+            addStyle(styles, 'margin', computed.margin);
+          }
+          if (hasNonZeroBoxValue(computed.padding)) {
+            addStyle(styles, 'padding', computed.padding);
+          }
+
+          if (computed.borderTopStyle !== 'none' && computed.borderTopWidth !== '0px') {
+            addStyle(styles, 'border-top', computed.borderTop);
+          }
+          if (computed.borderRightStyle !== 'none' && computed.borderRightWidth !== '0px') {
+            addStyle(styles, 'border-right', computed.borderRight);
+          }
+          if (computed.borderBottomStyle !== 'none' && computed.borderBottomWidth !== '0px') {
+            addStyle(styles, 'border-bottom', computed.borderBottom);
+          }
+          if (computed.borderLeftStyle !== 'none' && computed.borderLeftWidth !== '0px') {
+            addStyle(styles, 'border-left', computed.borderLeft);
+          }
+          if (computed.borderRadius && computed.borderRadius !== '0px') {
+            addStyle(styles, 'border-radius', computed.borderRadius);
+          }
+
+          if (computed.listStyleType && computed.listStyleType !== 'none') {
+            addStyle(styles, 'list-style-type', computed.listStyleType);
+          }
+
+          const isFixedVisualBlock =
+            rect.width > 0 &&
+            rect.width < 760 &&
+            (
+              computed.display === 'inline-block' ||
+              computed.display === 'inline-flex' ||
+              computed.display === 'inline-grid' ||
+              src.tagName.toLowerCase() === 'img' ||
+              Math.abs(rect.width - rect.height) < 1
+            );
+
+          if (isFixedVisualBlock) {
+            addStyle(styles, 'width', `${Math.round(rect.width)}px`);
+            if (rect.height > 0) {
+              addStyle(styles, 'height', `${Math.round(rect.height)}px`);
+            }
+          }
+
+          for (const [property, value] of Object.entries(overrides)) {
+            addStyle(styles, property, value);
+          }
+
+          if (styles.length > 0) {
+            dest.setAttribute('style', styles.join('; '));
+          }
+        };
+
+        const visibleChildElements = (el: HTMLElement) =>
+          Array.from(el.children).filter((child): child is HTMLElement => child instanceof HTMLElement && isVisible(child));
+
+        const groupChildrenByRow = (children: HTMLElement[]) => {
+          const rows: { top: number; items: HTMLElement[] }[] = [];
+          const threshold = 12;
+
+          children
+            .map((child) => ({ child, rect: child.getBoundingClientRect() }))
+            .filter(({ rect }) => rect.width > 0 || rect.height > 0)
+            .sort((a, b) => a.rect.top - b.rect.top || a.rect.left - b.rect.left)
+            .forEach(({ child, rect }) => {
+              const row = rows.find((entry) => Math.abs(entry.top - rect.top) <= threshold);
+              if (row) {
+                row.items.push(child);
+              } else {
+                rows.push({ top: rect.top, items: [child] });
+              }
+            });
+
+          return rows.map((row) =>
+            row.items.sort(
+              (left, right) => left.getBoundingClientRect().left - right.getBoundingClientRect().left,
+            ),
+          );
+        };
+
+        const shouldConvertToTable = (el: HTMLElement, children: HTMLElement[]) => {
+          if (children.length < 2) return false;
+          const computed = window.getComputedStyle(el);
+          if (computed.display.includes('flex') || computed.display.includes('grid')) {
+            return true;
+          }
+
+          const rows = groupChildrenByRow(children);
+          return rows.some((row) => row.length > 1);
+        };
+
+        const transformNode = (node: Node): Node | null => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            const text = node.textContent ?? '';
+            if (!text.trim()) return null;
+            return outputDoc.createTextNode(text);
+          }
+
+          if (!(node instanceof HTMLElement)) return null;
+          if (shouldSkipElement(node) || !isVisible(node)) return null;
+
+          const tagName = node.tagName.toLowerCase();
+          if (tagName === 'br') {
+            return outputDoc.createElement('br');
+          }
+
+          const normalizedTagName = normalizeTagName(tagName);
+          const children = visibleChildElements(node);
+
+          if (shouldConvertToTable(node, children)) {
+            const wrapper = outputDoc.createElement('div');
+            applyComputedStyles(node, wrapper, { display: 'block', width: '100%' });
+
+            const rows = groupChildrenByRow(children);
+            rows.forEach((row) => {
+              if (row.length === 1) {
+                const childNode = transformNode(row[0]);
+                if (childNode) wrapper.appendChild(childNode);
+                return;
+              }
+
+              const rowTable = outputDoc.createElement('table');
+              rowTable.setAttribute('role', 'presentation');
+              rowTable.setAttribute('style', 'width:100%; border-collapse:collapse; table-layout:fixed');
+
+              const tbody = outputDoc.createElement('tbody');
+              const tr = outputDoc.createElement('tr');
+              const rowRects = row.map((item) => item.getBoundingClientRect());
+              const rowLeft = Math.min(...rowRects.map((rect) => rect.left));
+              const rowRight = Math.max(...rowRects.map((rect) => rect.right));
+              const rowWidth = Math.max(rowRight - rowLeft, 1);
+
+              row.forEach((child, index) => {
+                const rect = child.getBoundingClientRect();
+                const nextRect = index < row.length - 1 ? row[index + 1].getBoundingClientRect() : null;
+                const td = outputDoc.createElement('td');
+                const widthPercent = Math.max((rect.width / rowWidth) * 100, 1);
+                const cellStyles = [
+                  `width:${widthPercent.toFixed(2)}%`,
+                  'vertical-align:top',
+                  'padding:0',
+                ];
+
+                if (nextRect) {
+                  const gap = Math.max(nextRect.left - rect.right, 0);
+                  if (gap > 0) {
+                    cellStyles.push(`padding-right:${Math.round(gap)}px`);
+                  }
+                }
+
+                td.setAttribute('style', cellStyles.join('; '));
+                const childNode = transformNode(child);
+                if (childNode) {
+                  td.appendChild(childNode);
+                }
+                tr.appendChild(td);
+              });
+
+              tbody.appendChild(tr);
+              rowTable.appendChild(tbody);
+              wrapper.appendChild(rowTable);
+            });
+
+            return wrapper;
+          }
+
+          const clone = outputDoc.createElement(normalizedTagName);
+          if (tagName === 'a') {
+            const href = node.getAttribute('href');
+            if (href) clone.setAttribute('href', href);
+          }
+          if (tagName === 'img') {
+            const src = node.getAttribute('src');
+            if (src) clone.setAttribute('src', src);
+            const alt = node.getAttribute('alt');
+            if (alt) clone.setAttribute('alt', alt);
+          }
+
+          applyComputedStyles(node, clone);
+          appendPseudoText(node, clone, 'before');
+          Array.from(node.childNodes).forEach((childNode) => {
+            const transformed = transformNode(childNode);
+            if (transformed) {
+              clone.appendChild(transformed);
+            }
+          });
+          appendPseudoText(node, clone, 'after');
+          return clone;
+        };
+
+        outputDoc.body.innerHTML = '';
+        const pageWrapper = outputDoc.createElement('div');
+        pageWrapper.className = 'rf-word-page';
+        applyComputedStyles(sourceRoot, pageWrapper, {
+          width: '100%',
+          'max-width': 'none',
+          'min-height': 'auto',
+          margin: '0 auto',
+        });
+
+        Array.from(sourceRoot.childNodes).forEach((childNode) => {
+          const transformed = transformNode(childNode);
+          if (transformed) {
+            pageWrapper.appendChild(transformed);
+          }
+        });
+
+        outputDoc.body.appendChild(pageWrapper);
+        return '<!DOCTYPE html>\n' + outputDoc.documentElement.outerHTML;
+      });
+
+      return snapshot;
+    } finally {
+      if (browser) await browser.close().catch(() => {});
+    }
+  }
+
+  private async prepareHtmlForWordExport(html: string): Promise<string> {
+    const preparedHtml = this.prepareHtmlForPdf(html);
+    const pageImages = await this.renderWordPageImages(preparedHtml);
+    return this.createWordPageImageHtml(pageImages);
+  }
+
+  private async prepareHtmlForLegacyDocExport(html: string): Promise<string> {
+    const preparedHtml = this.prepareHtmlForPdf(html);
+    try {
+      return await this.createWordSnapshotHtml(preparedHtml);
+    } catch (error) {
+      console.warn('[WORD] legacy DOC semantic export fallback engaged:', error);
+      const pageImages = await this.renderWordPageImages(preparedHtml);
+      return this.createWordPageImageHtml(pageImages);
+    }
+  }
+
+  private prepareHtmlForLegacyDoc(html: string): string {
+    if (!/xmlns:o=/i.test(html)) {
+      html = html.replace(
+        /<html([^>]*)>/i,
+        '<html$1 xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">',
+      );
+    }
+
+    const meta = [
+      '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">',
+      '<meta name="ProgId" content="Word.Document">',
+      '<meta name="Generator" content="ResumeForge">',
+    ].join('\n');
+
+    if (html.includes('</head>')) {
+      return html.replace('</head>', `${meta}\n</head>`);
+    }
+
+    return `${meta}\n${html}`;
+  }
+
+  private async createLegacyDocBuffer(html: string): Promise<Buffer> {
+    const wordHtml = await this.prepareHtmlForLegacyDocExport(html);
+    const legacyHtml = this.prepareHtmlForLegacyDoc(wordHtml);
+    return Buffer.from(`\uFEFF${legacyHtml}`, 'utf8');
+  }
+
+  private async renderWordPageImages(html: string): Promise<WordPageImage[]> {
+    let browser: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
+    try {
+      const renderContext = await this.openStaticRenderPage(html, A4_PAGE_HEIGHT_PX);
+      browser = renderContext.browser;
+      const page = renderContext.page;
+
+      await new Promise((r) => setTimeout(r, 1100));
+      await this.fixLayoutForPdf(page);
+      await new Promise((r) => setTimeout(r, 200));
+
+      const totalHeight = await page.evaluate(() => {
+        const root = (document.querySelector('.page') as HTMLElement | null) ?? document.body;
+        return Math.max(root.scrollHeight, document.body.scrollHeight, document.documentElement.scrollHeight);
+      });
+      const pageCount = Math.max(1, Math.ceil(totalHeight / A4_PAGE_HEIGHT_PX));
+      const images: WordPageImage[] = [];
+
+      for (let index = 0; index < pageCount; index += 1) {
+        const clipTop = index * A4_PAGE_HEIGHT_PX;
+        const clipHeight = Math.max(
+          1,
+          Math.min(A4_PAGE_HEIGHT_PX, totalHeight - clipTop || A4_PAGE_HEIGHT_PX),
+        );
+
+        const screenshot = await page.screenshot({
+          type: 'png',
+          captureBeyondViewport: true,
+          clip: {
+            x: 0,
+            y: clipTop,
+            width: A4_PAGE_WIDTH_PX,
+            height: clipHeight,
+          },
+        });
+
+        const imageBuffer = Buffer.from(screenshot);
+        images.push({
+          buffer: imageBuffer,
+          dataUrl: `data:image/png;base64,${imageBuffer.toString('base64')}`,
+          widthPx: A4_PAGE_WIDTH_PX,
+          heightPx: clipHeight,
+        });
+      }
+
+      return images;
+    } finally {
+      if (browser) await browser.close().catch(() => {});
+    }
+  }
+
+  private createWordPageImageHtml(images: WordPageImage[]): string {
+    const pageMarkup = images
+      .map((image, index) => `
+  <section class="rf-word-page${index < images.length - 1 ? ' rf-word-page--break' : ''}">
+    <img src="${image.dataUrl}" alt="Resume page ${index + 1}">
+  </section>`)
+      .join('\n');
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page { size: A4; margin: 0; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+    }
+    body {
+      font-size: 0;
+      line-height: 0;
+    }
+    .rf-word-page {
+      width: ${A4_PAGE_WIDTH_PT}pt;
+      margin: 0;
+      padding: 0;
+      break-after: auto;
+      page-break-after: auto;
+    }
+    .rf-word-page--break {
+      break-after: page;
+      page-break-after: always;
+    }
+    .rf-word-page img {
+      display: block;
+      width: ${A4_PAGE_WIDTH_PT}pt;
+      max-width: ${A4_PAGE_WIDTH_PT}pt;
+      height: auto;
+      margin: 0;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+${pageMarkup}
+</body>
+</html>`;
   }
 
   private normalizeAccentColor(value: string): string | null {
@@ -1138,7 +1759,7 @@ img { max-width: 100% !important; height: auto !important; }
       .replace(/@import\s+url\((['"]?)https?:\/\/[^)]+\1\)\s*;?/gi, '');
   }
 
-  private buildPdfFilename(candidateName: string, templateId: string): string {
+  private buildExportBasename(candidateName: string, templateId: string): string {
     const safeName = (candidateName || 'resume')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -1152,6 +1773,6 @@ img { max-width: 100% !important; height: auto !important; }
     const baseName = [safeName || 'resume', safeTemplate, 'resume']
       .filter(Boolean)
       .join('-');
-    return `${baseName}.pdf`;
+    return baseName;
   }
 }

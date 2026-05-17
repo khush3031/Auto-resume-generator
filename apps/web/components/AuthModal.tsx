@@ -93,8 +93,8 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
           </h2>
           <p className="modal-subtitle">
             {mode === 'login'
-              ? 'Sign in to save your resume and download PDFs.'
-              : 'Sign up to unlock PDF downloads and save your work.'}
+              ? 'Sign in to save your resume and download PDF or Word files.'
+              : 'Sign up to unlock PDF and Word downloads and save your work.'}
           </p>
         </div>
         <button onClick={onClose} aria-label="Close" className="modal-close">

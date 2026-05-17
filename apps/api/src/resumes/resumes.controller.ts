@@ -103,7 +103,7 @@ export class ResumesController {
   @UseGuards(JwtAuthGuard)
   @Post(':id/export')
   @RateLimit({ limit: 12, ttlMs: 10 * 60 * 1000, keyPrefix: 'resumes:export' })
-  async exportPdf(
+  async exportResume(
     @Param('id') id: string,
     @Body() body: ExportResumeDto,
     @Req() req: Request,
@@ -111,9 +111,14 @@ export class ResumesController {
   ) {
     try {
       const user = req.user as any;
-      const { buffer, fileName } = await this.resumesService.exportToPdf(id, user.sub, body.formData);
+      const { buffer, contentType, fileName } = await this.resumesService.exportResume(
+        id,
+        user.sub,
+        body.format ?? 'pdf',
+        body.formData,
+      );
       res.set({
-        'Content-Type':        'application/pdf',
+        'Content-Type':        contentType,
         'Content-Disposition': `attachment; filename="${fileName}"`,
         'Content-Length':      buffer.length.toString(),
         'Cache-Control':       'no-cache, no-store, must-revalidate',
@@ -124,7 +129,7 @@ export class ResumesController {
     } catch (err: any) {
       res.status(err?.status || 500).json({
         success: false,
-        message: err?.message || 'PDF export failed',
+        message: err?.message || 'Resume export failed',
       });
     }
   }

@@ -16,18 +16,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!res.ok) {
     return {
       title: 'Resume Preview — ResumeForge',
-      description: 'Preview your resume and download the generated PDF.'
+      description: 'Preview your resume and download it as PDF or Word.'
     };
   }
   const json   = await res.json();
   const resume = json.data;
   return {
     title: `${resume.title || 'Resume Preview'} | ResumeForge`,
-    description: 'Preview your resume before downloading your final PDF.',
+    description: 'Preview your resume before downloading your final PDF or Word file.',
     robots: 'noindex',
     openGraph: {
       title: `${resume.title || 'Resume Preview'} | ResumeForge`,
-      description: 'Preview your resume before downloading your final PDF.'
+      description: 'Preview your resume before downloading your final PDF or Word file.'
     }
   };
 }
@@ -43,7 +43,7 @@ export default async function PreviewPage({ params }: PageProps) {
     return (
       <main className="preview-not-found">
         <p className="preview-not-found__text">Resume not found.</p>
-        <Link href="/templates" className="dl-btn" style={{ marginTop: '1.5rem' }}>
+        <Link href="/templates" className="btn btn--primary" style={{ marginTop: '1.5rem' }}>
           Browse templates
         </Link>
       </main>
@@ -74,9 +74,6 @@ export default async function PreviewPage({ params }: PageProps) {
 
           <div className="preview-topbar__download-md">
             <DownloadButton resumeId={resumeId} />
-          </div>
-          <div className="preview-topbar__download-sm">
-            <DownloadButton resumeId={resumeId} iconOnly />
           </div>
         </div>
       </div>

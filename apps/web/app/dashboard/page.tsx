@@ -55,7 +55,7 @@ export default function DashboardPage() {
             <p className="dashboard-header__eyebrow">Dashboard</p>
             <h1 className="dashboard-header__title">Your saved resumes</h1>
             <p className="dashboard-header__subtitle">
-              Manage resumes and download PDFs whenever you need them.
+              Manage resumes and download PDF or Word versions whenever you need them.
             </p>
           </div>
           <Link href="/templates" className="dashboard-new-btn">+ New Resume</Link>
