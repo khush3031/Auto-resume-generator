@@ -1,0 +1,48 @@
+# fly.toml — Fly.io config for ResumeForge API
+# Deploy from repo root: fly deploy --config fly.toml
+#
+# Docs: https://fly.io/docs/reference/configuration/
+
+app            = "resumeforge-api"   # change if name is already taken on Fly.io
+primary_region = "sin"               # Singapore — closest to South Asia
+
+[build]
+  # Build context is the repo root (where this fly.toml lives).
+  # The Dockerfile lives in apps/api/ but uses the full monorepo context
+  # so workspace packages (@resumeforge/shared, @resumeforge/templates) resolve.
+  dockerfile = "apps/api/Dockerfile"
+
+# ── Static environment variables ──────────────────────────────────────────────
+# Secrets (MONGODB_URI, JWT_SECRET, etc.) are set via:
+#   fly secrets set KEY=value
+# Do NOT put secrets here.
+[env]
+  NODE_ENV                   = "production"
+  PORT                       = "8080"
+  # Required for Puppeteer inside Docker (no X server / sandbox available)
+  PDF_ALLOW_UNSAFE_NO_SANDBOX = "true"
+
+# ── HTTP service ──────────────────────────────────────────────────────────────
+[http_service]
+  internal_port       = 8080
+  force_https         = true
+  # Auto-stop when idle (free-tier friendly). First request after idle has a
+  # ~2s cold-start. Set min_machines_running = 1 for always-on (~$4-6/mo).
+  auto_stop_machines  = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes           = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "15s"
+    interval     = "30s"
+    method       = "GET"
+    timeout      = "10s"
+    path         = "/__ping"
+
+# ── VM sizing ─────────────────────────────────────────────────────────────────
+# 512 MB is recommended — Chromium spikes to ~150-200 MB during PDF generation.
+# shared-cpu-1x + 512 MB = ~$0.83/mo above the free $5 credit = essentially free.
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "512mb"
