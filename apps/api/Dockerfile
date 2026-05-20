@@ -70,7 +70,7 @@ RUN pnpm --filter resumeforge-api build
 # ── Runtime ───────────────────────────────────────────────────────────────────
 ENV NODE_ENV=production
 
-# Railway injects PORT automatically — NestJS reads process.env.PORT in main.ts
-EXPOSE 3000
+# Railway/HuggingFace injects PORT automatically — NestJS reads process.env.PORT
+EXPOSE 7860
 
 CMD ["node", "apps/api/dist/main.js"]
