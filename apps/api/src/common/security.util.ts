@@ -25,7 +25,7 @@ export function getAllowedCorsOrigins(rawValue = process.env.CORS_ORIGINS): stri
     .filter(Boolean);
 
   const defaults = isProductionEnvironment()
-    ? ['https://resumeforge-web.onrender.com']
+    ? ['https://resume-forge-web-tau.vercel.app']
     : DEFAULT_DEVELOPMENT_ORIGINS;
 
   return Array.from(new Set([...defaults, ...configuredOrigins]));

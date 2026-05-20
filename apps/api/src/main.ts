@@ -30,7 +30,8 @@ async function bootstrap() {
       if (!origin) return callback(null, true);
 
       const isLoopbackOrigin = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
-      if (isLoopbackOrigin || allowedOrigins.includes(origin)) {
+      const isVercelPreview = /^https:\/\/.*\.vercel\.app$/i.test(origin);
+      if (isLoopbackOrigin || isVercelPreview || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
