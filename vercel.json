@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
   "installCommand": "npm install -g pnpm@9 && pnpm install --no-frozen-lockfile",
-  "buildCommand": "pnpm --filter resumeforge-web build",
+  "buildCommand": "pnpm --filter @resumeforge/shared build && pnpm --filter resumeforge-web build",
   "outputDirectory": ".next"
 }
