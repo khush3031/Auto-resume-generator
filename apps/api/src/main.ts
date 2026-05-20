@@ -27,11 +27,13 @@ async function bootstrap() {
   const allowedOrigins = getAllowedCorsOrigins();
   app.enableCors({
     origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or postman)
       if (!origin) return callback(null, true);
 
       const isLoopbackOrigin = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
-      const isVercelPreview = /^https:\/\/.*\.vercel\.app$/i.test(origin);
-      if (isLoopbackOrigin || isVercelPreview || allowedOrigins.includes(origin)) {
+      const isVercelOrigin = /^https:\/\/.*\.vercel\.app$/i.test(origin);
+      
+      if (isLoopbackOrigin || isVercelOrigin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
